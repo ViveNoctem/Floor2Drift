@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:initial_project/floor/database.dart';
 import 'package:initial_project/floor/enums.dart';
 import 'package:initial_project/floor/task/task.dart';
+
+import 'floor/databaseDrift.dart';
 
 class TaskItem extends StatefulWidget {
   final ExampleTask task;
@@ -19,7 +19,6 @@ class _TaskItemState extends State<TaskItem> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     stateTask = widget.task;
   }
@@ -35,7 +34,7 @@ class _TaskItemState extends State<TaskItem> {
             setState(() {
               stateTask = widget.task.copyWith(status: getTaskStatus(value));
             });
-            await widget.database.taskDao.updateTask(stateTask);
+            await widget.database.exampleTaskDao.updateTask(stateTask);
           },
         ),
         Text(widget.task.message),

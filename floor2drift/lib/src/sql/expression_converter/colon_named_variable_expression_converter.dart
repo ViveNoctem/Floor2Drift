@@ -44,9 +44,6 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
         return ValueResponse.error("List not supported in ColonNamedVariable as Expression", element);
       }
 
-      // TODO add type converter
-      // TODO need map of  convertedFields an the current table
-
       if (selector.convertedFields[selector.entityName] != null) {
         for (final entry in selector.convertedFields[selector.entityName]!) {
           if (name != entry) {

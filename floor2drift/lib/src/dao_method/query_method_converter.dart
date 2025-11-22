@@ -79,7 +79,7 @@ class QueryMethodConverter extends DaoMethodConverter {
 
       final start = returnTypeString.lastIndexOf("<") + 1;
       final type = returnTypeString.substring(start, end);
-      // TODO find better way for this
+
       // TODO do not add the suffix to enum
       var isEnum = _checkIfEnum(returnType, method);
 

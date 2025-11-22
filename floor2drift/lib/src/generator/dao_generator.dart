@@ -16,12 +16,18 @@ import 'package:source_gen/source_gen.dart';
 class DaoGenerator extends AnnotationGenerator<Null, Null> {
   final String classNameSuffix;
   final DaoHelper daoHelper;
+  final bool useRowClass;
 
   @override
   TypeChecker get typeChecker => TypeChecker.fromRuntime(dao.runtimeType);
 
   // TODO need to support multiple databases?
-  DaoGenerator({this.classNameSuffix = "", this.daoHelper = const DaoHelper(), required super.inputOption});
+  DaoGenerator({
+    this.classNameSuffix = "",
+    this.daoHelper = const DaoHelper(),
+    required super.inputOption,
+    required this.useRowClass,
+  });
 
   @override
   (String, Set<String>, Null) generateForAnnotatedElement(
@@ -91,8 +97,6 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
 
     //TODO output option needed to resolve the part directive bc the file could be renamed
 
-    // TODO .dart durch .g.dart ersetzen
-
     var fileName = outputOption.getFileName(classElement.source.shortName);
 
     fileName = fileName.replaceAll(".dart", ".g.dart");
@@ -108,17 +112,25 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     for (final table in valueResponse.data.usedTabled) {
       final driftClassUri = dbState.driftClasses[table];
 
-      if (driftClassUri == null) {
-        continue;
+      if (driftClassUri != null) {
+        final tableImport = BaseHelper.getImport(Uri.parse(driftClassUri), targetFilePath);
+
+        if (tableImport != null) {
+          newImports.add(tableImport);
+        }
       }
 
-      final tableImport = BaseHelper.getImport(Uri.parse(driftClassUri), targetFilePath);
+      if (useRowClass) {
+        final floorEntitiyUri = dbState.floorClasses[table.substring(0, table.length - 1)];
 
-      if (tableImport == null) {
-        continue;
+        if (floorEntitiyUri != null) {
+          final floorEntityImport = BaseHelper.getImport(floorEntitiyUri.librarySource.uri, targetFilePath);
+
+          if (floorEntityImport != null) {
+            newImports.add(floorEntityImport);
+          }
+        }
       }
-
-      newImports.add(tableImport);
     }
 
     final header = _generateClassHeader(

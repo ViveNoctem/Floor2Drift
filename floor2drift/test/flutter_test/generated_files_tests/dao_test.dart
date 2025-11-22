@@ -916,32 +916,24 @@ void main() {
       expect(floorTask, EqualTaskMatcher(driftTask));
     });
 
-    // TODO updateMultiple doesn't work at the moment
-    // test("updateMultipleMessage", () async {
-    //   final (floorResult, driftResult) =
-    //       await (
-    //         floorTaskDao.updateMultipleMessages([8, 7], "New Message"),
-    //         driftTaskDao.updateMultipleMessages([8, 7], "New Message"),
-    //       ).wait;
+    // TODO WHERE IN doesn't work in custom update statement
+    //   test("updateMultipleMessage", () async {
+    //     final (floorResult, driftResult) =
+    //         await (
+    //           floorTaskDao.updateMultipleMessages([8, 7], "New Message"),
+    //           driftTaskDao.updateMultipleMessages([8, 7], "New Message"),
+    //         ).wait;
     //
-    //   expect(floorResult, equals(driftResult));
+    //     // expect(floorResult, equals(driftResult));
     //
-    //   final (floorTask8, driftTask8) =
-    //       await (
-    //         floorTaskDao.findTaskById(8),
-    //         driftTaskDao.findTaskById(8),
-    //       ).wait;
+    //     final (floorTask8, driftTask8) = await (floorTaskDao.findTaskById(8), driftTaskDao.findTaskById(8)).wait;
     //
-    //   expect(floorTask8, EqualTaskMatcher(driftTask8));
+    //     expect(floorTask8, EqualTaskMatcher(driftTask8));
     //
-    //   final (floorTask7, driftTask7) =
-    //       await (
-    //         floorTaskDao.findTaskById(7),
-    //         driftTaskDao.findTaskById(7),
-    //       ).wait;
+    //     final (floorTask7, driftTask7) = await (floorTaskDao.findTaskById(7), driftTaskDao.findTaskById(7)).wait;
     //
-    //   expect(floorTask7, EqualTaskMatcher(driftTask7));
-    // });
+    //     expect(floorTask7, EqualTaskMatcher(driftTask7));
+    //   });
   });
 
   group("annotation", () {

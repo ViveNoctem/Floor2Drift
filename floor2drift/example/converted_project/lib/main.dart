@@ -1,6 +1,9 @@
-import 'package:floor/floor.dart';
+import 'dart:io';
+
+import 'package:drift/drift.dart' hide Column;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:initial_project/floor/database.dart';
+import 'package:initial_project/floor/databaseDrift.dart';
 import 'package:initial_project/floor/user.dart';
 import 'package:initial_project/task_board.dart';
 
@@ -10,23 +13,17 @@ void main() async {
   runApp(MyApp(database: database));
 }
 
-// create migration
-final migration1to2 = Migration(1, 2, (database) async {
-  await database.execute('ALTER TABLE person ADD COLUMN nickname TEXT');
-});
-
-// create migration
-final migration2to3 = Migration(2, 3, (database) async {
-  await database.execute('ALTER TABLE person ADD COLUMN nickname TEXT');
-});
-
 Future<ExampleDatabase> initDatabase() async {
-  final database = await $FloorExampleDatabase
-      .databaseBuilder('app_database.db')
-      .addMigrations([migration1to2, migration2to3])
-      .build();
+  final database = ExampleDatabase(_openConnection());
 
   return database;
+}
+
+LazyDatabase _openConnection() {
+  return LazyDatabase(() async {
+    final file = File("./app_database.db");
+    return NativeDatabase.createInBackground(file);
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -63,7 +60,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     userNameController = TextEditingController();
     passwordController = TextEditingController();
@@ -73,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final userName = userNameController.text;
     final password = passwordController.text;
 
-    final user = await widget.database.userDao.getByUsername(userName);
+    final user = await widget.database.exampleUserDao.getByUsername(userName);
 
     if (user != null) {
       if (mounted == false) {
@@ -90,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
       password: password,
       id: null,
     );
-    await widget.database.userDao.insertUser(newUser);
+    await widget.database.exampleUserDao.insertUser(newUser);
 
     if (mounted == false) {
       return;
@@ -104,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final userName = userNameController.text;
     final password = passwordController.text;
 
-    final user = await widget.database.userDao.getByUsername(userName);
+    final user = await widget.database.exampleUserDao.getByUsername(userName);
 
     if (user == null) {
       if (mounted == false) {

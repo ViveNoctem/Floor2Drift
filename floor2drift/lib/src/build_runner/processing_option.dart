@@ -75,8 +75,6 @@ class ProcessingOptions extends ProcessingOptionBase {
   ) async {
     AnalysisSession session = context.currentSession;
 
-    // TODO now we must resolve all files twice.
-    // TODO fixed if the keep the databaseOnly approach
     var resolved = await session.getResolvedUnit(path);
 
     if (resolved is! ResolvedUnitResult) {
@@ -101,9 +99,6 @@ class ProcessingOptions extends ProcessingOptionBase {
 
     final libraryImports = classElement.library.definingCompilationUnit.libraryImports;
 
-    // TODO check if the libaryReader is needed an correct.
-    final libraryReader = LibraryReader(classElement.library);
-
     for (final library in libraryImports) {
       var importString = library.uri;
 
@@ -117,10 +112,8 @@ class ProcessingOptions extends ProcessingOptionBase {
         continue;
       }
 
+      // ignore floor import
       if (importString.relativeUriString == "package:floor/floor.dart") {
-        // TODO When to add drift import
-        // TODO Removes the floor import and adds drift import
-        imports.add("import 'package:drift/drift.dart';");
         continue;
       }
 
@@ -131,8 +124,6 @@ class ProcessingOptions extends ProcessingOptionBase {
           (generator is DaoGenerator || generator is BaseDaoGenerator)) {
         continue;
       }
-
-      // TODO Add part directives?
 
       final reader2 = LibraryReader(importString.library);
 
@@ -145,8 +136,7 @@ class ProcessingOptions extends ProcessingOptionBase {
         }
       }
 
-      // TODO currentFile always changed because we only use the generator on changed files
-      final newImportString = outputOption.rewriteImport((changed, importString), (true, libraryReader));
+      final newImportString = outputOption.rewriteImport((changed, importString));
       imports.add(newImportString);
     }
 

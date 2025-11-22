@@ -26,26 +26,6 @@ extension TaskDriftEntityExtension on Task? {
   }
 }
 
-// extension TaskDriftDaoExtension on driftEntity.Task? {
-//   floorEntity.Task? get toTask {
-//     if (this == null) {
-//       return null;
-//     }
-//
-//     return floorEntity.Task(
-//       id: this!.id,
-//       status: this!.status,
-//       timestamp: this!.timestamp,
-//       type: this!.type,
-//       message: this!.message,
-//       isRead: this!.isRead,
-//       customDouble: this!.customDouble,
-//       attachment: this!.attachment,
-//       integers: this!.integers ?? [], // TODO Check
-//     );
-//   }
-// }
-
 class EqualTaskMatcher extends Matcher {
   final Object? _expected;
 

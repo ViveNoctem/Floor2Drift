@@ -92,7 +92,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
     // close bracket before the select
     result += ")";
 
-    // if useSelectOnly == trze addColumns is always used for the SELECT clause
+    // if useSelectOnly == true addColumns is always used for the SELECT clause
     // TODO change _getSelectMap to support useSelectOnly
     if (useSelectOnly) {
       result += ".map((${tableSelector.selector}) => ${tableSelector.selector}.read(\$1)!)";

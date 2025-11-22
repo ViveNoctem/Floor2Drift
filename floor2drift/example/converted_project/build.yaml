@@ -1,0 +1,6 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          case_from_dart_to_sql: camelCase

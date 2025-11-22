@@ -78,8 +78,8 @@ void main() {
     });
   });
 
-  // TODO maybe more default value tests?
-  // TODO probably more important for server default
+  // TODO maybe more default value tests
+  // TODO server default?
   group("check field on companion", () {
     test("null initialization", () async {
       final dateTime = DateTime.now();

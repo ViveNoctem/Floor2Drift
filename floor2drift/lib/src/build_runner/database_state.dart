@@ -2,7 +2,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
 class DatabaseState {
-  // TODO could this be just ClassElement?
   final DartType databaseClass;
 
   final Set<ClassElement> entities;

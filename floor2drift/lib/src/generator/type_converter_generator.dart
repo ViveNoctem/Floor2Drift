@@ -84,6 +84,6 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
 
     result += "}\n";
 
-    return (result, const {}, null);
+    return (result, const {"import 'package:drift/drift.dart';"}, null);
   }
 }

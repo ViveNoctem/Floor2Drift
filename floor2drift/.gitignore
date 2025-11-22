@@ -7,4 +7,5 @@
 pubspec.lock
 .idea
 
+# Do not commit generated code
 *.g.dart

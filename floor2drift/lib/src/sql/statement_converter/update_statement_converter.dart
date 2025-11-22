@@ -45,13 +45,8 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
 
     var result = "return (customUpdate(\"$query\", variables: $variables, $tableGetter updateKind: UpdateKind.update)";
 
-    // TODO
     // close bracket before the update
     result += ");";
-
-    // TODO
-    // the method to execute the update statement is always .go()
-    // result += ".go();";
 
     return ValueResponse.value((result, tableName));
   }

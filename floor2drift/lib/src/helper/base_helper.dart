@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/floor2drift.dart';
 import 'package:floor2drift/src/enum/enums.dart';
@@ -12,23 +13,25 @@ class BaseHelper {
 
   static TypeSpecification getTypeSpecification(DartType interfaceType) {
     if (interfaceType is! InterfaceType) {
-      return const TypeSpecification(EType.unknown, EType.unknown, false);
+      return const TypeSpecification(EType.unknown, EType.unknown, true);
     }
 
     final mainType = EType.getByDartType(interfaceType);
 
-    if (interfaceType.typeArguments.isEmpty) {
-      return TypeSpecification(mainType, EType.unknown, false);
+    if (interfaceType.typeArguments.isEmpty || mainType == EType.unknown) {
+      return TypeSpecification(mainType, EType.unknown, interfaceType.nullabilitySuffix == NullabilitySuffix.question);
     }
 
     final typeArgumentDartType = interfaceType.typeArguments.first;
 
     final typeArgumentType = EType.getByDartType(typeArgumentDartType);
 
-    return TypeSpecification(mainType, typeArgumentType, false);
+    return TypeSpecification(
+      mainType,
+      typeArgumentType,
+      typeArgumentDartType.nullabilitySuffix == NullabilitySuffix.question,
+    );
   }
-
-  // TODO source is enough instead of libraryElement, but it is important to use libarySource
 
   static String? getImport(Uri toImportUri, String importInFilePath) {
     final libraryUri = toImportUri;

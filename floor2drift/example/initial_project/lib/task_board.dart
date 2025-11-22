@@ -19,7 +19,6 @@ class _TaskBoardState extends State<TaskBoard> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 

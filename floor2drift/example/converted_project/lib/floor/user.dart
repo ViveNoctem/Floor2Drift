@@ -3,7 +3,7 @@ import 'package:floor/floor.dart';
 
 @entity
 class ExampleUser implements Insertable<ExampleUser> {
-  @primaryKey
+  @PrimaryKey(autoGenerate: true)
   final int? id;
   final String userName;
   final String password;

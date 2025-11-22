@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:source_gen/source_gen.dart';
 
 abstract class OutputOptionBase {
   final bool dryRun;
@@ -13,10 +12,7 @@ abstract class OutputOptionBase {
   /// [filePath] the current absolute Path of the file to be written
   String getNewPath(String filePath);
 
-  String rewriteImport(
-    (bool willChange, DirectiveUriWithLibrary currentImport) import,
-    (bool willChange, LibraryReader currentLibrary) currentFile,
-  );
+  String rewriteImport((bool willChange, DirectiveUriWithLibrary currentImport) import);
 
   String rewriteImportString(bool willImportedChange, String path);
 
@@ -57,10 +53,7 @@ class OutputOptions extends OutputOptionBase {
   }
 
   @override
-  String rewriteImport(
-    (bool willChange, DirectiveUriWithLibrary currentImport) import,
-    (bool willChange, LibraryReader currentLibrary) currentFile,
-  ) {
+  String rewriteImport((bool willChange, DirectiveUriWithLibrary currentImport) import) {
     return rewriteImportString(import.$1, import.$2.relativeUriString);
   }
 

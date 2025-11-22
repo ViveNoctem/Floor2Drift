@@ -131,7 +131,8 @@ class BuildRunner {
   ) {
     final baseDaoGenerator = inputOption.convertDbDaos ? BaseDaoGenerator(inputOption: inputOption) : null;
 
-    final daoGenerator = inputOption.convertDbDaos ? DaoGenerator(inputOption: inputOption) : null;
+    final daoGenerator =
+        inputOption.convertDbDaos ? DaoGenerator(inputOption: inputOption, useRowClass: useRowClass) : null;
 
     final baseEntityGenerator = inputOption.convertDbEntities ? BaseEntityGenerator(inputOption: inputOption) : null;
 

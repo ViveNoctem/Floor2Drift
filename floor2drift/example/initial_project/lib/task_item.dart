@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:initial_project/floor/database.dart';
 import 'package:initial_project/floor/enums.dart';
 import 'package:initial_project/floor/task.dart';
@@ -19,7 +18,6 @@ class _TaskItemState extends State<TaskItem> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     stateTask = widget.task;
   }

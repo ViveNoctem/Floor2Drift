@@ -1,19 +1,15 @@
-import 'dart:typed_data';
-
-import 'package:floor/floor.dart';
+import 'package:drift/drift.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:initial_project/floor/base_class.dart';
 
 import '../enums.dart';
 import '../type_converters.dart';
+import '../type_convertersDrift.dart' as drift;
 
 @Entity()
 @TypeConverters([IntListConverter])
 class ExampleTask extends ExampleBaseClass<ExampleTask> {
   final String message;
-
-  // TODO add as a migration?
-  // final bool? isHighlighted;
 
   final int userId;
 
@@ -63,5 +59,18 @@ class ExampleTask extends ExampleBaseClass<ExampleTask> {
       type: type ?? this.type,
       attachment: attachment ?? this.attachment,
     );
+  }
+
+  @override
+  Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
+    return {
+      ...super.toColumns(nullToAbsent),
+      "message": Variable(message),
+      "userId": Variable(userId),
+      "timestamp": Variable(const drift.DateTimeConverter().toSql(timestamp)),
+      "status": Variable(status.index),
+      "type": Variable(type?.index),
+      "attachment": Variable(attachment),
+    };
   }
 }

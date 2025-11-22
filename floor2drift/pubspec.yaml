@@ -10,7 +10,6 @@ environment:
 # Add regular dependencies here.
 dependencies:
 
-  #  TODO Theoretically, flutter is only needed for tests?
   flutter:
     sdk: flutter
 
@@ -42,4 +41,3 @@ dev_dependencies:
   drift: ^2.16.0
   build_runner: ^2.4.8
   drift_dev: ^2.16.0
-  json_serializable: ^6.9.0

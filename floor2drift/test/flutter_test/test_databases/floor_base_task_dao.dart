@@ -4,7 +4,7 @@ import 'package:floor_annotation/floor_annotation.dart';
 import 'base_class.dart';
 
 @convertBaseDao
-// TODO Maybe create new Dao, to have Dao Tests and BaseDao Tests separate?
+// TODO create new Dao, to have separate Dao Tests and BaseDao Tests
 abstract class BaseDao<T extends BaseClass<T>> {
   @Query('SELECT * FROM task')
   Future<List<T>> getAll();

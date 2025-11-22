@@ -16,9 +16,6 @@ class BaseEntityGenerator
 
   BaseEntityGenerator({this.classHelper = const ClassHelper(), required super.inputOption});
 
-  // TODO baseEntity gets added because its a super class of an generated Class
-  // TODO the canAnalyze doesn't work.
-  // TODO Just always generate at the moment
   @override
   FutureOr<bool> getImport(LibraryReader library) {
     for (final _ in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
@@ -34,7 +31,6 @@ class BaseEntityGenerator
     OutputOptionBase outputOption,
     DatabaseState dbState,
   ) {
-    // TODO BaseEntityGenerator should probably be deactivated if useRowClass for the entityGenerator is true.
     var result = "";
 
     final valueResult = classHelper.generateInheritanceFields(classElement, dbState.typeConverterMap);

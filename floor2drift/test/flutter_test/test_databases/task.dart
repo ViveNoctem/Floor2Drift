@@ -21,6 +21,7 @@ class Task extends BaseClass<Task> {
   @TestAnnotation()
   final TaskStatus status;
 
+  @TypeConverters([TaskTypeConverter])
   final TaskType? type;
 
   final List<int>? integers;

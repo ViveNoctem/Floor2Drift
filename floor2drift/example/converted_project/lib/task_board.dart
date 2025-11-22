@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:initial_project/floor/database.dart';
 import 'package:initial_project/floor/task/task.dart';
 import 'package:initial_project/floor/user.dart';
 import 'package:initial_project/task_item.dart';
+
+import 'floor/databaseDrift.dart';
 
 class TaskBoard extends StatefulWidget {
   final ExampleDatabase database;
@@ -19,13 +20,14 @@ class _TaskBoardState extends State<TaskBoard> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   Future<List<Widget>> loadTasks() async {
     // just ignore that id can be null
-    final tasks = await widget.database.taskDao.getAllForUser(widget.user.id!);
+    final tasks = await widget.database.exampleTaskDao.getAllForUser(
+      widget.user.id!,
+    );
     taskWidgets = tasks.map((s) => getTaskWidget(s)).toList();
     return taskWidgets;
   }
@@ -87,7 +89,7 @@ class _TaskBoardState extends State<TaskBoard> {
       return;
     }
 
-    await widget.database.taskDao.add(
+    await widget.database.exampleTaskDao.add(
       ExampleTask.open(userId: widget.user.id!, message: newMessage),
     );
 

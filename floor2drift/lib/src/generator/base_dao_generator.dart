@@ -20,9 +20,6 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
 
   const BaseDaoGenerator({this.daoHelper = const DaoHelper(), required super.inputOption});
 
-  // TODO baseDao gets added because its a super class of an generated Class
-  // TODO the canAnalyze doesn't work.
-  // TODO Just always generate at the moment
   @override
   FutureOr<bool> getImport(LibraryReader library) {
     for (final _ in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
@@ -42,12 +39,7 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
       classElement,
       // do not use classNameSuffix. The Type Name should always be a generic type
       "",
-      TableSelectorBaseDao(
-        tableSelector,
-        dbState.convertedFields,
-        // TODO check entityName
-        entityName: classElement.name,
-      ),
+      TableSelectorBaseDao(tableSelector, dbState.convertedFields, entityName: classElement.name),
     );
 
     final newImports = <String>{};
