@@ -1,0 +1,14 @@
+targets:
+  $default:
+    sources:
+      - "$package$"
+      - "lib/**"
+      - "test/**"
+    builders:
+      drift_dev:
+        generate_for:
+          - "test/**"
+          - "test/**.g.dart"
+        options:
+          store_date_time_values_as_text: true
+          case_from_dart_to_sql: camelCase

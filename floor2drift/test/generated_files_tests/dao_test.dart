@@ -1,0 +1,1110 @@
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:test/test.dart';
+
+import '../additional_classes/test_helper.dart';
+import '../test_databases/enums.dart';
+import '../test_databases/floor_task_dao.dart' as floorDao;
+import '../test_databases/floor_task_daoDrift.dart' as driftDao;
+import '../test_databases/floor_test_database.dart' as floor;
+import '../test_databases/floor_test_databaseDrift.dart' as drift;
+import '../test_databases/task.dart';
+
+// TODO Add test for integers with IntListConverter
+// TODO Add tests for isBetween
+// TODO Add tests for aggregate functions with filter clause
+// TODO Add tests for total
+// TODO Add test for group_concat with order by
+// TODO Add test for stringAgg
+void main() {
+  late floor.FloorTestDatabase floorDatabase;
+  late drift.FloorTestDatabase driftDatabase;
+  late floorDao.TaskDao floorTaskDao;
+  late driftDao.TaskDao driftTaskDao;
+  List<Task> floorTestEntities = [
+    Task(
+      id: 1,
+      isRead: true,
+      message: "1",
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      type: TaskType.bug,
+      customDouble: 1.1,
+      attachment: Uint8List.fromList(const [1, 2, 3]),
+      integers: const [1, 2, 3],
+    ),
+    Task(
+      id: 2,
+      isRead: true,
+      message: "2",
+      timestamp: DateTime(2025, 2, 1),
+      status: TaskStatus.inProgress,
+      type: TaskType.story,
+      customDouble: 1.1,
+      attachment: Uint8List.fromList(const [1, 2, 3]),
+      integers: const [1, 2, 3],
+    ),
+    Task(
+      id: 3,
+      isRead: true,
+      message: "3",
+      timestamp: DateTime(2025, 3, 1),
+      status: TaskStatus.open,
+      type: TaskType.task,
+      customDouble: 2.2,
+      attachment: Uint8List.fromList(const [4, 5, 6]),
+      integers: const [4, 5, 6],
+    ),
+    Task(
+      id: 4,
+      isRead: true,
+      message: "4",
+      timestamp: DateTime(2025, 4, 1),
+      status: TaskStatus.done,
+      type: TaskType.bug,
+      customDouble: 2.2,
+      attachment: Uint8List.fromList(const [4, 5, 6]),
+      integers: const [4, 5, 6],
+    ),
+    Task(
+      id: 5,
+      isRead: true,
+      message: "5",
+      timestamp: DateTime(2025, 5, 1),
+      status: TaskStatus.inProgress,
+      type: TaskType.task,
+      customDouble: 3.3,
+      attachment: Uint8List.fromList(const [7, 8, 9]),
+      integers: const [7, 8, 9],
+    ),
+    Task(
+      id: 6,
+      isRead: false,
+      message: "6",
+      timestamp: DateTime(2025, 6, 1),
+      status: TaskStatus.open,
+      type: TaskType.story,
+      customDouble: 3.3,
+      attachment: Uint8List.fromList(const [7, 8, 9]),
+      integers: const [7, 8, 9],
+    ),
+    Task(
+      id: 7,
+      isRead: false,
+      message: "7",
+      timestamp: DateTime(2025, 7, 1),
+      status: TaskStatus.done,
+      type: TaskType.story,
+      customDouble: 4.4,
+      attachment: Uint8List.fromList(const [10, 11, 12]),
+      integers: const [10, 11, 12],
+    ),
+    Task(
+      id: 8,
+      isRead: false,
+      message: "8",
+      timestamp: DateTime(2025, 8, 1),
+      status: TaskStatus.inProgress,
+      type: TaskType.task,
+      customDouble: 4.4,
+      attachment: Uint8List.fromList(const [10, 11, 12]),
+      integers: const [10, 11, 12],
+    ),
+    Task(
+      id: 9,
+      isRead: false,
+      message: "9",
+      timestamp: DateTime(2025, 9, 1),
+      status: TaskStatus.open,
+      type: TaskType.bug,
+      customDouble: 5.5,
+      attachment: Uint8List.fromList(const [13, 14, 15]),
+      integers: const [13, 14, 15],
+    ),
+    Task(
+      id: 10,
+      isRead: false,
+      message: "10",
+      timestamp: DateTime(2025, 10, 1),
+      status: TaskStatus.open,
+      type: TaskType.bug,
+      customDouble: 5.5,
+      attachment: Uint8List.fromList(const [13, 14, 15]),
+      integers: const [13, 14, 15],
+    ),
+    // TODO why is isRead and attachment not allowed to be null
+    Task(
+      id: 11,
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      customDouble: 0,
+      integers: const [1],
+      isRead: false,
+      attachment: Uint8List.fromList(const [1, 1, 1]),
+    ),
+    Task(
+      id: 12,
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      customDouble: 0,
+      integers: const [1],
+      isRead: false,
+      attachment: Uint8List.fromList(const [1, 1, 1]),
+    ),
+    Task(
+      id: 13,
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      customDouble: 0,
+      integers: const [1],
+      isRead: false,
+      attachment: Uint8List.fromList(const [1, 1, 1]),
+    ),
+  ];
+
+  List<Task> driftTestEntities = [
+    Task(
+      id: 1,
+      isRead: true,
+      message: "1",
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      type: TaskType.bug,
+      customDouble: 1.1,
+      attachment: Uint8List.fromList(const [1, 2, 3]),
+      integers: const [1, 2, 3],
+    ),
+    Task(
+      id: 2,
+      isRead: true,
+      message: "2",
+      timestamp: DateTime(2025, 2, 1),
+      status: TaskStatus.inProgress,
+      type: TaskType.story,
+      customDouble: 1.1,
+      attachment: Uint8List.fromList(const [1, 2, 3]),
+      integers: const [1, 2, 3],
+    ),
+    Task(
+      id: 3,
+      isRead: true,
+      message: "3",
+      timestamp: DateTime(2025, 3, 1),
+      status: TaskStatus.open,
+      type: TaskType.task,
+      customDouble: 2.2,
+      attachment: Uint8List.fromList(const [4, 5, 6]),
+      integers: const [4, 5, 6],
+    ),
+    Task(
+      id: 4,
+      isRead: true,
+      message: "4",
+      timestamp: DateTime(2025, 4, 1),
+      status: TaskStatus.done,
+      type: TaskType.bug,
+      customDouble: 2.2,
+      attachment: Uint8List.fromList(const [4, 5, 6]),
+      integers: const [4, 5, 6],
+    ),
+    Task(
+      id: 5,
+      isRead: true,
+      message: "5",
+      timestamp: DateTime(2025, 5, 1),
+      status: TaskStatus.inProgress,
+      type: TaskType.task,
+      customDouble: 3.3,
+      attachment: Uint8List.fromList(const [7, 8, 9]),
+      integers: const [7, 8, 9],
+    ),
+    Task(
+      id: 6,
+      isRead: false,
+      message: "6",
+      timestamp: DateTime(2025, 6, 1),
+      status: TaskStatus.open,
+      type: TaskType.story,
+      customDouble: 3.3,
+      attachment: Uint8List.fromList(const [7, 8, 9]),
+      integers: const [7, 8, 9],
+    ),
+    Task(
+      id: 7,
+      isRead: false,
+      message: "7",
+      timestamp: DateTime(2025, 7, 1),
+      status: TaskStatus.done,
+      type: TaskType.story,
+      customDouble: 4.4,
+      attachment: Uint8List.fromList(const [10, 11, 12]),
+      integers: const [10, 11, 12],
+    ),
+    Task(
+      id: 8,
+      isRead: false,
+      message: "8",
+      timestamp: DateTime(2025, 8, 1),
+      status: TaskStatus.inProgress,
+      type: TaskType.task,
+      customDouble: 4.4,
+      attachment: Uint8List.fromList(const [10, 11, 12]),
+      integers: const [10, 11, 12],
+    ),
+    Task(
+      id: 9,
+      isRead: false,
+      message: "9",
+      timestamp: DateTime(2025, 9, 1),
+      status: TaskStatus.open,
+      type: TaskType.bug,
+      customDouble: 5.5,
+      attachment: Uint8List.fromList(const [13, 14, 15]),
+      integers: const [13, 14, 15],
+    ),
+    Task(
+      id: 10,
+      isRead: false,
+      message: "10",
+      timestamp: DateTime(2025, 10, 1),
+      status: TaskStatus.open,
+      type: TaskType.bug,
+      customDouble: 5.5,
+      attachment: Uint8List.fromList(const [13, 14, 15]),
+      integers: const [13, 14, 15],
+    ),
+    Task(
+      id: 11,
+      message: 'default',
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      customDouble: 0,
+      integers: const [1],
+      isRead: false,
+      attachment: Uint8List.fromList(const [1, 1, 1]),
+    ),
+    Task(
+      id: 12,
+      message: 'default',
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      customDouble: 0,
+      integers: const [1],
+      isRead: false,
+      attachment: Uint8List.fromList(const [1, 1, 1]),
+    ),
+    Task(
+      id: 13,
+      message: 'default',
+      timestamp: DateTime(2025, 1, 1),
+      status: TaskStatus.done,
+      customDouble: 0,
+      integers: const [1],
+      isRead: false,
+      attachment: Uint8List.fromList(const [1, 1, 1]),
+    ),
+  ];
+
+  setUp(() async {
+    floorDatabase = await floor.$FloorFloorTestDatabase.inMemoryDatabaseBuilder().build();
+    floorTaskDao = floorDatabase.taskDao;
+    await floorTaskDao.annotationInsertTasks(floorTestEntities);
+    driftDatabase = drift.FloorTestDatabase(DatabaseConnection(NativeDatabase.memory()));
+    driftTaskDao = driftDatabase.taskDao;
+    await driftDatabase.tasks.insertAll(driftTestEntities);
+  });
+
+  tearDown(() async {
+    await floorDatabase.close();
+    await driftDatabase.close();
+  });
+
+  group("WHERE", () {
+    test("WHERE", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereId(1), driftTaskDao.whereId(1)).wait;
+
+      expect(floorTask, EqualTaskMatcher(driftTask.toTask));
+    });
+
+    test("WHERE NOT EQUAL", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereNotEqual(8), driftTaskDao.whereNotEqual(8)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE SMALLER BIGGGER", () async {
+      final (floorTask, driftTask) =
+          await (floorTaskDao.whereSmallerBigger(8), driftTaskDao.whereSmallerBigger(8)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE NOT EQUAL DATE", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereNotEqualDate(DateTime(2025, 10, 1)),
+            driftTaskDao.whereNotEqualDate(DateTime(2025, 10, 1)),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE SMALLER BIGGER DATE", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereSmallerBiggerDate(DateTime(2025, 10, 1)),
+            driftTaskDao.whereSmallerBiggerDate(DateTime(2025, 10, 1)),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE AND 1", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereAnd(2, true), driftTaskDao.whereAnd(2, true)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE AND 2", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereAnd(8, true), driftTaskDao.whereAnd(8, true)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE OR", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereOr(3, false), driftTaskDao.whereOr(3, false)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE AND OR", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereAndOr(6, true, TaskStatus.done.index),
+            driftTaskDao.whereAndOr(6, true, TaskStatus.done.index),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE AND OR 2", () async {
+      // every task in the db has TaskStatus.done
+      // TaskStatus in the sql query should not be TaskStatus.done
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereAndOr2(false, TaskStatus.open.index),
+            driftTaskDao.whereAndOr2(false, TaskStatus.open.index),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
+
+  group("WHERE IN", () {
+    test("WHERE IN", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereIn([2, 5]), driftTaskDao.whereIn([2, 5])).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE IN enum", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereInEnum([TaskStatus.open.index, TaskStatus.inProgress.index]),
+            driftTaskDao.whereInEnum([TaskStatus.open.index, TaskStatus.inProgress.index]),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE IN 582", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereIn582(), driftTaskDao.whereIn582()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE NOT IN", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereNotIn([8, 2]), driftTaskDao.whereNotIn([8, 2])).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE NOT IN enum", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereNotInEnum([TaskStatus.done.index]),
+            driftTaskDao.whereNotInEnum([TaskStatus.done.index]),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE NOT IN 791", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereNotIn791(), driftTaskDao.whereNotIn791()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE AND OR IN", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereAndOrIn(3, false, [TaskStatus.inProgress.index, TaskStatus.done.index]),
+            driftTaskDao.whereAndOrIn(3, false, [TaskStatus.inProgress.index, TaskStatus.done.index]),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
+
+  group("WHERE SMALLER BIGGER", () {
+    test("WHERE BIGGER", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereBigger(4), driftTaskDao.whereBigger(4)).wait;
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE BIGGER EQUAL", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereBiggerEqual(4), driftTaskDao.whereBiggerEqual(4)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE SMALLER", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereSmaller(4), driftTaskDao.whereSmaller(4)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE SMALLER EQUAL", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.whereSmallerEqual(4), driftTaskDao.whereSmallerEqual(4)).wait;
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE BIGGER DATE", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereBiggerDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereBiggerDate(DateTime(2025, 9, 1)),
+          ).wait;
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE BIGGER EQUAL DATE", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereBiggerEqualDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereBiggerEqualDate(DateTime(2025, 9, 1)),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE SMALLER DATE", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereSmallerDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereSmallerDate(DateTime(2025, 9, 1)),
+          ).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("WHERE SMALLER EQUAL DATE", () async {
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereSmallerEqualDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereSmallerEqualDate(DateTime(2025, 9, 1)),
+          ).wait;
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
+
+  group("LIKE", () {
+    setUp(() async {
+      final now = DateTime.now();
+      final likeEntitesFloor = [
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "test message", integers: [1]),
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "message", integers: [1]),
+      ];
+
+      final likeEntitiesDrift = [
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "test message", integers: [1]),
+        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "message", integers: [1]),
+      ];
+      await (
+        floorTaskDao.annotationInsertTasks(likeEntitesFloor),
+        driftDatabase.tasks.insertAll(likeEntitiesDrift),
+      ).wait;
+    });
+
+    test("LIKE %", () async {
+      final (floorTask, driftTask) =
+          await (floorTaskDao.likeMessage("%message"), driftTaskDao.likeMessage("%message")).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("LIKE _", () async {
+      final (floorTask, driftTask) =
+          await (floorTaskDao.likeMessage("test_message"), driftTaskDao.likeMessage("test_message")).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    // TODO not supported at the moment
+    // test("LIKE ESCAPE", () {
+    //
+    // });
+  });
+
+  group("type test", () {
+    group("Uint8List", () {
+      test("single Uint8List", () async {
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnSingleUint8List(4), driftTaskDao.returnSingleUint8List(4)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("multiple Uint8List", () async {
+        // TODO why is isRead and attachment not allowed to be null
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnMultipleUint8List(4), driftTaskDao.returnMultipleUint8List(4)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i]?.length, equals(driftTask[i]?.length));
+          final floorIter = floorTask[i]?.iterator;
+          final driftIter = driftTask[i]?.iterator;
+
+          for (int n = 0; n < (floorTask[i]?.length ?? 0); n++) {
+            floorIter?.moveNext();
+            driftIter?.moveNext();
+            expect(floorIter?.current, equals(driftIter?.current));
+          }
+        }
+      });
+
+      test("where Uint8List", () async {
+        final (floorTask, driftTask) =
+            await (
+              floorTaskDao.whereUint8List(Uint8List.fromList(const [4, 5, 6])),
+              driftTaskDao.whereUint8List(Uint8List.fromList(const [4, 5, 6])),
+            ).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+        }
+      });
+    });
+
+    group("double", () {
+      test("single double", () async {
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnSingleDouble(8), driftTaskDao.returnSingleDouble(8)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("multiple double", () async {
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnMultipleDouble(2), driftTaskDao.returnMultipleDouble(2)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], equals(driftTask[i]));
+        }
+      });
+
+      test("where double", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.whereDouble(5.5), driftTaskDao.whereDouble(5.5)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+        }
+      });
+    });
+
+    group("int", () {
+      test("single int", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.returnSingleInt(8), driftTaskDao.returnSingleInt(8)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("multiple int", () async {
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnMultipleInt(2), driftTaskDao.returnMultipleInt(2)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], equals(driftTask[i]));
+        }
+      });
+
+      test("where int", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.whereInt(2), driftTaskDao.whereInt(2)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+        }
+      });
+    });
+
+    group("bool", () {
+      // TODO why is isRead and attachment not allowed to be null
+      test("single bool", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.returnSingleBool(3), driftTaskDao.returnSingleBool(3)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("multiple bool", () async {
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnMultipleBool(3), driftTaskDao.returnMultipleBool(3)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], equals(driftTask[i]));
+        }
+      });
+
+      test("where bool", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.whereBool(true), driftTaskDao.whereBool(true)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+        }
+      });
+    });
+
+    group("String", () {
+      test("single String", () async {
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnSingleString(9), driftTaskDao.returnSingleString(9)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("multiple String", () async {
+        final (floorTask, driftTask) =
+            await (floorTaskDao.returnMultipleString(1), driftTaskDao.returnMultipleString(1)).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], equals(driftTask[i]));
+        }
+      });
+
+      test("where String", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.whereString("9"), driftTaskDao.whereString("9")).wait;
+
+        expect(floorTask.length, equals(driftTask.length));
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+        }
+      });
+    });
+  });
+
+  group("DELETE", () {
+    test("DELETE WHERE", () async {
+      await (floorTaskDao.deleteWhereId(5), driftTaskDao.deleteWhereId(5)).wait;
+
+      final (floorTask, driftTask) = await (floorTaskDao.getAll(), driftTaskDao.getAll()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("DELETE ALL", () async {
+      await (floorTaskDao.deleteAll(), driftTaskDao.deleteAll()).wait;
+
+      final (floorTask, driftTask) = await (floorTaskDao.getAll(), driftTaskDao.getAll()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
+
+  group("aggregate functions", () {
+    group("COUNT", () {
+      test("COUNT *", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.count(), driftTaskDao.count()).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("COUNT WHERE", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.countWhere(4), driftTaskDao.countWhere(4)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+    });
+
+    group("AVG", () {
+      test("AVG", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.avg(), driftTaskDao.avg()).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("AVG WHERE ", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.avgWhere(8), driftTaskDao.avgWhere(8)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+    });
+
+    group("MIN", () {
+      test("MIN", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.min(), driftTaskDao.min()).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("MIN WHERE ", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.minWhere(8), driftTaskDao.minWhere(8)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+    });
+
+    group("MAX", () {
+      test("MAX", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.max(), driftTaskDao.max()).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("MAX WHERE ", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.maxWhere(3), driftTaskDao.maxWhere(3)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+    });
+
+    group("SUM", () {
+      test("SUM", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.sum(), driftTaskDao.sum()).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("SUM WHERE ", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.sumWhere(8), driftTaskDao.sumWhere(8)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+    });
+  });
+
+  group("Update", () {
+    test("updateMessage", () async {
+      final (floorResult, driftResult) =
+          await (floorTaskDao.updateMessage(8, "New Message"), driftTaskDao.updateMessage(8, "New Message")).wait;
+
+      expect(floorResult, equals(driftResult));
+
+      final (floorTask, driftTask) = await (floorTaskDao.findTaskById(8), driftTaskDao.findTaskById(8)).wait;
+
+      expect(floorTask, EqualTaskMatcher(driftTask));
+    });
+
+    // TODO updateMultiple doesn't work at the moment
+    // test("updateMultipleMessage", () async {
+    //   final (floorResult, driftResult) =
+    //       await (
+    //         floorTaskDao.updateMultipleMessages([8, 7], "New Message"),
+    //         driftTaskDao.updateMultipleMessages([8, 7], "New Message"),
+    //       ).wait;
+    //
+    //   expect(floorResult, equals(driftResult));
+    //
+    //   final (floorTask8, driftTask8) =
+    //       await (
+    //         floorTaskDao.findTaskById(8),
+    //         driftTaskDao.findTaskById(8),
+    //       ).wait;
+    //
+    //   expect(floorTask8, EqualTaskMatcher(driftTask8));
+    //
+    //   final (floorTask7, driftTask7) =
+    //       await (
+    //         floorTaskDao.findTaskById(7),
+    //         driftTaskDao.findTaskById(7),
+    //       ).wait;
+    //
+    //   expect(floorTask7, EqualTaskMatcher(driftTask7));
+    // });
+  });
+
+  group("annotation", () {
+    group("delete", () {
+      test("single", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.findTaskById(2), driftTaskDao.findTaskById(2)).wait;
+
+        expect(floorTask, EqualTaskMatcher(driftTask));
+
+        final (floorDeleteResult, driftDeleteResult) =
+            await (floorTaskDao.annotationDeleteTask(floorTask!), driftTaskDao.annotationDeleteTask(driftTask!)).wait;
+
+        expect(floorDeleteResult, equals(driftDeleteResult));
+      });
+
+      test("multiple", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.findAllTasks(), driftTaskDao.findAllTasks()).wait;
+
+        final lengthBefore = floorTask.length;
+
+        expect(floorTask.length, equals(driftTask.length));
+
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
+        }
+
+        final (floorDeleteResult, driftDeleteResult) =
+            await (
+              floorTaskDao.annotationDeleteTasks(floorTask.sublist(0, 5)),
+              driftTaskDao.annotationDeleteTasks(driftTask.sublist(0, 5)),
+            ).wait;
+
+        expect(floorDeleteResult, equals(5));
+
+        // The current implementation always return -1;
+        expect(driftDeleteResult, equals(-1));
+
+        // Because the return value doesn't work check if the deleted values are missing in the db
+        final (floorTaskDeleted, driftTaskDeleted) =
+            await (floorTaskDao.findAllTasks(), driftTaskDao.findAllTasks()).wait;
+
+        expect(floorTaskDeleted.length, equals(lengthBefore - 5));
+
+        expect(floorTaskDeleted.length, equals(driftTaskDeleted.length));
+
+        for (int i = 0; i < floorTaskDeleted.length; i++) {
+          expect(floorTaskDeleted[i], EqualTaskMatcher(driftTaskDeleted[i]));
+        }
+      });
+    });
+
+    group("insert", () {
+      test("single", () async {
+        final insertTask = Task(
+          timestamp: DateTime.now(),
+          status: TaskStatus.done,
+          customDouble: 0.05,
+          integers: [1, 2],
+        );
+
+        final (floorInsertResult, driftInsertResult) =
+            await (floorTaskDao.annotationInsertTask(insertTask), driftTaskDao.annotationInsertTask(insertTask)).wait;
+        expect(floorInsertResult, equals(driftInsertResult));
+
+        final (floorTask, driftTask) =
+            await (floorTaskDao.findTaskById(floorInsertResult), driftTaskDao.findTaskById(driftInsertResult)).wait;
+
+        expect(floorTask, EqualTaskMatcher(driftTask));
+      });
+
+      test("multiple", () async {
+        final insertTask = [
+          Task(timestamp: DateTime.now(), status: TaskStatus.done, customDouble: 0.05, integers: [1, 2, 3]),
+          Task(timestamp: DateTime.now(), status: TaskStatus.open, customDouble: 1.5555, integers: [5]),
+        ];
+
+        final (floorInsertResult, driftInsertResult) =
+            await (floorTaskDao.annotationInsertTasks(insertTask), driftTaskDao.annotationInsertTasks(insertTask)).wait;
+
+        expect(floorInsertResult.length, equals(2));
+
+        // current implementation always returns empty list
+        expect(driftInsertResult, isEmpty);
+
+        expect(floorInsertResult[0], equals(14));
+        expect(floorInsertResult[1], equals(15));
+
+        var (floorTask, driftTask) = await (floorTaskDao.findTaskById(14), driftTaskDao.findTaskById(14)).wait;
+
+        expect(floorTask, EqualTaskMatcher(driftTask));
+
+        (floorTask, driftTask) = await (floorTaskDao.findTaskById(15), driftTaskDao.findTaskById(15)).wait;
+
+        expect(floorTask, EqualTaskMatcher(driftTask));
+      });
+    });
+
+    group("update", () {
+      test("single", () async {
+        var (floorTask, driftTask) = await (floorTaskDao.findTaskById(2), driftTaskDao.findTaskById(2)).wait;
+
+        expect(floorTask, EqualTaskMatcher(driftTask));
+
+        floorTask = floorTask!.copyWithMessage("NewMessage");
+        driftTask = driftTask!.copyWithMessage("NewMessage");
+
+        final (floorUpdateResult, driftUpdateResult) =
+            await (floorTaskDao.annotationUpdateTask(floorTask!), driftTaskDao.annotationUpdateTask(driftTask!)).wait;
+        expect(floorUpdateResult, equals(1));
+
+        // Current implementation always returns -1
+        expect(driftUpdateResult, equals(-1));
+
+        (floorTask, driftTask) = await (floorTaskDao.findTaskById(2), driftTaskDao.findTaskById(2)).wait;
+
+        expect(floorTask!.message, equals("NewMessage"));
+
+        expect(floorTask, EqualTaskMatcher(driftTask));
+      });
+
+      test("multiple", () async {
+        var (floorTask, driftTask) = await (floorTaskDao.findAllTasks(), driftTaskDao.findAllTasks()).wait;
+
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
+        }
+
+        floorTask = floorTask.map<Task>((s) => s.copyWithMessage("NewMessage")).toList();
+        driftTask = driftTask.map<Task>((s) => s.copyWithMessage("NewMessage")).toList();
+
+        final (floorUpdateResult, driftUpdateResult) =
+            await (floorTaskDao.annotationUpdateTasks(floorTask), driftTaskDao.annotationUpdateTasks(driftTask)).wait;
+        expect(floorUpdateResult, equals(13));
+
+        // Current implementation always returns -1
+        expect(driftUpdateResult, equals(-1));
+
+        (floorTask, driftTask) = await (floorTaskDao.findAllTasks(), driftTaskDao.findAllTasks()).wait;
+
+        for (final task in floorTask) {
+          expect(task.message, equals("NewMessage"));
+        }
+
+        for (int i = 0; i < floorTask.length; i++) {
+          expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
+        }
+      });
+    });
+  });
+
+  // group("ORDER", () {
+  //   test("", () {});
+  // });
+  //
+  // group("DISTINCT", () {
+  //   test("", () {});
+  // });
+  //
+  // group("SELECT", () {
+  //   test("", () {});
+  // });
+  //
+  // group("GROUP BY", () {
+  //   test("", () {});
+  // });
+}

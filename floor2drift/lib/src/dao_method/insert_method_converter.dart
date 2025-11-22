@@ -1,0 +1,139 @@
+import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/element.dart';
+import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
+import 'package:floor2drift/src/enum/enums.dart';
+import 'package:floor2drift/src/helper/annotation_helper.dart';
+import 'package:floor2drift/src/helper/base_helper.dart';
+import 'package:floor2drift/src/return_type.dart';
+import 'package:floor2drift/src/value_response.dart';
+import 'package:source_gen/source_gen.dart';
+
+class InsertMethodConverter extends DaoMethodConverter {
+  final AnnotationHelper annotationHelper;
+
+  const InsertMethodConverter({this.annotationHelper = const AnnotationHelper()});
+  @override
+  ValueResponse<(String, String)> parse(
+    MethodElement method,
+    DartObject insertAnnotation,
+    TableSelector tableSelector,
+  ) {
+    if (method.parameters.isEmpty || method.parameters.length > 1) {
+      return ValueResponse.error("expected method to have excactly one parameter", method);
+    }
+
+    final parameter = method.parameters.first;
+
+    final parameterType = BaseHelper.getTypeSpecification(parameter.type);
+    final returnType = BaseHelper.getTypeSpecification(method.returnType);
+    // only future supported for @insert
+    switch (returnType.type) {
+      case EType.future:
+        break;
+
+      default:
+        return ValueResponse.error("Future return type expected for  @insert", method);
+    }
+
+    final methodHeaderResult = getMethodHeader(method);
+
+    switch (methodHeaderResult) {
+      case ValueData<String>():
+        break;
+      case ValueError<String>():
+        return methodHeaderResult.wrap();
+    }
+
+    final methodHeader = methodHeaderResult.data;
+
+    final methodBodyResult = _getMethodBody(tableSelector, parameter, parameterType, returnType, insertAnnotation);
+
+    switch (methodBodyResult) {
+      case ValueData<String>():
+        break;
+      case ValueError<String>():
+        return methodBodyResult.wrap();
+    }
+
+    final methodBody = methodBodyResult.data;
+
+    final result = """$methodHeader
+    $methodBody
+    }""";
+
+    return ValueResponse.value((result, ""));
+  }
+
+  ValueResponse<String> _getMethodBody(
+    TableSelector tableSelector,
+    ParameterElement parameter,
+    TypeSpecification parameterType,
+    TypeSpecification returnType,
+    DartObject insertAnnotation,
+  ) {
+    final tableNameResult = getTableName(tableSelector, parameter, parameterType);
+
+    switch (tableNameResult) {
+      case ValueData<String>():
+        break;
+      case ValueError<String>():
+        return tableNameResult.wrap();
+    }
+
+    final tableName = tableNameResult.data;
+
+    final argumentNameResult = getArgumentName(parameter);
+
+    switch (argumentNameResult) {
+      case ValueData<String>():
+        break;
+      case ValueError<String>():
+        return argumentNameResult.wrap();
+    }
+
+    final argumentName = argumentNameResult.data;
+
+    final insertMode = _getInsertMode(insertAnnotation);
+
+    ValueResponse<String> quantityResult = switch (parameterType.type) {
+      EType.unknown => ValueResponse.value("await $tableName.insertOne($insertMode$argumentName);"),
+      EType.list => ValueResponse.value("await $tableName.insertAll($insertMode$argumentName);"),
+      _ => ValueResponse.error("Parmeter type is not supported", parameter),
+    };
+
+    switch (quantityResult) {
+      case ValueData<String>():
+        break;
+      case ValueError<String>():
+        return quantityResult.wrap();
+    }
+
+    final quantity = quantityResult.data;
+
+    switch (returnType.firstTypeArgument) {
+      case EType.voidType:
+        return ValueResponse.value(quantity);
+      case EType.unknown:
+        return ValueResponse.value("return $quantity");
+      case EType.list:
+        return ValueResponse.value("$quantity\nreturn const [];");
+      default:
+        return ValueResponse.error("Expected object void or list as Return Type", parameter);
+    }
+  }
+
+  String _getInsertMode(DartObject insertAnnotation) {
+    ConstantReader reader = ConstantReader(insertAnnotation);
+
+    final onConflictField = reader.read("onConflict");
+    final conflictName = onConflictField.objectValue.variable?.name;
+
+    return switch (conflictName) {
+      "replace" => "mode: InsertMode.replace, ",
+      "rollback" => "mode: InsertMode.insertOrRollback, ",
+      "fail" => "mode: InsertMode.insertOrFail, ",
+      "ignore" => "mode: InsertMode.insertOrIgnore, ",
+      "abort" || _ => "",
+    };
+  }
+}
