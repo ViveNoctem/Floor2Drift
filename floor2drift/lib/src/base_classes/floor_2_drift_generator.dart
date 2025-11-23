@@ -22,11 +22,8 @@ import 'package:source_gen/source_gen.dart';
 import 'output_option.dart';
 
 class Floor2DriftGenerator {
-  /// TODO needs to be removed
-  /// TODO Quickfix to convertd TypeConverters used on classes and fields
-  /// TODO The entity Generators should return all found/used TypeConverters
-  static Set<ClassElement> allTypeConverters = {};
   final InputOptionBase inputOption;
+
   final ProcessingOptionBase processingOption;
 
   final OutputOptionBase outputOption;

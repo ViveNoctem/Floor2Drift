@@ -28,7 +28,7 @@ For all configuration options see: [Configuration](#configuration)
 > See [UseRowClass](#userowclass) for instruction on how to use this option.
 
 ```dart
-import 'package:floor2drift/src/build_runner/build_runner.dart';
+import 'package:floor2drift/floor2drift.dart';
 import 'package:glob/glob.dart';
 
 void main(List<String> arguments) async {
@@ -60,7 +60,7 @@ targets:
 ```
 
 ## Database Migrations
-DB Migrations have to be converted manually to drift migrations
+DB Migrations have to be converted manually to drift migrations.
 
 ## General differences
 
@@ -110,11 +110,11 @@ cd floor2drift && dart test test/dart_test
 ```
 
 ## Configuration
-### BuildRunner
-The easiest way to configure this libarary is to use the `BuildRunner` default constructor.
+### Floor2DriftGenerator
+The easiest way to configure this libarary is to use the `Floor2DriftGenerator` default constructor.
 
 ```dart
-factory BuildRunner({
+factory Floor2DriftGenerator({
   required String dbPath,
   String rootPath = "../",
   Glob? classNameFilter,
@@ -134,7 +134,7 @@ The path to the file containing the floor database.
 The library analyzes the first class with the `@Databse` annotation and will generate drift equivalents for entities, daos, etc. used in this database.
 
 #### rootPath
-The path to the root of the project to be converted.
+The path to the root of the project to be converted (parent directory of lib directory)
 The default should work for you if the scripts working dir is `/tool/floor2drift.dart`
 
 #### classNameFilter
@@ -179,20 +179,17 @@ Then drift can open the old floor db and migrate it to drift directly.
     - overrides with `@Table(name: "NewName")` annotation, will be taken into account.
 - `driftScheme`
     - the table name is snake_case version of the class name
-    - check if this is correct.
 - `driftSchemeWithOverride`
     - the same as driftScheme, but the table name can be overridden by the `@Table(name: "NewName")` annotation.
 
 ### Custom Configuration
-You can also create a more custom configuration by using the `BuildRunner.custom` constructor.
+You can also create a more custom configuration by using the `Floor2DriftGenerator.custom` constructor.
 Override the default option objects or implement them yourself.
 Beware that some checks to guarantee that the configuration is valid are not done with the custom constructor.
 
 ## Contribute
 
 ## Todos
-
-TODO Example User Import isn't added in converted project
 
 ### General
 - call dart fix on all generated files?
