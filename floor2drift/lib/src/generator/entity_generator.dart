@@ -9,6 +9,7 @@ import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
+import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
 class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<ClassElement>, List<String>)>> {
@@ -65,7 +66,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
     result += fieldsString;
     result += classHelper.closeClass();
     // TODO Test name
-    return (result, newImports, MapEntry(classElement.name, (usedTypeConverters, convertedFields)));
+    return (result, newImports, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
   }
 
   String _getTableName(ETableNameOption tableName, ClassElement classElement) {

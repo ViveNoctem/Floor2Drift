@@ -936,6 +936,39 @@ void main() {
     //   });
   });
 
+  group("BETWEEN", () {
+    test("int", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.betweenId(5, 7), driftTaskDao.betweenId(5, 7)).wait;
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("not string", () async {
+      final (floorTask, driftTask) =
+          await (floorTaskDao.betweenNotMessage("3", "6"), driftTaskDao.betweenNotMessage("3", "6")).wait;
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    // TODO floor doesn't seem to support enum with typeConverters in query arguments
+    // TODO floor uses .index instead of the converter
+    // test("not enum", () async {
+    //   final (floorTask, driftTask) =
+    //       await (
+    //         floorTaskDao.betweenTaskType(TaskType.bug, TaskType.story),
+    //         driftTaskDao.betweenTaskType(TaskType.bug, TaskType.story),
+    //       ).wait;
+    //   expect(floorTask.length, equals(driftTask.length));
+    //   for (int i = 0; i < floorTask.length; i++) {
+    //     expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+    //   }
+    // });
+  });
+
   group("annotation", () {
     group("delete", () {
       test("single", () async {

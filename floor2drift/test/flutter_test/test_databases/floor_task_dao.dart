@@ -270,6 +270,19 @@ abstract class TaskDao extends BaseDao<Task> {
 
   // endregion
 
+  // region BETWEEN
+  @Query("SELECT * FROM TASK WHERE id BETWEEN :fromId  AND :toId")
+  Future<List<Task>> betweenId(int fromId, int toId);
+
+  @Query("SELECT * FROM TASK WHERE message NOT BETWEEN :fromMessage  AND :toMessage")
+  Future<List<Task>> betweenNotMessage(String fromMessage, String toMessage);
+
+  // Floor doesn't support converted enum in query argumen
+  // Is still needed to check that the converter works correctly with converted enum
+  @Query("SELECT * FROM TASK WHERE type NOT BETWEEN :fromType  AND :toType")
+  Future<List<Task>> betweenNotTaskType(TaskType fromType, TaskType toType);
+  // endregion
+
   // region insert update delete
 
   @Insert()

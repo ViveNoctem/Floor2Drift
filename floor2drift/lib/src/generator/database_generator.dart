@@ -48,6 +48,9 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
 
     final newImports = <String>{};
 
+    // always needs drift import
+    newImports.add("import 'package:drift/drift.dart';");
+
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
     for (final entity in state.entities) {

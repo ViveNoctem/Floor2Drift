@@ -9,7 +9,7 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   ValueResponse<(String, String)> parse(UpdateStatement statement, MethodElement method, TableSelector tableSelector) {
     final tableFrom = statement.table;
 
-    final lowerCaseTableName = "${tableFrom.tableName[0].toLowerCase()}${tableFrom.tableName.substring(1)}s";
+    final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 
     // in baseDao use "table" selector
     // in normal dao use lowerCastableName
@@ -19,7 +19,7 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
       TableSelectorDao() => "updates: {$lowerCaseTableName},",
     };
 
-    final tableName = "${lowerCaseTableName[0].toUpperCase()}${lowerCaseTableName.substring(1)}";
+    final tableName = ReCase(lowerCaseTableName).pascalCase;
     final query = statement.span?.text;
 
     var variables = "[";

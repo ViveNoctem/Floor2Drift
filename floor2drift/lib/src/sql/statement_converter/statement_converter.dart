@@ -4,6 +4,7 @@ import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/sql_helper.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide Variable;
 
 part 'delete_statement_converter.dart';

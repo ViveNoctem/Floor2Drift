@@ -42,11 +42,11 @@ void main(List<String> arguments) async {
 }
 ```
 
-### Dao/Entity Inheritance
+#### Dao/Entity Inheritance
 If you use Dao or Entity inheritance the base classes needs to the annotated with `@ConvertBaseDao` and `@ConvertBaseEntity` respectively.
 The Generators will not generate inherited classes, that have not an annotation 
 
-### Drift builder configuration
+#### Drift builder configuration
 case_from_dart_to_sql: camelCase is needed for the column names from drift and floor to be the same.
 `@ColumnInfo` doesn't work at the moment.
 

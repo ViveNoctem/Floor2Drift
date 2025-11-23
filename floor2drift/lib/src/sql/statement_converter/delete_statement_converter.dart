@@ -9,7 +9,7 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
   ValueResponse<(String, String)> parse(DeleteStatement statement, MethodElement method, TableSelector tableSelector) {
     final tableFrom = statement.from;
 
-    final lowerCaseTableName = "${tableFrom.tableName[0].toLowerCase()}${tableFrom.tableName.substring(1)}s";
+    final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 
     // in baseDao use "table" selector
     // in normal dao use lowerCastableName
@@ -18,8 +18,8 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
       case TableSelectorBaseDao():
         tableSelector.selector = tableSelector.table;
       case TableSelectorDao():
-        // TODO entityName is being set here and in base_dao_generator  and select_statement cconverter copied this too
-        tableSelector.entityName = tableFrom.tableName;
+        // TODO entityName is being set here and in base_dao_generator  and select_statement converter copied this too
+        tableSelector.entityName = ReCase(tableFrom.tableName).pascalCase;
         tableSelector.selector = lowerCaseTableName;
     }
 

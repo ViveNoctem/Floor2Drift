@@ -8,6 +8,7 @@ import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
+import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
 class BaseEntityGenerator
@@ -52,6 +53,6 @@ class BaseEntityGenerator
     result += fieldsString;
     result += classHelper.closeClass();
 
-    return (result, const {}, MapEntry(classElement.name, (usedTypeConverters, convertedFields)));
+    return (result, const {}, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
   }
 }

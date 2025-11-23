@@ -10,6 +10,7 @@ import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
 abstract class DaoMethodConverter {
@@ -69,7 +70,7 @@ abstract class DaoMethodConverter {
       return ValueResponse.error("couldn't determine name of parameter class", parameter);
     }
 
-    final tablename = "${className.substring(0, 1).toLowerCase()}${className.substring(1)}s";
+    final tablename = "${ReCase(className).snakeCase}s";
 
     return ValueResponse.value(tablename);
   }

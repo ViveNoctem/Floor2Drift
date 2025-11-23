@@ -46,11 +46,11 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
 
       if (selector.convertedFields[selector.entityName] != null) {
         for (final entry in selector.convertedFields[selector.entityName]!) {
-          if (name != entry) {
+          if (selector.currentFieldName != entry) {
             continue;
           }
-          final typeConverterString = "${selector.selector}.$name.converter.toSql($name${isEnum ? ".index" : ""})";
 
+          final typeConverterString = "${selector.selector}.${selector.currentFieldName}.converter.toSql($name)";
           return ValueResponse.value(("Variable($typeConverterString)", EExpressionType.colonNamedVariable));
         }
       }

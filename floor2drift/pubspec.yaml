@@ -29,10 +29,9 @@ dependencies:
   dart_style: ^2.3.8
   path: ^1.9.1
   meta: ^1.16.0
+  recase: ^4.1.0
 
 dev_dependencies:
-
-
   lints: ^5.0.0
   test: ^1.24.0
   mockito: 5.4.4

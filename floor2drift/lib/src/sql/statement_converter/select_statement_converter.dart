@@ -17,7 +17,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
       return ValueResponse.error("Only table select statements are supported // $statement", method);
     }
 
-    final lowerCaseTableName = "${tableFrom.tableName[0].toLowerCase()}${tableFrom.tableName.substring(1)}s";
+    final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 
     // in baseDao use "table" selector
     // in normal dao use lowerCastableName
@@ -27,11 +27,11 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
         tableSelector.selector = tableSelector.table;
       case TableSelectorDao():
         // copied from delete_statement_converter
-        tableSelector.entityName = tableFrom.tableName;
+        tableSelector.entityName = ReCase(tableFrom.tableName).pascalCase;
         tableSelector.selector = lowerCaseTableName;
     }
 
-    final tableName = "${lowerCaseTableName[0].toUpperCase()}${lowerCaseTableName.substring(1)}";
+    final tableName = ReCase(lowerCaseTableName).pascalCase;
 
     // TODO GROUP BY
 
