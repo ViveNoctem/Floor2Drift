@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:floor2drift/src/build_runner/database_state.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/element_extension.dart';
 import 'package:floor2drift/src/value_response.dart';
 

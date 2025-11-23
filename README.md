@@ -3,7 +3,7 @@
 > 
 >WIP
 > 
-> Simple use cases work, but expect things to break and manual fixes for the generated code to compile e.g. adding/remove imports, etc.
+> Simple use cases should work, but expect things to break and to manually fix things in the generated code for it to compile e.g. adding/remove imports, etc.
 
 This project is a Flutter/Dart library to help migrate away from the [Floor](https://pub.dev/packages/floor) orm library to [Drift](https://pub.dev/packages/drift).
 The library analyzes your flutter project with the [analyzer](https://pub.dev/packages/analyzer) package and generates drift equivalents for all found floor classes.
@@ -32,13 +32,13 @@ import 'package:floor2drift/src/build_runner/build_runner.dart';
 import 'package:glob/glob.dart';
 
 void main(List<String> arguments) async {
-  final buildRunner = BuildRunner(
+  final generator = Floor2DriftGenerator(
     dbPath: "../test_databases/floor_test_database.dart",
     rootPath: "../",
     classNameFilter: Glob("*task*", caseSensitive: false),
   );
 
-  buildRunner.start();
+  generator.start();
 }
 ```
 

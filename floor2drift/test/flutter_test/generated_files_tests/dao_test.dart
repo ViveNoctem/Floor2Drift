@@ -11,9 +11,7 @@ import '../test_databases/floor_test_databaseDrift.dart' as drift;
 import '../test_databases/task.dart';
 
 // TODO Add test for integers with IntListConverter
-// TODO Add tests for isBetween
 // TODO Add tests for aggregate functions with filter clause
-// TODO Add tests for total
 // TODO Add test for group_concat with order by
 // TODO Add test for stringAgg
 void main() {
@@ -809,7 +807,7 @@ void main() {
   });
 
   group("DELETE", () {
-    test("DELETE WHERE", () async {
+    test("WHERE", () async {
       await (floorTaskDao.deleteWhereId(5), driftTaskDao.deleteWhereId(5)).wait;
 
       final (floorTask, driftTask) = await (floorTaskDao.getAll(), driftTaskDao.getAll()).wait;
@@ -820,7 +818,7 @@ void main() {
       }
     });
 
-    test("DELETE ALL", () async {
+    test("ALL", () async {
       await (floorTaskDao.deleteAll(), driftTaskDao.deleteAll()).wait;
 
       final (floorTask, driftTask) = await (floorTaskDao.getAll(), driftTaskDao.getAll()).wait;
@@ -834,13 +832,13 @@ void main() {
 
   group("aggregate functions", () {
     group("COUNT", () {
-      test("COUNT *", () async {
+      test("*", () async {
         final (floorTask, driftTask) = await (floorTaskDao.count(), driftTaskDao.count()).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
-      test("COUNT WHERE", () async {
+      test("WHERE", () async {
         final (floorTask, driftTask) = await (floorTaskDao.countWhere(4), driftTaskDao.countWhere(4)).wait;
 
         expect(floorTask, equals(driftTask));
@@ -848,13 +846,13 @@ void main() {
     });
 
     group("AVG", () {
-      test("AVG", () async {
+      test("ALL", () async {
         final (floorTask, driftTask) = await (floorTaskDao.avg(), driftTaskDao.avg()).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
-      test("AVG WHERE ", () async {
+      test("WHERE ", () async {
         final (floorTask, driftTask) = await (floorTaskDao.avgWhere(8), driftTaskDao.avgWhere(8)).wait;
 
         expect(floorTask, equals(driftTask));
@@ -862,13 +860,13 @@ void main() {
     });
 
     group("MIN", () {
-      test("MIN", () async {
+      test("ALL", () async {
         final (floorTask, driftTask) = await (floorTaskDao.min(), driftTaskDao.min()).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
-      test("MIN WHERE ", () async {
+      test("WHERE ", () async {
         final (floorTask, driftTask) = await (floorTaskDao.minWhere(8), driftTaskDao.minWhere(8)).wait;
 
         expect(floorTask, equals(driftTask));
@@ -876,13 +874,13 @@ void main() {
     });
 
     group("MAX", () {
-      test("MAX", () async {
+      test("ALL", () async {
         final (floorTask, driftTask) = await (floorTaskDao.max(), driftTaskDao.max()).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
-      test("MAX WHERE ", () async {
+      test("WHERE", () async {
         final (floorTask, driftTask) = await (floorTaskDao.maxWhere(3), driftTaskDao.maxWhere(3)).wait;
 
         expect(floorTask, equals(driftTask));
@@ -890,14 +888,41 @@ void main() {
     });
 
     group("SUM", () {
-      test("SUM", () async {
+      test("ALL", () async {
         final (floorTask, driftTask) = await (floorTaskDao.sum(), driftTaskDao.sum()).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
-      test("SUM WHERE ", () async {
+      test("WHERE", () async {
         final (floorTask, driftTask) = await (floorTaskDao.sumWhere(8), driftTaskDao.sumWhere(8)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      // sum doesn't seem to be able to return null in floor
+      test("NULL", () async {
+        final sum = await driftTaskDao.sumWhere(0);
+        expect(sum, equals(null));
+      });
+    });
+
+    group("TOTAL", () {
+      test("ALL", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.total(), driftTaskDao.total()).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("WHERE", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.totalWhere(8), driftTaskDao.totalWhere(8)).wait;
+
+        expect(floorTask, equals(driftTask));
+      });
+
+      test("0.0", () async {
+        final (floorTask, driftTask) = await (floorTaskDao.totalWhere(0), driftTaskDao.totalWhere(0)).wait;
+        expect(floorTask, equals(0.0));
 
         expect(floorTask, equals(driftTask));
       });
@@ -950,23 +975,21 @@ void main() {
           await (floorTaskDao.betweenNotMessage("3", "6"), driftTaskDao.betweenNotMessage("3", "6")).wait;
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
-        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
       }
     });
 
     // TODO floor doesn't seem to support enum with typeConverters in query arguments
     // TODO floor uses .index instead of the converter
-    // test("not enum", () async {
-    //   final (floorTask, driftTask) =
-    //       await (
-    //         floorTaskDao.betweenTaskType(TaskType.bug, TaskType.story),
-    //         driftTaskDao.betweenTaskType(TaskType.bug, TaskType.story),
-    //       ).wait;
-    //   expect(floorTask.length, equals(driftTask.length));
-    //   for (int i = 0; i < floorTask.length; i++) {
-    //     expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
-    //   }
-    // });
+    test("not enum", () async {
+      final driftTask = await driftTaskDao.betweenNotTaskType(TaskType.bug, TaskType.story);
+
+      expect(driftTask.length, equals(3));
+
+      expect(driftTask[0].id, equals(3));
+      expect(driftTask[1].id, equals(5));
+      expect(driftTask[2].id, equals(8));
+    });
   });
 
   group("annotation", () {

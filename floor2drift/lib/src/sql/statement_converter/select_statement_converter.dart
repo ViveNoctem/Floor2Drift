@@ -92,10 +92,12 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
     // close bracket before the select
     result += ")";
 
+    final typeSpecification = BaseHelper.getTypeSpecification(method.returnType);
+
     // if useSelectOnly == true addColumns is always used for the SELECT clause
     // TODO change _getSelectMap to support useSelectOnly
     if (useSelectOnly) {
-      result += ".map((${tableSelector.selector}) => ${tableSelector.selector}.read(\$1)!)";
+      result += ".map((${tableSelector.selector}) => ${tableSelector.selector}.read(\$1))";
     } else {
       result += _getSelectMap(
         statement.columns,
@@ -105,7 +107,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
       );
     }
 
-    result += sqlHelper.getGetter(BaseHelper.getTypeSpecification(method.returnType));
+    result += sqlHelper.getGetter(typeSpecification);
     result += ";";
 
     return ValueResponse.value((result, tableName));

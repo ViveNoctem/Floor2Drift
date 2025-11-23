@@ -2,9 +2,9 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:floor2drift/src/build_runner/database_state.dart';
-import 'package:floor2drift/src/build_runner/input_option.dart';
-import 'package:floor2drift/src/build_runner/output_option.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
+import 'package:floor2drift/src/base_classes/input_option.dart';
+import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
@@ -13,7 +13,7 @@ import 'package:floor2drift/src/generator/entity_generator.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'annotation_generator.dart';
+import '../generator/annotation_generator.dart';
 
 abstract class ProcessingOptionBase {
   late final List<AnnotationGenerator> generators;

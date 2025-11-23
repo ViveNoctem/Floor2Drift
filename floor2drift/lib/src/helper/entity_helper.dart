@@ -3,7 +3,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:floor2drift/src/build_runner/database_state.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:source_gen/source_gen.dart';
@@ -104,11 +104,6 @@ class ClassHelper {
         case UnkownAnnotaion():
           continue;
         case TypeConvertersAnnotation():
-          // TODO Remove and find better way for this
-          // TODO check if class annotation is only being used for this one class
-          // BuildRunner.allTypeConverters.addAll(
-          //   annotation.value.values.map((s) => s.classElement),
-          // );
           typeConverters = <DartType, TypeConverterClassElement>{...typeConverters, ...annotation.value};
           break;
       }
@@ -222,12 +217,6 @@ class ClassHelper {
         case PrimaryKeyAnnotation():
           metaDataSuffix += annotation.getStringValue;
         case TypeConvertersAnnotation():
-          // TODO needs to be remove
-          // TODO see BuildRunner.allTypeConverters
-          // TODO check if field annotation is only being used for this one field
-          // BuildRunner.allTypeConverters.addAll(
-          //   annotation.value.values.map((s) => s.classElement),
-          // );
           localTypeConverters.addAll(annotation.value);
         case UnkownAnnotaion():
           break;

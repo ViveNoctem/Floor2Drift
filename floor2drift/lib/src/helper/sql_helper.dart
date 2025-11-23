@@ -56,7 +56,8 @@ class SqlHelper {
       case EType.future:
         switch (returnType.firstTypeArgument) {
           case EType.unknown:
-            getterMethod += returnType.nullable ? "getSingleOrNull" : "getSingle";
+            // getterMethod += returnType.nullable ? "getSingleOrNull" : "getSingle";
+            getterMethod += "getSingleOrNull";
           case EType.list:
             getterMethod += "get";
           case EType.voidType:
@@ -69,7 +70,8 @@ class SqlHelper {
       case EType.stream:
         switch (returnType.firstTypeArgument) {
           case EType.unknown:
-            getterMethod += returnType.nullable ? "watchSingleOrNull" : "watchSingleOrNull";
+            // getterMethod += returnType.nullable ? "watchSingleOrNull" : "watchSingleOrNull";
+            getterMethod += "watchSingleOrNull";
           case EType.list:
             getterMethod += "watch";
           case EType.voidType:

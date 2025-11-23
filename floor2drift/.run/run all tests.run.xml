@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="run all tests" type="CompoundRunConfigurationType">
+    <toRun name="run dart tests" type="DartTestRunConfigurationType" />
+    <toRun name="run flutter tests" type="FlutterTestConfigType" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -248,6 +248,16 @@ abstract class TaskDao extends BaseDao<Task> {
   @Query("SELECT SUM(id) FROM Task WHERE id < :id")
   Future<int?> sumWhere(int id);
 
+  @Query("SELECT TOTAL(id) FROM Task")
+  Future<double?> total();
+
+  @Query("SELECT TOTAL(id) FROM Task WHERE id < :id")
+  Future<double?> totalWhere(int id);
+
+  // TODO Filter not supported
+  // @Query("SELECT TOTAL(id) FILTER (WHERE id < :id) FROM Task")
+  // Future<double?> totalFilter(int id);
+
   //endregion
 
   // region custom delete

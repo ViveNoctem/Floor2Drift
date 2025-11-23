@@ -1,4 +1,4 @@
-import 'package:floor2drift/src/build_runner/build_runner.dart';
+import 'package:floor2drift/src/base_classes/floor_2_drift_generator.dart';
 import 'package:glob/glob.dart';
 
 void main(List<String> arguments) async {
@@ -6,11 +6,11 @@ void main(List<String> arguments) async {
 
   final dbLocation = "../flutter_test/test_databases/floor_test_database.dart";
 
-  final buildRunner = BuildRunner(
+  final generator = Floor2DriftGenerator(
     dbPath: dbLocation,
     rootPath: rootDir,
     classNameFilter: Glob("*task*", caseSensitive: false),
   );
 
-  buildRunner.start();
+  generator.start();
 }

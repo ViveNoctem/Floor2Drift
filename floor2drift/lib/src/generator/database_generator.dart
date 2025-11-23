@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
-import 'package:floor2drift/src/build_runner/annotation_generator.dart';
-import 'package:floor2drift/src/build_runner/database_state.dart';
-import 'package:floor2drift/src/build_runner/input_option.dart';
-import 'package:floor2drift/src/build_runner/output_option.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
+import 'package:floor2drift/src/base_classes/input_option.dart';
+import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
+import 'package:floor2drift/src/generator/annotation_generator.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:floor_annotation/floor_annotation.dart';

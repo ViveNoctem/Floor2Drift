@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:floor2drift/src/build_runner/annotation_generator.dart';
-import 'package:floor2drift/src/build_runner/database_state.dart';
-import 'package:floor2drift/src/build_runner/input_option.dart';
-import 'package:floor2drift/src/build_runner/processing_option.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
+import 'package:floor2drift/src/base_classes/input_option.dart';
+import 'package:floor2drift/src/base_classes/processing_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
 import 'package:floor2drift/src/enum/enums.dart';
+import 'package:floor2drift/src/generator/annotation_generator.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
@@ -21,7 +21,7 @@ import 'package:source_gen/source_gen.dart';
 
 import 'output_option.dart';
 
-class BuildRunner {
+class Floor2DriftGenerator {
   /// TODO needs to be removed
   /// TODO Quickfix to convertd TypeConverters used on classes and fields
   /// TODO The entity Generators should return all found/used TypeConverters
@@ -32,8 +32,8 @@ class BuildRunner {
   final OutputOptionBase outputOption;
 
   /// TODO Add warning for using this constructor or make it private
-  /// TODO All safety checks done in factory [BuildRunner] are not done
-  BuildRunner.custom(this.inputOption, this.processingOption, this.outputOption);
+  /// TODO All safety checks done in factory [Floor2DriftGenerator] are not done
+  Floor2DriftGenerator.custom(this.inputOption, this.processingOption, this.outputOption);
 
   /// [rootPath] path to the root directory of the project to be converted
   ///
@@ -50,7 +50,7 @@ class BuildRunner {
   /// [convertEntity] should [Database.entities] be converted
   ///
   /// [convertTypeConverter] should found [TypeConverter] classes be converted
-  factory BuildRunner({
+  factory Floor2DriftGenerator({
     required String dbPath,
     String rootPath = "../",
     Glob? classNameFilter,
@@ -87,7 +87,7 @@ class BuildRunner {
 
     final processingOption = _getProcessingOption(inputOption, outputOption, useRowClass, tableRenaming);
 
-    return BuildRunner.custom(inputOption, processingOption, outputOption);
+    return Floor2DriftGenerator.custom(inputOption, processingOption, outputOption);
   }
 
   static FileSystemEntity _getRootEntity(String rootPath) {

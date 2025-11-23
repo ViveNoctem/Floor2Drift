@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:floor2drift/src/build_runner/annotation_generator.dart';
-import 'package:floor2drift/src/build_runner/database_state.dart';
-import 'package:floor2drift/src/build_runner/output_option.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
+import 'package:floor2drift/src/base_classes/output_option.dart';
+import 'package:floor2drift/src/generator/annotation_generator.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
