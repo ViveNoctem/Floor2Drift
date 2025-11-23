@@ -9,7 +9,7 @@ import 'type_convertersDrift.dart' as drift;
 
 @entity
 @TypeConverters([IntListConverter])
-class Task extends BaseClass<Task> {
+class TestTask extends BaseClass<TestTask> {
   final String message;
 
   final bool? isRead;
@@ -50,15 +50,15 @@ class Task extends BaseClass<Task> {
   // getter and setter sets should be ignored also
   set setterGetterSet(String value) => setterGetterTest = value;
 
-  Task({
+  TestTask({
     super.id,
     this.isRead,
     this.message = "default",
     required this.timestamp,
     required this.status,
-    this.type,
+    this.type = TaskType.story,
     this.integers,
-    this.attachment,
+    this.attachment = null,
     // this.tempText = "tempText",
     required this.customDouble,
   });
@@ -79,7 +79,7 @@ class Task extends BaseClass<Task> {
   }
 
   copyWithMessage(String message) {
-    return Task(
+    return TestTask(
       id: id,
       status: status,
       timestamp: timestamp,

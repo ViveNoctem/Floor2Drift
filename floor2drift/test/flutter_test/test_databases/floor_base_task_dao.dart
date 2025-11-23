@@ -6,7 +6,7 @@ import 'base_class.dart';
 @convertBaseDao
 // TODO create new Dao, to have separate Dao Tests and BaseDao Tests
 abstract class BaseDao<T extends BaseClass<T>> {
-  @Query('SELECT * FROM task')
+  @Query('SELECT * FROM TestTask')
   Future<List<T>> getAll();
 
   // @insert

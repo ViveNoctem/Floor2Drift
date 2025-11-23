@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="generate test" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
+  <configuration default="false" name="generate test drift files" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
     <option name="filePath" value="$PROJECT_DIR$/test/tool/test_generator.dart" />
     <option name="workingDirectory" value="$PROJECT_DIR$/test/tool" />
     <method v="2" />

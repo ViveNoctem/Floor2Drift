@@ -6,13 +6,13 @@ class TestHelper {
   const TestHelper();
 }
 
-extension TaskDriftEntityExtension on Task? {
-  Task? get toTask {
+extension TaskDriftEntityExtension on TestTask? {
+  TestTask? get toTask {
     if (this == null) {
       return null;
     }
 
-    return Task(
+    return TestTask(
       id: this!.id,
       status: this!.status,
       timestamp: this!.timestamp,
@@ -44,14 +44,14 @@ class EqualTaskMatcher extends Matcher {
       return true;
     }
 
-    if (item is! Task || expected is! Task) {
+    if (item is! TestTask || expected is! TestTask) {
       return false;
     }
 
     return _taskEqual(item, expected);
   }
 
-  bool _taskEqual(Task floor, Task drift) {
+  bool _taskEqual(TestTask floor, TestTask drift) {
     expect(floor.message, equals(drift.message));
     expect(floor.isRead, equals(drift.isRead));
     expect(floor.timestamp, equals(drift.timestamp));

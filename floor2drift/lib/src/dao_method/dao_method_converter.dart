@@ -70,7 +70,7 @@ abstract class DaoMethodConverter {
       return ValueResponse.error("couldn't determine name of parameter class", parameter);
     }
 
-    final tablename = "${ReCase(className).snakeCase}s";
+    final tablename = "${ReCase(className).camelCase}s";
 
     return ValueResponse.value(tablename);
   }

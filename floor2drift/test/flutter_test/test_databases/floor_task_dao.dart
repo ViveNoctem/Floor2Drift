@@ -8,206 +8,206 @@ import 'floor_base_task_dao.dart';
 import 'task.dart';
 
 @dao
-abstract class TaskDao extends BaseDao<Task> {
+abstract class TestTaskDao extends BaseDao<TestTask> {
   // @Query('SELECT * FROM Task')
   // Future<List<Task>> getAll();
 
   @TestAnnotation()
-  @Query('SELECT * FROM Task WHERE id = :id LIMIT 1')
-  Future<Task?> findTaskById(int id);
+  @Query('SELECT * FROM TestTask WHERE id = :id LIMIT 1')
+  Future<TestTask?> findTaskById(int id);
 
-  @Query('SELECT id FROM Task WHERE id = :id')
+  @Query('SELECT id FROM TestTask WHERE id = :id')
   Future<int?> findTaskIdById(int id);
 
-  @Query('SELECT * FROM Task')
-  Future<List<Task>> findAllTasks();
+  @Query('SELECT * FROM TestTask')
+  Future<List<TestTask>> findAllTasks();
 
-  @Query('SELECT * FROM Task')
-  Stream<List<Task>> findAllTasksAsStream();
+  @Query('SELECT * FROM TestTask')
+  Stream<List<TestTask>> findAllTasksAsStream();
 
-  @Query('SELECT COUNT(*) FROM Task')
+  @Query('SELECT COUNT(*) FROM TestTask')
   Stream<int?> countTasks();
 
-  @Query('SELECT AVG(id) FROM Task')
+  @Query('SELECT AVG(id) FROM TestTask')
   Stream<double?> avgTasks();
 
-  @Query('SELECT DISTINCT COUNT(DISTINCT message) FROM Task')
+  @Query('SELECT DISTINCT COUNT(DISTINCT message) FROM TestTask')
   Stream<int?> findUniqueMessagesCountAsStream();
 
-  @Query('SELECT * FROM Task WHERE status = :status')
-  Stream<List<Task>> findAllTasksByStatusAsStream(TaskStatus status);
+  @Query('SELECT * FROM TestTask WHERE status = :status')
+  Stream<List<TestTask>> findAllTasksByStatusAsStream(TaskStatus status);
 
-  // @annotate.Query('UPDATE OR ABORT Task SET type = :type WHERE id = :id')
+  // @annotate.Query('UPDATE OR ABORT TestTask SET type = :type WHERE id = :id')
   // Future<int?> updateTypeById(TaskType type, int id);
 
   // region whereQueries
 
-  @Query('SELECT * FROM Task WHERE id = :id')
-  Future<Task?> whereId(int id);
+  @Query('SELECT * FROM TestTask WHERE id = :id')
+  Future<TestTask?> whereId(int id);
 
-  @Query('SELECT * FROM Task WHERE id != :id')
-  Future<List<Task>> whereNotEqual(int id);
+  @Query('SELECT * FROM TestTask WHERE id != :id')
+  Future<List<TestTask>> whereNotEqual(int id);
 
-  @Query('SELECT * FROM Task WHERE timestamp != :timestamp')
-  Future<List<Task>> whereNotEqualDate(DateTime timestamp);
+  @Query('SELECT * FROM TestTask WHERE timestamp != :timestamp')
+  Future<List<TestTask>> whereNotEqualDate(DateTime timestamp);
 
-  @Query('SELECT * FROM Task WHERE id <> :id')
-  Future<List<Task>> whereSmallerBigger(int id);
+  @Query('SELECT * FROM TestTask WHERE id <> :id')
+  Future<List<TestTask>> whereSmallerBigger(int id);
 
-  @Query('SELECT * FROM Task WHERE timestamp <> :timestamp')
-  Future<List<Task>> whereSmallerBiggerDate(DateTime timestamp);
+  @Query('SELECT * FROM TestTask WHERE timestamp <> :timestamp')
+  Future<List<TestTask>> whereSmallerBiggerDate(DateTime timestamp);
 
-  @Query('SELECT * FROM Task WHERE id = :id AND isRead = :isRead')
-  Future<List<Task>> whereAnd(int id, bool isRead);
+  @Query('SELECT * FROM TestTask WHERE id = :id AND isRead = :isRead')
+  Future<List<TestTask>> whereAnd(int id, bool isRead);
 
-  @Query('SELECT * FROM Task WHERE id = :id OR isRead = :isRead')
-  Future<List<Task>> whereOr(int id, bool isRead);
+  @Query('SELECT * FROM TestTask WHERE id = :id OR isRead = :isRead')
+  Future<List<TestTask>> whereOr(int id, bool isRead);
 
-  @Query('SELECT * FROM Task WHERE id = :id OR (isRead = :isRead AND status = :status)')
-  Future<List<Task>> whereAndOr(int id, bool isRead, int status);
+  @Query('SELECT * FROM TestTask WHERE id = :id OR (isRead = :isRead AND status = :status)')
+  Future<List<TestTask>> whereAndOr(int id, bool isRead, int status);
 
-  @Query('SELECT * FROM Task WHERE isRead = :isRead AND (type IS NULL OR status = :status)')
-  Future<List<Task>> whereAndOr2(bool isRead, int status);
+  @Query('SELECT * FROM TestTask WHERE isRead = :isRead AND (type IS NULL OR status = :status)')
+  Future<List<TestTask>> whereAndOr2(bool isRead, int status);
 
   // endregion
 
   // region whereBiggerSmaller
 
-  @Query('SELECT * FROM Task WHERE id > :id')
-  Future<List<Task>> whereBigger(int id);
+  @Query('SELECT * FROM TestTask WHERE id > :id')
+  Future<List<TestTask>> whereBigger(int id);
 
-  @Query('SELECT * FROM Task WHERE id >= :id')
-  Future<List<Task>> whereBiggerEqual(int id);
+  @Query('SELECT * FROM TestTask WHERE id >= :id')
+  Future<List<TestTask>> whereBiggerEqual(int id);
 
-  @Query('SELECT * FROM Task WHERE id < :id')
-  Future<List<Task>> whereSmaller(int id);
+  @Query('SELECT * FROM TestTask WHERE id < :id')
+  Future<List<TestTask>> whereSmaller(int id);
 
-  @Query('SELECT * FROM Task WHERE id <= :id')
-  Future<List<Task>> whereSmallerEqual(int id);
+  @Query('SELECT * FROM TestTask WHERE id <= :id')
+  Future<List<TestTask>> whereSmallerEqual(int id);
 
-  @Query('SELECT * FROM Task WHERE timestamp > :timestamp')
-  Future<List<Task>> whereBiggerDate(DateTime timestamp);
+  @Query('SELECT * FROM TestTask WHERE timestamp > :timestamp')
+  Future<List<TestTask>> whereBiggerDate(DateTime timestamp);
 
-  @Query('SELECT * FROM Task WHERE timestamp >= :timestamp')
-  Future<List<Task>> whereBiggerEqualDate(DateTime timestamp);
+  @Query('SELECT * FROM TestTask WHERE timestamp >= :timestamp')
+  Future<List<TestTask>> whereBiggerEqualDate(DateTime timestamp);
 
-  @Query('SELECT * FROM Task WHERE timestamp < :timestamp')
-  Future<List<Task>> whereSmallerDate(DateTime timestamp);
+  @Query('SELECT * FROM TestTask WHERE timestamp < :timestamp')
+  Future<List<TestTask>> whereSmallerDate(DateTime timestamp);
 
-  @Query('SELECT * FROM Task WHERE timestamp <= :timestamp')
-  Future<List<Task>> whereSmallerEqualDate(DateTime timestamp);
+  @Query('SELECT * FROM TestTask WHERE timestamp <= :timestamp')
+  Future<List<TestTask>> whereSmallerEqualDate(DateTime timestamp);
 
   // endregion
 
   // region WHERE IN
-  @Query('SELECT * FROM Task WHERE id IN (:ids)')
-  Future<List<Task>> whereIn(List<int> ids);
+  @Query('SELECT * FROM TestTask WHERE id IN (:ids)')
+  Future<List<TestTask>> whereIn(List<int> ids);
 
-  @Query('SELECT * FROM Task WHERE status IN (:status)')
-  Future<List<Task>> whereInEnum(List<int> status);
+  @Query('SELECT * FROM TestTask WHERE status IN (:status)')
+  Future<List<TestTask>> whereInEnum(List<int> status);
 
-  @Query('SELECT * FROM Task WHERE id IN (5, 8, 2)')
-  Future<List<Task>> whereIn582();
+  @Query('SELECT * FROM TestTask WHERE id IN (5, 8, 2)')
+  Future<List<TestTask>> whereIn582();
 
-  @Query('SELECT * FROM Task WHERE id NOT IN (:ids)')
-  Future<List<Task>> whereNotIn(List<int> ids);
+  @Query('SELECT * FROM TestTask WHERE id NOT IN (:ids)')
+  Future<List<TestTask>> whereNotIn(List<int> ids);
 
-  @Query('SELECT * FROM Task WHERE status NOT IN (:status)')
-  Future<List<Task>> whereNotInEnum(List<int> status);
+  @Query('SELECT * FROM TestTask WHERE status NOT IN (:status)')
+  Future<List<TestTask>> whereNotInEnum(List<int> status);
 
-  @Query('SELECT * FROM Task WHERE id NOT IN (7,9,1)')
-  Future<List<Task>> whereNotIn791();
+  @Query('SELECT * FROM TestTask WHERE id NOT IN (7,9,1)')
+  Future<List<TestTask>> whereNotIn791();
 
-  @Query('SELECT * FROM Task WHERE id = :id OR (isRead = :isRead AND status IN (:status))')
-  Future<List<Task>> whereAndOrIn(int id, bool isRead, List<int> status);
+  @Query('SELECT * FROM TestTask WHERE id = :id OR (isRead = :isRead AND status IN (:status))')
+  Future<List<TestTask>> whereAndOrIn(int id, bool isRead, List<int> status);
 
   // endregion
 
   // region testing return values remove?
   // just many methods to test generation of different return types
   // if the floor2drift.g.dart has no errors everything is fine
-  @Query('SELECT * FROM Task WHERE id = :id')
-  Future<Task?> returnSingleFutureTask(int id);
+  @Query('SELECT * FROM TestTask WHERE id = :id')
+  Future<TestTask?> returnSingleFutureTask(int id);
 
-  @Query('SELECT * FROM Task WHERE id = :id')
-  Stream<Task?> returnSingleStreamTask(int id);
+  @Query('SELECT * FROM TestTask WHERE id = :id')
+  Stream<TestTask?> returnSingleStreamTask(int id);
 
-  @Query('SELECT * FROM Task WHERE id IN (:ids)')
-  Stream<List<Task?>> returnMultipleStreamTask(List<int> ids);
+  @Query('SELECT * FROM TestTask WHERE id IN (:ids)')
+  Stream<List<TestTask?>> returnMultipleStreamTask(List<int> ids);
 
-  @Query('SELECT * FROM Task WHERE id IN (:ids)')
-  Future<List<Task?>> returnMultipleFutureTask(List<int> ids);
+  @Query('SELECT * FROM TestTask WHERE id IN (:ids)')
+  Future<List<TestTask?>> returnMultipleFutureTask(List<int> ids);
 
-  @Query('SELECT status FROM Task WHERE status = :status')
+  @Query('SELECT status FROM TestTask WHERE status = :status')
   Stream<TaskStatus?> selectAndReturnEnum(TaskStatus status);
 
   // endregion
 
   // region LIKE
 
-  @Query('SELECT * FROM Task WHERE message LIKE :likeClause')
-  Future<List<Task>> likeMessage(String likeClause);
+  @Query('SELECT * FROM TestTask WHERE message LIKE :likeClause')
+  Future<List<TestTask>> likeMessage(String likeClause);
 
   // endregion
 
   // region typeTests
   // region Uint8List
-  @Query('SELECT attachment FROM Task WHERE id = :id')
+  @Query('SELECT attachment FROM TestTask WHERE id = :id')
   Future<Uint8List?> returnSingleUint8List(int id);
 
-  @Query('SELECT attachment FROM Task WHERE id > :id')
+  @Query('SELECT attachment FROM TestTask WHERE id > :id')
   Future<List<Uint8List?>> returnMultipleUint8List(int id);
 
-  @Query('SELECT * FROM Task WHERE attachment = :attachment')
-  Future<List<Task>> whereUint8List(Uint8List attachment);
+  @Query('SELECT * FROM TestTask WHERE attachment = :attachment')
+  Future<List<TestTask>> whereUint8List(Uint8List attachment);
 
   // endregion
 
   // region double
-  @Query('SELECT customDouble FROM Task WHERE id = :id')
+  @Query('SELECT customDouble FROM TestTask WHERE id = :id')
   Future<double?> returnSingleDouble(int id);
 
-  @Query('SELECT customDouble FROM Task WHERE id > :id')
+  @Query('SELECT customDouble FROM TestTask WHERE id > :id')
   Future<List<double>> returnMultipleDouble(int id);
 
-  @Query('SELECT * FROM Task WHERE customDouble = :customDouble')
-  Future<List<Task>> whereDouble(double customDouble);
+  @Query('SELECT * FROM TestTask WHERE customDouble = :customDouble')
+  Future<List<TestTask>> whereDouble(double customDouble);
 
   // endregion
 
   // region int
-  @Query('SELECT id FROM Task WHERE id = :id')
+  @Query('SELECT id FROM TestTask WHERE id = :id')
   Future<int?> returnSingleInt(int id);
 
-  @Query('SELECT id FROM Task WHERE id > :id')
+  @Query('SELECT id FROM TestTask WHERE id > :id')
   Future<List<int?>> returnMultipleInt(int id);
 
-  @Query('SELECT * FROM Task WHERE id = :id')
-  Future<List<Task>> whereInt(int id);
+  @Query('SELECT * FROM TestTask WHERE id = :id')
+  Future<List<TestTask>> whereInt(int id);
 
   // endregion
 
   // region bool
-  @Query('SELECT isRead FROM Task WHERE id = :id')
+  @Query('SELECT isRead FROM TestTask WHERE id = :id')
   Future<bool?> returnSingleBool(int id);
 
-  @Query('SELECT isRead FROM Task WHERE id > :id')
+  @Query('SELECT isRead FROM TestTask WHERE id > :id')
   Future<List<bool?>> returnMultipleBool(int id);
 
-  @Query('SELECT * FROM Task WHERE isRead = :isRead')
-  Future<List<Task>> whereBool(bool isRead);
+  @Query('SELECT * FROM TestTask WHERE isRead = :isRead')
+  Future<List<TestTask>> whereBool(bool isRead);
 
   // endregion
 
   // region string
-  @Query('SELECT message FROM Task WHERE id = :id')
+  @Query('SELECT message FROM TestTask WHERE id = :id')
   Future<String?> returnSingleString(int id);
 
-  @Query('SELECT message FROM Task WHERE id > :id')
+  @Query('SELECT message FROM TestTask WHERE id > :id')
   Future<List<String>> returnMultipleString(int id);
 
-  @Query('SELECT * FROM Task WHERE message = :message')
-  Future<List<Task>> whereString(String message);
+  @Query('SELECT * FROM TestTask WHERE message = :message')
+  Future<List<TestTask>> whereString(String message);
 
   // endregion
 
@@ -215,103 +215,103 @@ abstract class TaskDao extends BaseDao<Task> {
 
   // region aggregate functions
 
-  @Query("SELECT COUNT(id) FROM Task")
+  @Query("SELECT COUNT(id) FROM TestTask")
   Future<int?> count();
 
-  @Query("SELECT COUNT(*) FROM Task")
+  @Query("SELECT COUNT(*) FROM TestTask")
   Future<int?> countStar();
 
-  @Query("SELECT COUNT(*) FROM Task WHERE id < :id")
+  @Query("SELECT COUNT(*) FROM TestTask WHERE id < :id")
   Future<int?> countWhere(int id);
 
-  @Query("SELECT AVG(id) FROM Task")
+  @Query("SELECT AVG(id) FROM TestTask")
   Future<double?> avg();
 
-  @Query("SELECT AVG(id) FROM Task WHERE id < :id")
+  @Query("SELECT AVG(id) FROM TestTask WHERE id < :id")
   Future<double?> avgWhere(int id);
 
-  @Query("SELECT MIN(id) FROM Task")
+  @Query("SELECT MIN(id) FROM TestTask")
   Future<int?> min();
 
-  @Query("SELECT MIN(id) FROM Task WHERE id > :id")
+  @Query("SELECT MIN(id) FROM TestTask WHERE id > :id")
   Future<int?> minWhere(int id);
 
-  @Query("SELECT MAX(id) FROM Task")
+  @Query("SELECT MAX(id) FROM TestTask")
   Future<int?> max();
 
-  @Query("SELECT MAX(id) FROM Task WHERE id < :id")
+  @Query("SELECT MAX(id) FROM TestTask WHERE id < :id")
   Future<int?> maxWhere(int id);
 
-  @Query("SELECT SUM(id) FROM Task")
+  @Query("SELECT SUM(id) FROM TestTask")
   Future<int?> sum();
 
-  @Query("SELECT SUM(id) FROM Task WHERE id < :id")
+  @Query("SELECT SUM(id) FROM TestTask WHERE id < :id")
   Future<int?> sumWhere(int id);
 
-  @Query("SELECT TOTAL(id) FROM Task")
+  @Query("SELECT TOTAL(id) FROM TestTask")
   Future<double?> total();
 
-  @Query("SELECT TOTAL(id) FROM Task WHERE id < :id")
+  @Query("SELECT TOTAL(id) FROM TestTask WHERE id < :id")
   Future<double?> totalWhere(int id);
 
   // TODO Filter not supported
-  // @Query("SELECT TOTAL(id) FILTER (WHERE id < :id) FROM Task")
+  // @Query("SELECT TOTAL(id) FILTER (WHERE id < :id) FROM TestTask")
   // Future<double?> totalFilter(int id);
 
   //endregion
 
   // region custom delete
 
-  @Query("DELETE FROM Task WHERE id = :id")
+  @Query("DELETE FROM TestTask WHERE id = :id")
   Future<void> deleteWhereId(int id);
 
-  @Query("DELETE FROM Task")
+  @Query("DELETE FROM TestTask")
   Future<void> deleteAll();
 
   // endregion
 
   // region custom update
 
-  @Query("UPDATE Task SET message = :message WHERE id = :id")
+  @Query("UPDATE TestTask SET message = :message WHERE id = :id")
   Future<int?> updateMessage(int id, String message);
 
-  @Query("UPDATE Task SET message = :message WHERE id IN (:ids)")
+  @Query("UPDATE TestTask SET message = :message WHERE id IN (:ids)")
   Future<int?> updateMultipleMessages(List<int> ids, String message);
 
   // endregion
 
   // region BETWEEN
-  @Query("SELECT * FROM TASK WHERE id BETWEEN :fromId  AND :toId")
-  Future<List<Task>> betweenId(int fromId, int toId);
+  @Query("SELECT * FROM TestTask WHERE id BETWEEN :fromId  AND :toId")
+  Future<List<TestTask>> betweenId(int fromId, int toId);
 
-  @Query("SELECT * FROM TASK WHERE message NOT BETWEEN :fromMessage  AND :toMessage")
-  Future<List<Task>> betweenNotMessage(String fromMessage, String toMessage);
+  @Query("SELECT * FROM TestTask WHERE message NOT BETWEEN :fromMessage  AND :toMessage")
+  Future<List<TestTask>> betweenNotMessage(String fromMessage, String toMessage);
 
   // Floor doesn't support converted enum in query argumen
   // Is still needed to check that the converter works correctly with converted enum
-  @Query("SELECT * FROM TASK WHERE type NOT BETWEEN :fromType  AND :toType")
-  Future<List<Task>> betweenNotTaskType(TaskType fromType, TaskType toType);
+  @Query("SELECT * FROM TestTask WHERE type NOT BETWEEN :fromType  AND :toType")
+  Future<List<TestTask>> betweenNotTaskType(TaskType fromType, TaskType toType);
   // endregion
 
   // region insert update delete
 
   @Insert()
-  Future<int> annotationInsertTask(Task task);
+  Future<int> annotationInsertTask(TestTask task);
 
   @insert
-  Future<List<int>> annotationInsertTasks(List<Task> taskList);
+  Future<List<int>> annotationInsertTasks(List<TestTask> taskList);
 
   @update
-  Future<int> annotationUpdateTask(Task task);
+  Future<int> annotationUpdateTask(TestTask task);
 
   @Update()
-  Future<int> annotationUpdateTasks(List<Task> task);
+  Future<int> annotationUpdateTasks(List<TestTask> task);
 
   @delete
-  Future<int> annotationDeleteTask(Task task);
+  Future<int> annotationDeleteTask(TestTask task);
 
   @delete
-  Future<int> annotationDeleteTasks(List<Task> taskList);
+  Future<int> annotationDeleteTasks(List<TestTask> taskList);
 
   // endregion
 }

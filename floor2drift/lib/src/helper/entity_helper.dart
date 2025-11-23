@@ -190,25 +190,8 @@ class ClassHelper {
     ConstructorElement? constructor,
   ) {
     final localTypeConverters = Map<DartType, TypeConverterClassElement>.from(typeConverters);
+
     var metaDataSuffix = "";
-
-    if (constructor != null) {
-      for (final parameter in constructor.parameters) {
-        if (parameter.name != field.name) {
-          continue;
-        }
-
-        final defaultValue = parameter.defaultValueCode;
-
-        if (parameter.hasDefaultValue == false || defaultValue == null || defaultValue.isEmpty) {
-          break;
-        }
-
-        //TODO build_option to change from client_default to server default
-        metaDataSuffix += ".clientDefault(() => $defaultValue)";
-        break;
-      }
-    }
 
     for (final annotation in annotations) {
       switch (annotation) {
@@ -224,6 +207,32 @@ class ClassHelper {
     }
 
     final usedTypeConverter = localTypeConverters[field.type];
+
+    if (constructor != null) {
+      for (final parameter in constructor.parameters) {
+        if (parameter.name != field.name) {
+          continue;
+        }
+
+        final defaultValue = parameter.defaultValueCode;
+
+        // ignore empty or null default value
+        if (parameter.hasDefaultValue == false ||
+            defaultValue == null ||
+            defaultValue.isEmpty ||
+            defaultValue == "null") {
+          break;
+        }
+
+        //TODO build_option to change from client_default to server default
+        final valueString =
+            usedTypeConverter == null
+                ? defaultValue
+                : "const ${usedTypeConverter.classElement.name}().toSql($defaultValue)!";
+        metaDataSuffix += ".clientDefault(() => $valueString)";
+        break;
+      }
+    }
 
     if (usedTypeConverter != null) {
       // TODO cast Exception?
@@ -252,8 +261,10 @@ class ClassHelper {
       return ValueResponse.error("$returnTypName is not supported", field);
     }
 
+    final fieldSuffix = generateFieldSuffix(field, fieldType, usedTypeConverter);
+
     return ValueResponse.value((
-      "$columntype get ${field.name} => $columnCode()${generateFieldSuffix(field, fieldType, usedTypeConverter)}$metaDataSuffix();\n",
+      "$columntype get ${field.name} => $columnCode()$fieldSuffix$metaDataSuffix();\n",
       usedTypeConverter?.classElement,
       field.name,
     ));

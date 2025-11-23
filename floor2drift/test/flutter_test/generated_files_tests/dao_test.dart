@@ -17,10 +17,10 @@ import '../test_databases/task.dart';
 void main() {
   late floor.FloorTestDatabase floorDatabase;
   late drift.FloorTestDatabase driftDatabase;
-  late floorDao.TaskDao floorTaskDao;
-  late driftDao.TaskDao driftTaskDao;
-  List<Task> floorTestEntities = [
-    Task(
+  late floorDao.TestTaskDao floorTaskDao;
+  late driftDao.TestTaskDao driftTaskDao;
+  List<TestTask> floorTestEntities = [
+    TestTask(
       id: 1,
       isRead: true,
       message: "1",
@@ -31,7 +31,7 @@ void main() {
       attachment: Uint8List.fromList(const [1, 2, 3]),
       integers: const [1, 2, 3],
     ),
-    Task(
+    TestTask(
       id: 2,
       isRead: true,
       message: "2",
@@ -42,7 +42,7 @@ void main() {
       attachment: Uint8List.fromList(const [1, 2, 3]),
       integers: const [1, 2, 3],
     ),
-    Task(
+    TestTask(
       id: 3,
       isRead: true,
       message: "3",
@@ -53,7 +53,7 @@ void main() {
       attachment: Uint8List.fromList(const [4, 5, 6]),
       integers: const [4, 5, 6],
     ),
-    Task(
+    TestTask(
       id: 4,
       isRead: true,
       message: "4",
@@ -64,7 +64,7 @@ void main() {
       attachment: Uint8List.fromList(const [4, 5, 6]),
       integers: const [4, 5, 6],
     ),
-    Task(
+    TestTask(
       id: 5,
       isRead: true,
       message: "5",
@@ -75,7 +75,7 @@ void main() {
       attachment: Uint8List.fromList(const [7, 8, 9]),
       integers: const [7, 8, 9],
     ),
-    Task(
+    TestTask(
       id: 6,
       isRead: false,
       message: "6",
@@ -86,7 +86,7 @@ void main() {
       attachment: Uint8List.fromList(const [7, 8, 9]),
       integers: const [7, 8, 9],
     ),
-    Task(
+    TestTask(
       id: 7,
       isRead: false,
       message: "7",
@@ -97,7 +97,7 @@ void main() {
       attachment: Uint8List.fromList(const [10, 11, 12]),
       integers: const [10, 11, 12],
     ),
-    Task(
+    TestTask(
       id: 8,
       isRead: false,
       message: "8",
@@ -108,7 +108,7 @@ void main() {
       attachment: Uint8List.fromList(const [10, 11, 12]),
       integers: const [10, 11, 12],
     ),
-    Task(
+    TestTask(
       id: 9,
       isRead: false,
       message: "9",
@@ -119,7 +119,7 @@ void main() {
       attachment: Uint8List.fromList(const [13, 14, 15]),
       integers: const [13, 14, 15],
     ),
-    Task(
+    TestTask(
       id: 10,
       isRead: false,
       message: "10",
@@ -131,7 +131,7 @@ void main() {
       integers: const [13, 14, 15],
     ),
     // TODO why is isRead and attachment not allowed to be null
-    Task(
+    TestTask(
       id: 11,
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
@@ -140,7 +140,7 @@ void main() {
       isRead: false,
       attachment: Uint8List.fromList(const [1, 1, 1]),
     ),
-    Task(
+    TestTask(
       id: 12,
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
@@ -149,7 +149,7 @@ void main() {
       isRead: false,
       attachment: Uint8List.fromList(const [1, 1, 1]),
     ),
-    Task(
+    TestTask(
       id: 13,
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
@@ -160,8 +160,8 @@ void main() {
     ),
   ];
 
-  List<Task> driftTestEntities = [
-    Task(
+  List<TestTask> driftTestEntities = [
+    TestTask(
       id: 1,
       isRead: true,
       message: "1",
@@ -172,7 +172,7 @@ void main() {
       attachment: Uint8List.fromList(const [1, 2, 3]),
       integers: const [1, 2, 3],
     ),
-    Task(
+    TestTask(
       id: 2,
       isRead: true,
       message: "2",
@@ -183,7 +183,7 @@ void main() {
       attachment: Uint8List.fromList(const [1, 2, 3]),
       integers: const [1, 2, 3],
     ),
-    Task(
+    TestTask(
       id: 3,
       isRead: true,
       message: "3",
@@ -194,7 +194,7 @@ void main() {
       attachment: Uint8List.fromList(const [4, 5, 6]),
       integers: const [4, 5, 6],
     ),
-    Task(
+    TestTask(
       id: 4,
       isRead: true,
       message: "4",
@@ -205,7 +205,7 @@ void main() {
       attachment: Uint8List.fromList(const [4, 5, 6]),
       integers: const [4, 5, 6],
     ),
-    Task(
+    TestTask(
       id: 5,
       isRead: true,
       message: "5",
@@ -216,7 +216,7 @@ void main() {
       attachment: Uint8List.fromList(const [7, 8, 9]),
       integers: const [7, 8, 9],
     ),
-    Task(
+    TestTask(
       id: 6,
       isRead: false,
       message: "6",
@@ -227,7 +227,7 @@ void main() {
       attachment: Uint8List.fromList(const [7, 8, 9]),
       integers: const [7, 8, 9],
     ),
-    Task(
+    TestTask(
       id: 7,
       isRead: false,
       message: "7",
@@ -238,7 +238,7 @@ void main() {
       attachment: Uint8List.fromList(const [10, 11, 12]),
       integers: const [10, 11, 12],
     ),
-    Task(
+    TestTask(
       id: 8,
       isRead: false,
       message: "8",
@@ -249,7 +249,7 @@ void main() {
       attachment: Uint8List.fromList(const [10, 11, 12]),
       integers: const [10, 11, 12],
     ),
-    Task(
+    TestTask(
       id: 9,
       isRead: false,
       message: "9",
@@ -260,7 +260,7 @@ void main() {
       attachment: Uint8List.fromList(const [13, 14, 15]),
       integers: const [13, 14, 15],
     ),
-    Task(
+    TestTask(
       id: 10,
       isRead: false,
       message: "10",
@@ -271,7 +271,7 @@ void main() {
       attachment: Uint8List.fromList(const [13, 14, 15]),
       integers: const [13, 14, 15],
     ),
-    Task(
+    TestTask(
       id: 11,
       message: 'default',
       timestamp: DateTime(2025, 1, 1),
@@ -281,7 +281,7 @@ void main() {
       isRead: false,
       attachment: Uint8List.fromList(const [1, 1, 1]),
     ),
-    Task(
+    TestTask(
       id: 12,
       message: 'default',
       timestamp: DateTime(2025, 1, 1),
@@ -291,7 +291,7 @@ void main() {
       isRead: false,
       attachment: Uint8List.fromList(const [1, 1, 1]),
     ),
-    Task(
+    TestTask(
       id: 13,
       message: 'default',
       timestamp: DateTime(2025, 1, 1),
@@ -308,8 +308,8 @@ void main() {
     floorTaskDao = floorDatabase.taskDao;
     await floorTaskDao.annotationInsertTasks(floorTestEntities);
     driftDatabase = drift.FloorTestDatabase(DatabaseConnection(NativeDatabase.memory()));
-    driftTaskDao = driftDatabase.taskDao;
-    await driftDatabase.tasks.insertAll(driftTestEntities);
+    driftTaskDao = driftDatabase.testTaskDao;
+    await driftDatabase.testTasks.insertAll(driftTestEntities);
   });
 
   tearDown(() async {
@@ -608,21 +608,21 @@ void main() {
     setUp(() async {
       final now = DateTime.now();
       final likeEntitesFloor = [
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "test message", integers: [1]),
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "message", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "test message", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "message", integers: [1]),
       ];
 
       final likeEntitiesDrift = [
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "test message", integers: [1]),
-        Task(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "message", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "testmessage", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "test message", integers: [1]),
+        TestTask(timestamp: now, status: TaskStatus.open, customDouble: 0, message: "message", integers: [1]),
       ];
       await (
         floorTaskDao.annotationInsertTasks(likeEntitesFloor),
-        driftDatabase.tasks.insertAll(likeEntitiesDrift),
+        driftDatabase.testTasks.insertAll(likeEntitiesDrift),
       ).wait;
     });
 
@@ -1043,7 +1043,7 @@ void main() {
 
     group("insert", () {
       test("single", () async {
-        final insertTask = Task(
+        final insertTask = TestTask(
           timestamp: DateTime.now(),
           status: TaskStatus.done,
           customDouble: 0.05,
@@ -1062,8 +1062,8 @@ void main() {
 
       test("multiple", () async {
         final insertTask = [
-          Task(timestamp: DateTime.now(), status: TaskStatus.done, customDouble: 0.05, integers: [1, 2, 3]),
-          Task(timestamp: DateTime.now(), status: TaskStatus.open, customDouble: 1.5555, integers: [5]),
+          TestTask(timestamp: DateTime.now(), status: TaskStatus.done, customDouble: 0.05, integers: [1, 2, 3]),
+          TestTask(timestamp: DateTime.now(), status: TaskStatus.open, customDouble: 1.5555, integers: [5]),
         ];
 
         final (floorInsertResult, driftInsertResult) =
@@ -1117,8 +1117,8 @@ void main() {
           expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
         }
 
-        floorTask = floorTask.map<Task>((s) => s.copyWithMessage("NewMessage")).toList();
-        driftTask = driftTask.map<Task>((s) => s.copyWithMessage("NewMessage")).toList();
+        floorTask = floorTask.map<TestTask>((s) => s.copyWithMessage("NewMessage")).toList();
+        driftTask = driftTask.map<TestTask>((s) => s.copyWithMessage("NewMessage")).toList();
 
         final (floorUpdateResult, driftUpdateResult) =
             await (floorTaskDao.annotationUpdateTasks(floorTask), driftTaskDao.annotationUpdateTasks(driftTask)).wait;

@@ -28,7 +28,7 @@ void main() {
   group("check fields on entity", () {
     test("null initialization", () {
       final dateTime = DateTime.now();
-      final taskDrift = Task(
+      final taskDrift = TestTask(
         message: "",
         timestamp: dateTime,
         status: TaskStatus.done,
@@ -36,7 +36,7 @@ void main() {
         integers: [1], // TODO IntListConverter doesnt work with empty list
       );
 
-      final taskFloor = Task(
+      final taskFloor = TestTask(
         message: "",
         timestamp: dateTime,
         status: TaskStatus.done,
@@ -50,7 +50,7 @@ void main() {
 
     test("value initialization", () {
       final dateTime = DateTime.now();
-      final taskDrift = Task(
+      final taskDrift = TestTask(
         id: 5,
         type: TaskType.story,
         isRead: true,
@@ -62,7 +62,7 @@ void main() {
         attachment: Uint8List.fromList([6, 7, 3, 6]),
       );
 
-      final taskFloor = Task(
+      final taskFloor = TestTask(
         id: 5,
         type: TaskType.story,
         isRead: true,
@@ -84,14 +84,14 @@ void main() {
     test("null initialization", () async {
       final dateTime = DateTime.now();
 
-      final taskFloor = Task(
+      final taskFloor = TestTask(
         timestamp: dateTime,
         status: TaskStatus.done,
         customDouble: 3.999,
         integers: [1], // TODO IntListConverter doesnt work with empty list
       );
 
-      final driftInsertable = drift.TasksCompanion.insert(
+      final driftInsertable = drift.TestTasksCompanion.insert(
         timestamp: dateTime,
         status: TaskStatus.done,
         customDouble: 3.999,
@@ -100,7 +100,7 @@ void main() {
 
       final (taskDrift, voidValue) =
           await (
-            driftDatabase.tasks.insertReturning(driftInsertable),
+            driftDatabase.testTasks.insertReturning(driftInsertable),
             floorDatabase.taskDao.annotationInsertTask(taskFloor),
           ).wait;
 
@@ -109,7 +109,7 @@ void main() {
 
     test("value initialization", () {
       final dateTime = DateTime.now();
-      final taskDrift = Task(
+      final taskDrift = TestTask(
         id: 5,
         type: TaskType.story,
         isRead: true,
@@ -121,7 +121,7 @@ void main() {
         integers: [5, 6],
       );
 
-      final taskFloor = Task(
+      final taskFloor = TestTask(
         id: 5,
         type: TaskType.story,
         isRead: true,
@@ -142,8 +142,8 @@ void main() {
 
     final (_, _) =
         await (
-          driftDatabase.tasks.insertOne(
-            drift.TasksCompanion.insert(
+          driftDatabase.testTasks.insertOne(
+            drift.TestTasksCompanion.insert(
               timestamp: dateTime,
               status: TaskStatus.inProgress,
               type: Value(TaskType.bug),
@@ -152,7 +152,7 @@ void main() {
             ),
           ),
           floorDatabase.taskDao.annotationInsertTask(
-            Task(
+            TestTask(
               timestamp: dateTime,
               status: TaskStatus.inProgress,
               type: TaskType.bug,
@@ -162,7 +162,8 @@ void main() {
           ),
         ).wait;
 
-    final (driftSelect, floorSelect) = await (driftDatabase.tasks.select().get(), floorDatabase.taskDao.getAll()).wait;
+    final (driftSelect, floorSelect) =
+        await (driftDatabase.testTasks.select().get(), floorDatabase.taskDao.getAll()).wait;
 
     expect(driftSelect.length, equals(floorSelect.length));
 

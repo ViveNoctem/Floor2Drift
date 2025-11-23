@@ -11,8 +11,8 @@ import 'type_converters.dart';
 
 part 'floor_test_database.g.dart';
 
-@Database(version: 1, entities: [Task])
+@Database(version: 1, entities: [TestTask])
 @TypeConverters([DateTimeConverter2, TaskTypeConverter])
 abstract class FloorTestDatabase extends FloorDatabase {
-  TaskDao get taskDao;
+  TestTaskDao get taskDao;
 }
