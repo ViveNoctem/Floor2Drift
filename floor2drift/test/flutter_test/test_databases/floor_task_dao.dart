@@ -164,13 +164,13 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
   // endregion
 
   // region double
-  @Query('SELECT customDouble FROM TestTask WHERE id = :id')
+  @Query('SELECT cUsToMdOuBlE FROM TestTask WHERE id = :id')
   Future<double?> returnSingleDouble(int id);
 
-  @Query('SELECT customDouble FROM TestTask WHERE id > :id')
+  @Query('SELECT cUsToMdOuBlE FROM TestTask WHERE id > :id')
   Future<List<double>> returnMultipleDouble(int id);
 
-  @Query('SELECT * FROM TestTask WHERE customDouble = :customDouble')
+  @Query('SELECT * FROM TestTask WHERE cUsToMdOuBlE = :customDouble')
   Future<List<TestTask>> whereDouble(double customDouble);
 
   // endregion
@@ -298,6 +298,9 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
   @Insert()
   Future<int> annotationInsertTask(TestTask task);
 
+  @Insert()
+  Future<int> annotationInsertUser(TestUser user);
+
   @insert
   Future<List<int>> annotationInsertTasks(List<TestTask> taskList);
 
@@ -312,6 +315,13 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
 
   @delete
   Future<int> annotationDeleteTasks(List<TestTask> taskList);
+
+  // endregion
+
+  // region renamed test
+
+  @Query("SELECT DifFeReNt_STRING FROM testTask WHERE id = :id or DifFeReNt_STRING = :renamedString")
+  Future<String?> renamedStringTest(int id, String renamedString);
 
   // endregion
 }

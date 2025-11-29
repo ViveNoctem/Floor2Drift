@@ -6,7 +6,7 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
-import 'package:floor2drift/src/generator/annotation_generator.dart';
+import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:floor_annotation/floor_annotation.dart';
@@ -284,9 +284,13 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
         continue;
       }
 
-      final fromType = superType.typeArguments[0];
+      final fromType = superType.typeArguments[0].element;
 
       final toType = superType.typeArguments[1];
+
+      if (fromType == null) {
+        throw ArgumentError("Couldn't determine generic elements for typeConverter $classType");
+      }
 
       result.add(TypeConverterClassElement(element.toClassElement, fromType, toType));
     }

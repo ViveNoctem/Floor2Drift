@@ -8,9 +8,9 @@ import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/processing_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
 import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/generator/annotation_generator.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';
+import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
 import 'package:floor2drift/src/generator/database_generator.dart';
 import 'package:floor2drift/src/generator/entity_generator.dart';
@@ -234,6 +234,22 @@ class Floor2DriftGenerator {
               entityFieldConverted[entry.key] = entry.value.$2;
             }
           }
+        }
+      }
+
+      // TODO try to find better solution
+      // TODO dao generators need to know which field in the current class and super classes are renamed with @ColumnInfo
+      // TODO entityGenerator and baseEntityGenerator fill the renameMaps
+      // TODO here the renameMaps of the class and the renameMaps of its super classes are being merged.
+      for (final entry in dbState.renameMap.entries) {
+        for (final superElement in entry.value.superElement) {
+          final superRenames = dbState.renameMap[superElement];
+
+          if (superRenames == null) {
+            continue;
+          }
+
+          entry.value.renames.addAll(superRenames.renames);
         }
       }
     }

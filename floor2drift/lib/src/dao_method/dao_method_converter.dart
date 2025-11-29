@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/dao_method/delete_method_converter.dart';
 import 'package:floor2drift/src/dao_method/insert_method_converter.dart';
 import 'package:floor2drift/src/dao_method/query_method_converter.dart';
@@ -15,39 +16,91 @@ import 'package:source_gen/source_gen.dart';
 
 abstract class DaoMethodConverter {
   const DaoMethodConverter();
-  static ValueResponse<(String, String)> parseMethod(MethodElement method, TableSelector tableSelector) {
+  static ValueResponse<(String, String)> parseMethod(
+    MethodElement method,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
     const queryChecker = TypeChecker.fromRuntime(Query);
     var annotation = queryChecker.firstAnnotationOfExact(method);
 
     if (annotation != null) {
-      return const QueryMethodConverter().parse(method, annotation, tableSelector);
+      return const QueryMethodConverter().parse(method, annotation, tableSelector, dbState);
     }
 
     final deleteChecker = TypeChecker.fromRuntime(delete.runtimeType);
     annotation = deleteChecker.firstAnnotationOfExact(method);
 
     if (annotation != null) {
-      return const DeleteMethodConverter().parse(method, annotation, tableSelector);
+      return const DeleteMethodConverter().parse(method, annotation, tableSelector, dbState);
     }
 
     const insertChecker = TypeChecker.fromRuntime(Insert);
     annotation = insertChecker.firstAnnotationOfExact(method);
 
     if (annotation != null) {
-      return const InsertMethodConverter().parse(method, annotation, tableSelector);
+      return const InsertMethodConverter().parse(method, annotation, tableSelector, dbState);
     }
 
     const updateChecker = TypeChecker.fromRuntime(Update);
     annotation = updateChecker.firstAnnotationOfExact(method);
 
     if (annotation != null) {
-      return const UpdateMethodConverter().parse(method, annotation, tableSelector);
+      return const UpdateMethodConverter().parse(method, annotation, tableSelector, dbState);
     }
 
     return ValueResponse.value(("", ""));
   }
 
-  ValueResponse<(String, String)> parse(MethodElement method, DartObject annotation, TableSelector tableSelector);
+  ValueResponse<(String, String)> parse(
+    MethodElement method,
+    DartObject annotation,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  );
+
+  static ValueResponse<String> parseMethodUsedTable(
+    MethodElement method,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
+    const queryChecker = TypeChecker.fromRuntime(Query);
+    var annotation = queryChecker.firstAnnotationOfExact(method);
+
+    if (annotation != null) {
+      return const QueryMethodConverter().parseUsedTable(method, annotation, tableSelector, dbState);
+    }
+
+    final deleteChecker = TypeChecker.fromRuntime(delete.runtimeType);
+    annotation = deleteChecker.firstAnnotationOfExact(method);
+
+    if (annotation != null) {
+      return const DeleteMethodConverter().parseUsedTable(method, annotation, tableSelector, dbState);
+    }
+
+    const insertChecker = TypeChecker.fromRuntime(Insert);
+    annotation = insertChecker.firstAnnotationOfExact(method);
+
+    if (annotation != null) {
+      return const InsertMethodConverter().parseUsedTable(method, annotation, tableSelector, dbState);
+    }
+
+    const updateChecker = TypeChecker.fromRuntime(Update);
+    annotation = updateChecker.firstAnnotationOfExact(method);
+
+    if (annotation != null) {
+      return const UpdateMethodConverter().parseUsedTable(method, annotation, tableSelector, dbState);
+    }
+
+    return ValueResponse.value("");
+  }
+
+  ValueResponse<String> parseUsedTable(
+    MethodElement method,
+    DartObject annotation,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  );
 
   @protected
   ValueResponse<String> getDaoTablename(

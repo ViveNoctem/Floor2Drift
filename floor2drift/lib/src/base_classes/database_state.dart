@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 
 class DatabaseState {
   final DartType databaseClass;
@@ -20,10 +21,15 @@ class DatabaseState {
   var driftClasses = <String, String>{};
   final floorClasses = <String, ClassElement>{};
 
+  var tableEntityMap = <String, Element>{};
+  var entityTableMap = <Element, String>{};
+
   // TODO implement migration conversion
   // final List<Migration> migrations;
 
-  late final Map<DartType, TypeConverterClassElement> typeConverterMap;
+  late final Map<Element, TypeConverterClassElement> typeConverterMap;
+
+  final Map<Element, ClassState> renameMap = {};
 
   DatabaseState({
     required this.typeConverters,
@@ -61,7 +67,7 @@ class DatabaseState {
 
 class TypeConverterClassElement {
   final ClassElement classElement;
-  final DartType fromType;
+  final Element fromType;
   final DartType toType;
 
   const TypeConverterClassElement(this.classElement, this.fromType, this.toType);

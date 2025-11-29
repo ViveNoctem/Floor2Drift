@@ -41,7 +41,7 @@ class TaskTypeConverter extends TypeConverter<TaskType?, String?> {
 
 class IntListConverter extends TypeConverter<List<int>?, String> {
   @override
-  List<int> decode(String databaseValue) {
+  List<int>? decode(String databaseValue) {
     return databaseValue.split(",").map((s) => int.parse(s)).toList();
   }
 

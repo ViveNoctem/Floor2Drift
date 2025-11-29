@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
@@ -35,7 +36,7 @@ void main() {
   setUp(() {
     mockElement = MockElement();
 
-    selector = TableSelectorDao([], {}, selector: "s");
+    selector = TableSelectorDao({}, selector: "s", currentClassState: null);
 
     mockParameter = MockParameterElement();
     mockParameterElement = MockElement();
@@ -195,10 +196,36 @@ void main() {
 
       switch (result) {
         case ValueData<(String, EExpressionType)>():
-          expect(false, isTrue, reason: "Parameter test2 can't be found in the mockParametert");
+          expect(false, isTrue, reason: "Parameter test2 can't be found in the mockParameter");
         case ValueError<(String, EExpressionType)>():
           break;
       }
+    });
+
+    group("typeConverter", () {
+      setUp(() {
+        selector.entityName = "testEntity";
+        selector.convertedFields["testEntity"] = ["field", "test"];
+        selector.currentFieldName = "field";
+      });
+      test("default", () {
+        final expression = ColonNamedVariable.synthetic(":test");
+
+        final result = ColonNamedVariableExpressionConverter().parse(
+          expression,
+          mockElement,
+          asExpression: true,
+          parameters: mockParameters,
+          selector: selector,
+        );
+
+        switch (result) {
+          case ValueData<(String, EExpressionType)>():
+            expect(result.data.$1, equals("Variable(s.field.converter.toSql(test))"));
+          case ValueError<(String, EExpressionType)>():
+            expect(false, isTrue, reason: result.error);
+        }
+      });
     });
   });
 
@@ -236,6 +263,30 @@ void main() {
       switch (result) {
         case ValueData<(String, EExpressionType)>():
           expect(result.data.$1, equals("s.test"));
+        case ValueError<(String, EExpressionType)>():
+          expect(false, isTrue, reason: result.error);
+      }
+    });
+
+    test("renamed", () {
+      final classState = ClassState(classType: MockDartType());
+      classState.renames["test"] = "renamed";
+      selector.currentClassState = classState;
+
+      final expression = Reference(columnName: "test");
+
+      final result = ReferenceExpressionConverter().parse(
+        expression,
+        mockElement,
+        asExpression: false,
+        parameters: mockParameters,
+        selector: selector,
+      );
+
+      switch (result) {
+        case ValueData<(String, EExpressionType)>():
+          expect(result.data.$1, equals("renamed"));
+          expect(selector.currentFieldName, "renamed");
         case ValueError<(String, EExpressionType)>():
           expect(false, isTrue, reason: result.error);
       }
@@ -2121,4 +2172,6 @@ void main() {
       }
     });
   });
+
+  // TODO baseDao tests
 }

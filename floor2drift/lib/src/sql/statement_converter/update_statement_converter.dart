@@ -6,8 +6,15 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   const UpdateStatementConverter({this.sqlHelper = const SqlHelper()});
 
   @override
-  ValueResponse<(String, String)> parse(UpdateStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<(String, String)> parse(
+    UpdateStatement statement,
+    MethodElement method,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
     final tableFrom = statement.table;
+
+    tableSelector.currentClassState = dbState.renameMap[dbState.tableEntityMap[tableFrom.tableName]];
 
     final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 
@@ -49,5 +56,12 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
     result += ");";
 
     return ValueResponse.value((result, tableName));
+  }
+
+  @override
+  ValueResponse<String> parseUsedTable(UpdateStatement statement, MethodElement method, TableSelector tableSelector) {
+    // TODO what to do in baseDao?
+
+    return ValueResponse.value(ReCase(statement.table.tableName).pascalCase);
   }
 }

@@ -1,9 +1,11 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/annotation_helper.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
+import 'package:floor2drift/src/helper/dao_helper.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:source_gen/source_gen.dart';
@@ -17,6 +19,7 @@ class InsertMethodConverter extends DaoMethodConverter {
     MethodElement method,
     DartObject insertAnnotation,
     TableSelector tableSelector,
+    DatabaseState dbState,
   ) {
     if (method.parameters.isEmpty || method.parameters.length > 1) {
       return ValueResponse.error("expected method to have excactly one parameter", method);
@@ -135,5 +138,15 @@ class InsertMethodConverter extends DaoMethodConverter {
       "ignore" => "mode: InsertMode.insertOrIgnore, ",
       "abort" || _ => "",
     };
+  }
+
+  @override
+  ValueResponse<String> parseUsedTable(
+    MethodElement method,
+    DartObject annotation,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
+    return const DaoHelper().parseUsedTableAnnotation(method, annotation, tableSelector, dbState);
   }
 }

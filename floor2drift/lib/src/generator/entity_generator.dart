@@ -3,7 +3,7 @@ import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/generator/annotation_generator.dart';
+import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/helper/annotation_helper.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
@@ -46,7 +46,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
 
     final newImports = <String>{if (import != null) import};
 
-    final data = classHelper.generateInheritanceFields(classElement, dbState.typeConverterMap);
+    final data = classHelper.generateInheritanceFields(classElement, dbState);
 
     switch (data) {
       case ValueError():
@@ -54,6 +54,11 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
       case ValueData<(String, String, Set<ClassElement>, List<String>)>():
         break;
     }
+
+    //
+    final floorTableName = _getFloorTableName(classElement);
+    dbState.entityTableMap[classElement] = floorTableName;
+    dbState.tableEntityMap[floorTableName] = classElement;
 
     final (fieldsString, mixinString, usedTypeConverters, convertedFields) = data.data;
 
@@ -72,12 +77,16 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
   String _getTableName(ETableNameOption tableName, ClassElement classElement) {
     return switch (tableName) {
       ETableNameOption.driftScheme => "",
-      ETableNameOption.floorScheme => _getFloorTableName(classElement),
-      ETableNameOption.driftSchemeWithOverride => _getDriftCustomTableName(classElement),
+      ETableNameOption.floorScheme => _overideTablename(_getFloorTableName(classElement)),
+      ETableNameOption.driftSchemeWithOverride => _overideTablename(_getDriftCustomTableName(classElement)),
     };
   }
 
   String _overideTablename(String newTableName) {
+    if (newTableName.isEmpty) {
+      return "";
+    }
+
     return """
     @override
     String? get tableName => "$newTableName";
@@ -94,10 +103,10 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
     final overrideTableName = annotationHelper.getEntityAnnotationTableName(entityAnnotation);
 
     if (overrideTableName.isNotEmpty) {
-      return _overideTablename(overrideTableName);
+      return overrideTableName;
     }
 
-    return _overideTablename(classElement.name);
+    return classElement.name;
   }
 
   String _getDriftCustomTableName(ClassElement classElement) {
@@ -110,7 +119,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
     final overrideTableName = annotationHelper.getEntityAnnotationTableName(entityAnnotation);
 
     if (overrideTableName.isNotEmpty) {
-      return _overideTablename(overrideTableName);
+      return overrideTableName;
     }
 
     // if not specified in Annotation use Drift scheme
