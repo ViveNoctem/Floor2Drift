@@ -5,7 +5,7 @@ import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/generator/annotation_generator.dart';
+import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
@@ -35,29 +35,35 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
     OutputOptionBase outputOption,
     DatabaseState dbState,
   ) {
+    // analysing generic
+    final typeDeclaration = classElement.typeParameters.firstOrNull?.declaration;
+    final baseEntityDeclaration = typeDeclaration?.toString();
+    final genericName = typeDeclaration?.name;
+    final baseEntityName = typeDeclaration?.bound?.element?.name;
+
     final valueResponse = daoHelper.generateClassBody(
       classElement,
       // do not use classNameSuffix. The Type Name should always be a generic type
       "",
-      TableSelectorBaseDao(tableSelector, dbState.convertedFields, entityName: classElement.name),
+      TableSelectorBaseDao(
+        tableSelector,
+        dbState.convertedFields,
+        entityName: classElement.name,
+        currentClassState: dbState.renameMap[typeDeclaration?.bound?.element],
+      ),
+      dbState,
     );
 
     final newImports = <String>{};
     newImports.add("import 'package:drift/drift.dart';");
 
     switch (valueResponse) {
-      case ValueData<({String body, Set<String> usedTabled})>():
+      case ValueData<String>():
         break;
 
-      case ValueError<({String body, Set<String> usedTabled})>():
+      case ValueError<String>():
         throw InvalidGenerationSource(valueResponse.error, element: valueResponse.element);
     }
-
-    final typeDeclaration = classElement.typeParameters.firstOrNull?.declaration;
-
-    final baseEntityDeclaration = typeDeclaration?.toString();
-    final genericName = typeDeclaration?.name;
-    final baseEntityName = typeDeclaration?.bound?.element?.name;
 
     if (baseEntityDeclaration == null ||
         baseEntityDeclaration.isEmpty ||
@@ -97,7 +103,7 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
       newImports.add(outputOption.getFileName(databaseimport));
     }
 
-    var result = "$header\n\n${valueResponse.data.body}\n}\n";
+    var result = "$header\n\n${valueResponse.data}\n}\n";
 
     return (result, newImports, null);
   }

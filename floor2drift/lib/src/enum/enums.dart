@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/type.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 
 enum EExpressionType { reference, colonNamedVariable, unkown }
 
@@ -63,8 +64,15 @@ sealed class TableSelector {
   String selector;
   String entityName;
   String currentFieldName;
+  ClassState? currentClassState;
 
-  TableSelector(this.convertedFields, {this.selector = "", this.entityName = "", this.currentFieldName = ""});
+  TableSelector(
+    this.convertedFields, {
+    this.selector = "",
+    this.entityName = "",
+    this.currentFieldName = "",
+    required this.currentClassState,
+  });
 
   @override
   String toString() {
@@ -75,10 +83,22 @@ sealed class TableSelector {
 
 class TableSelectorBaseDao extends TableSelector {
   final String table;
-  TableSelectorBaseDao(this.table, super.convertedFields, {super.selector, super.entityName, super.currentFieldName});
+  TableSelectorBaseDao(
+    this.table,
+    super.convertedFields, {
+    super.selector,
+    super.entityName,
+    super.currentFieldName,
+    required super.currentClassState,
+  });
 }
 
 class TableSelectorDao extends TableSelector {
-  final List<String> tables;
-  TableSelectorDao(this.tables, super.convertedFields, {super.selector, super.entityName, super.currentFieldName});
+  TableSelectorDao(
+    super.convertedFields, {
+    super.selector,
+    super.entityName,
+    super.currentFieldName,
+    required super.currentClassState,
+  });
 }

@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' show Uint8List, DatabaseConnection, TableStatements, Variable;
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
@@ -30,6 +30,7 @@ void main() {
       customDouble: 1.1,
       attachment: Uint8List.fromList(const [1, 2, 3]),
       integers: const [1, 2, 3],
+      renamedString: "USELESS STRING",
     ),
     TestTask(
       id: 2,
@@ -171,6 +172,7 @@ void main() {
       customDouble: 1.1,
       attachment: Uint8List.fromList(const [1, 2, 3]),
       integers: const [1, 2, 3],
+      renamedString: "USELESS STRING",
     ),
     TestTask(
       id: 2,
@@ -1137,6 +1139,40 @@ void main() {
           expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
         }
       });
+    });
+  });
+
+  group("renaming", () {
+    test("baseClass", () async {
+      final (floorString, driftString) =
+          await (floorTaskDao.renamedStringTestBaseDao(1, "6"), driftTaskDao.renamedStringTestBaseDao(1, "6")).wait;
+
+      expect(floorString, equals(driftString));
+    });
+
+    test("check rename in db", () async {
+      final row =
+          await driftDatabase
+              .customSelect(
+                "SELECT DifFeReNt_STRING FROM TESTTASK WHERE id = :id or DifFeReNt_STRING = :renamedString",
+                variables: [Variable(1), Variable("6")],
+              )
+              .getSingleOrNull();
+
+      expect(row, isNotNull);
+
+      final driftString = row!.read<String>("DifFeReNt_StRiNg");
+
+      final floorString = await floorTaskDao.renamedStringTestBaseDao(1, "6");
+
+      expect(floorString, equals(driftString));
+    });
+
+    test("entity", () async {
+      final (floorString, driftString) =
+          await (floorTaskDao.renamedStringTest(1, "6"), driftTaskDao.renamedStringTest(1, "6")).wait;
+
+      expect(floorString, equals(driftString));
     });
   });
 

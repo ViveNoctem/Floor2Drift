@@ -8,6 +8,22 @@ import 'type_converters.dart';
 import 'type_convertersDrift.dart' as drift;
 
 @entity
+class TestUser implements Insertable<TestUser> {
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final String name;
+  final String password;
+
+  const TestUser({required this.name, required this.password, required this.id});
+
+  @override
+  Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
+    return {"id": Variable(id), "name": Variable(name), "password": Variable(password)};
+  }
+}
+
+@entity
 @TypeConverters([IntListConverter])
 class TestTask extends BaseClass<TestTask> {
   final String message;
@@ -33,6 +49,7 @@ class TestTask extends BaseClass<TestTask> {
   // @ignore
   // final String tempText;
 
+  @ColumnInfo(name: "cUsToMdOuBlE")
   final double customDouble;
 
   @ignore
@@ -58,9 +75,11 @@ class TestTask extends BaseClass<TestTask> {
     required this.status,
     this.type = TaskType.story,
     this.integers,
+    // DO NOT REMOVE redundant initializer. generator should not include null initialization
     this.attachment = null,
     // this.tempText = "tempText",
     required this.customDouble,
+    super.renamedString,
   });
 
   @override
@@ -74,7 +93,7 @@ class TestTask extends BaseClass<TestTask> {
       "type": Variable(const drift.TaskTypeConverter().toSql(type)),
       "integers": Variable(const drift.IntListConverter().toSql(integers)),
       "attachment": Variable(attachment),
-      "customDouble": Variable(customDouble),
+      "cUsToMdOuBlE": Variable(customDouble),
     };
   }
 

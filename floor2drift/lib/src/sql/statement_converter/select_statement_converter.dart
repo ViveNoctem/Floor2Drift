@@ -10,7 +10,12 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
   });
 
   @override
-  ValueResponse<(String, String)> parse(SelectStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<(String, String)> parse(
+    SelectStatement statement,
+    MethodElement method,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
     final tableFrom = statement.from;
 
     if (tableFrom is! TableReference) {
@@ -22,16 +27,20 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
     // in baseDao use "table" selector
     // in normal dao use lowerCastableName
     // TODO if multiple tables are used in one dao, the tableSelector needs to be determined by the return type
+
+    final tableName = ReCase(lowerCaseTableName).pascalCase;
+
     switch (tableSelector) {
       case TableSelectorBaseDao():
         tableSelector.selector = tableSelector.table;
+      // currentClassState is set when creating the TableSelectorBaseDao
       case TableSelectorDao():
         // copied from delete_statement_converter
         tableSelector.entityName = ReCase(tableFrom.tableName).pascalCase;
         tableSelector.selector = lowerCaseTableName;
+        tableSelector.currentClassState =
+            dbState.renameMap[dbState.tableEntityMap[tableName.substring(0, tableName.length - 1)]];
     }
-
-    final tableName = ReCase(lowerCaseTableName).pascalCase;
 
     // TODO GROUP BY
 
@@ -146,5 +155,21 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     // alway use selector name and not tableName because it is an object selector not a table selector
     return ".map((${tableSelector.selector}) => ${result.data.$1})";
+  }
+
+  @override
+  ValueResponse<String> parseUsedTable(SelectStatement statement, MethodElement method, TableSelector tableSelector) {
+    // TODO what to do in baseDao?
+    final table = statement.table;
+
+    if (table == null) {
+      return ValueResponse.error("Couldn't determine table for select statement $statement", method);
+    }
+
+    if (table is! TableReference) {
+      return ValueResponse.error("Only table references supported for select statements $statement", method);
+    }
+
+    return ValueResponse.value(ReCase(table.tableName).pascalCase);
   }
 }

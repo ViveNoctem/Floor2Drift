@@ -48,7 +48,6 @@ The Generators will not generate inherited classes, that have not an annotation
 
 #### Drift builder configuration
 case_from_dart_to_sql: camelCase is needed for the column names from drift and floor to be the same.
-`@ColumnInfo` doesn't work at the moment.
 
 ```yaml
 targets:
@@ -209,6 +208,7 @@ Beware that some checks to guarantee that the configuration is valid are not don
 - add the doc comments on fields methods classes from the old files to the generated new files.
 - import rewriting doesn't work properly when only converting part of all files
   - to many imports are rewritten
+- merge or cleanUp dbState and tableSelector
 
 ### Floor2DriftGenerator
 
@@ -236,6 +236,7 @@ Beware that some checks to guarantee that the configuration is valid are not don
 - custom update
   - doesn't work with List<int> as a parameter.
 - custom insert
+- add tests for renaming in expression_converter_test
 #### DaoGenerator 
 
 ##### BaseDaoGenerator
@@ -252,7 +253,6 @@ Beware that some checks to guarantee that the configuration is valid are not don
     - default value on field not in constructor
 - rename field names
   - probably the user must set `case_from_dart_to_sql : PascalCase/preserve` themselves
-  - and add automatic migration from `@ColumnInfo(name: "NewName")` to `named(""")` in drift
 - what to do with "real" implemented functions in entities, daos, etc.
   - copy them to the generated file?
 #### EntityGenerator

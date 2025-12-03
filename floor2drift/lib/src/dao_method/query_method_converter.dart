@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
@@ -8,10 +9,36 @@ import 'package:floor2drift/src/helper/sql_helper.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/sql/statement_converter/statement_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 class QueryMethodConverter extends DaoMethodConverter {
   const QueryMethodConverter();
-  ValueResponse<(String, String)> parse(MethodElement method, DartObject queryAnnotation, TableSelector tableSelector) {
+
+  @override
+  ValueResponse<String> parseUsedTable(
+    MethodElement method,
+    DartObject annotation,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
+    final parsedResult = _parseQueryAnnotation(annotation, method);
+
+    switch (parsedResult) {
+      case ValueError<ParseResult>():
+        return parsedResult.wrap();
+      case ValueData<ParseResult>():
+    }
+
+    final rootNode = parsedResult.data.rootNode;
+    return StatementConverter.parseStatementUsedTable(rootNode, method, tableSelector);
+  }
+
+  ValueResponse<(String, String)> parse(
+    MethodElement method,
+    DartObject queryAnnotation,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
     var body = "";
     var usedTable = "";
 
@@ -20,7 +47,7 @@ class QueryMethodConverter extends DaoMethodConverter {
     var singleMethod = "";
     bool found = false;
 
-    final data = _handleQueryAnnotation(method, queryAnnotation, tableSelector);
+    final data = _handleQueryAnnotation(method, queryAnnotation, tableSelector, dbState);
 
     switch (data) {
       case ValueData<(String, String)>():
@@ -40,7 +67,6 @@ class QueryMethodConverter extends DaoMethodConverter {
     singleMethod += "$metaDataResult\n";
     // TODO usedTables are here but are needed in tableSelector
     usedTable = table;
-
     // add method if a query annotation has been found
     if (found) {
       body += _generateMethodHeader(returnType, method, "");
@@ -51,11 +77,7 @@ class QueryMethodConverter extends DaoMethodConverter {
     return ValueResponse.value((body, usedTable));
   }
 
-  ValueResponse<(String, String)> _handleQueryAnnotation(
-    MethodElement method,
-    DartObject metaData,
-    TableSelector tableSelector,
-  ) {
+  ValueResponse<ParseResult> _parseQueryAnnotation(DartObject metaData, MethodElement method) {
     final query = metaData.getField("value")?.toStringValue();
     if (query == null) {
       return ValueResponse.error("@Query value is null", method);
@@ -66,8 +88,25 @@ class QueryMethodConverter extends DaoMethodConverter {
       return ValueResponse.error("encountered problem while parsing $query\n ${parseResult.errors}", method);
     }
 
-    final rootNode = parseResult.rootNode;
-    return StatementConverter.parseStatement(rootNode, method, tableSelector);
+    return ValueResponse.value(parseResult);
+  }
+
+  ValueResponse<(String, String)> _handleQueryAnnotation(
+    MethodElement method,
+    DartObject metaData,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
+    final parseResult = _parseQueryAnnotation(metaData, method);
+
+    switch (parseResult) {
+      case ValueError<ParseResult>():
+        return parseResult.wrap();
+      case ValueData<ParseResult>():
+    }
+
+    final rootNode = parseResult.data.rootNode;
+    return StatementConverter.parseStatement(rootNode, method, tableSelector, dbState);
   }
 
   String _generateMethodHeader(TypeSpecification returnType, MethodElement method, String classNameSuffix) {

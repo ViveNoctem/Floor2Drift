@@ -7,10 +7,13 @@ abstract class BaseClass<T extends BaseClass<T>> extends Insertable<T> {
   @PrimaryKey(autoGenerate: true)
   final int? id;
 
-  const BaseClass({this.id});
+  @ColumnInfo(name: "DifFeReNt_StRiNg")
+  final String? renamedString;
+
+  const BaseClass({this.id, this.renamedString});
 
   @override
   Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
-    return {"id": Variable(id)};
+    return {"id": Variable(id), "DifFeReNt_StRiNg": Variable(renamedString)};
   }
 }

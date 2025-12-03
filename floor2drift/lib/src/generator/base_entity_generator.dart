@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
-import 'package:floor2drift/src/generator/annotation_generator.dart';
+import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
@@ -34,7 +34,7 @@ class BaseEntityGenerator
   ) {
     var result = "";
 
-    final valueResult = classHelper.generateInheritanceFields(classElement, dbState.typeConverterMap);
+    final valueResult = classHelper.generateInheritanceFields(classElement, dbState);
 
     switch (valueResult) {
       case ValueError<(String, String, Set<ClassElement>, List<String>)>():

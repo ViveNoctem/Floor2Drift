@@ -9,6 +9,9 @@ abstract class BaseDao<T extends BaseClass<T>> {
   @Query('SELECT * FROM TestTask')
   Future<List<T>> getAll();
 
+  @Query("SELECT DifFeReNt_STRING FROM TESTTASK WHERE id = :id or DifFeReNt_STRING = :renamedString")
+  Future<String?> renamedStringTestBaseDao(int id, String renamedString);
+
   // @insert
   // Future<List<int>> baseTaskInsertList(List<T> list);
   //

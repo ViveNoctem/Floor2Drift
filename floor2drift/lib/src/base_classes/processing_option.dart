@@ -13,7 +13,7 @@ import 'package:floor2drift/src/generator/entity_generator.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
 import 'package:source_gen/source_gen.dart';
 
-import '../generator/annotation_generator.dart';
+import '../generator/class_generator.dart';
 
 abstract class ProcessingOptionBase {
   late final List<AnnotationGenerator> generators;

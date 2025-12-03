@@ -3,7 +3,7 @@ import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/generator/annotation_generator.dart';
+import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
@@ -46,18 +46,23 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     // always needs drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final valueResponse = daoHelper.generateClassBody(
-      classElement,
-      classNameSuffix,
-      TableSelectorDao(["ExampleTask"], dbState.convertedFields),
-      //TODO Add the used Tables in the current dao?
-    );
+    final tableSelector = TableSelectorDao(dbState.convertedFields, currentClassState: null);
+
+    final usedTablesResponse = daoHelper.getUsedTables(classElement, dbState, tableSelector);
+
+    switch (usedTablesResponse) {
+      case ValueError<Set<String>>():
+        throw InvalidGenerationSource(usedTablesResponse.error, element: usedTablesResponse.element);
+      case ValueData<Set<String>>():
+    }
+
+    final valueResponse = daoHelper.generateClassBody(classElement, classNameSuffix, tableSelector, dbState);
 
     switch (valueResponse) {
-      case ValueData<({String body, Set<String> usedTabled})>():
+      case ValueData<String>():
         break;
 
-      case ValueError<({String body, Set<String> usedTabled})>():
+      case ValueError<String>():
         throw InvalidGenerationSource(valueResponse.error, element: valueResponse.element);
     }
 
@@ -109,8 +114,8 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
       newImports.add(outputOption.getFileName(databaseimport));
     }
 
-    for (final table in valueResponse.data.usedTabled) {
-      final driftClassUri = dbState.driftClasses[table];
+    for (final table in usedTablesResponse.data) {
+      final driftClassUri = dbState.driftClasses["${table}s"];
 
       if (driftClassUri != null) {
         final tableImport = BaseHelper.getImport(Uri.parse(driftClassUri), targetFilePath);
@@ -134,20 +139,21 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     }
 
     final header = _generateClassHeader(
-      valueResponse.data.usedTabled,
+      usedTablesResponse.data,
       "${classElement.name}$classNameSuffix",
       dbState.databaseClass.element!.name!,
       mixinClause,
     );
 
-    var result = "$partDirective\n\n$header\n\n${valueResponse.data.body}\n}\n";
+    var result = "$partDirective\n\n$header\n\n${valueResponse.data}\n}\n";
 
     return (result, newImports, null);
   }
 
   String _generateClassHeader(Set<String> tables, String className, String databaseName, String mixinClause) {
     // TODO case insensitivity of sqlite might be a problem
-    final tableString = tables.reduce((value, element) => "$value, $element");
+
+    final tableString = tables.map((s) => "${s}s").reduce((value, element) => "$value, $element");
     return '''@DriftAccessor(tables: [$tableString])
   class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}_\$${className}Mixin {
   $className(super.db);''';
