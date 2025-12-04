@@ -324,4 +324,31 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
   Future<String?> renamedStringTest(int id, String renamedString);
 
   // endregion
+
+  // region orderBy
+
+  @Query("SELECT * FROM testTask ORDER BY id")
+  Future<List<TestTask>> orderById();
+
+  @Query("SELECT * FROM testTask ORDER BY id ASC")
+  Future<List<TestTask>> orderByIdAsc();
+
+  @Query("SELECT * FROM testTask ORDER BY id DESC")
+  Future<List<TestTask>> orderByIdDesc();
+
+  @Query("SELECT * FROM testTask ORDER BY type DESC NULLS LAST")
+  Future<List<TestTask>> orderByTypeDescNullsLast();
+
+  @Query("SELECT * FROM testTask ORDER BY type DESC NULLS FIRST")
+  Future<List<TestTask>> orderByTypeDescNullsFirst();
+
+  @Query("SELECT * FROM testTask ORDER BY message Asc, id")
+  Future<List<TestTask>> orderByMessageAscId();
+
+  @Query("SELECT * FROM testTask ORDER BY message DESC, id DESC")
+  Future<List<TestTask>> orderByMessageDescIdAsc();
+
+  @Query("SELECT * FROM testTask WHERE id < :argument ORDER BY id DESC")
+  Future<List<TestTask>> getOrderByWhere(int argument);
+  // endregion
 }

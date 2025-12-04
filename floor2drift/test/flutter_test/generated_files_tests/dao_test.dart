@@ -157,6 +157,7 @@ void main() {
       customDouble: 0,
       integers: const [1],
       isRead: false,
+      type: null,
       attachment: Uint8List.fromList(const [1, 1, 1]),
     ),
   ];
@@ -298,6 +299,7 @@ void main() {
       message: 'default',
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
+      type: null,
       customDouble: 0,
       integers: const [1],
       isRead: false,
@@ -1176,9 +1178,71 @@ void main() {
     });
   });
 
-  // group("ORDER", () {
-  //   test("", () {});
-  // });
+  group("ORDER BY", () {
+    test("default", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.orderById(), driftTaskDao.orderById()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("simple ASC", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.orderByIdAsc(), driftTaskDao.orderByIdAsc()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("simple DESC", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.orderByIdDesc(), driftTaskDao.orderByIdDesc()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("nulls last", () async {
+      final (floorTask, driftTask) =
+          await (floorTaskDao.orderByTypeDescNullsLast(), driftTaskDao.orderByTypeDescNullsLast()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      expect(floorTask.last.type, equals(null));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("nulls last", () async {
+      final (floorTask, driftTask) =
+          await (floorTaskDao.orderByTypeDescNullsFirst(), driftTaskDao.orderByTypeDescNullsFirst()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      expect(floorTask.first.type, equals(null));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+
+    test("where", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.getOrderByWhere(5), driftTaskDao.getOrderByWhere(5)).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
   //
   // group("DISTINCT", () {
   //   test("", () {});
