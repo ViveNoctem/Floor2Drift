@@ -42,8 +42,6 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
             dbState.renameMap[dbState.tableEntityMap[tableName.substring(0, tableName.length - 1)]];
     }
 
-    // TODO GROUP BY
-
     final column = statement.columns.firstOrNull;
 
     // use selectOnly instead of select, if an aggregate function is used
@@ -95,8 +93,19 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
       result += whereResult.data;
     }
 
-    // TODO ORDER BY
-    // TODO .orderby([OrderingTerm.asc(categories.id)])
+    final orderBy = statement.orderBy;
+    if (orderBy != null && orderBy is OrderBy) {
+      final orderByResult = sqlHelper.addOrderByClause(orderBy, method, tableSelector);
+
+      switch (orderByResult) {
+        case ValueError<String>():
+          return orderByResult.wrap();
+        case ValueData<String>():
+      }
+      result += orderByResult.data;
+    }
+
+    // TODO GROUP BY
 
     // close bracket before the select
     result += ")";
