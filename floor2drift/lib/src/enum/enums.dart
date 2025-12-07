@@ -61,6 +61,7 @@ enum ETableNameOption {
 sealed class TableSelector {
   final Map<String, List<String>> convertedFields;
 
+  String functionSelector;
   String selector;
   String entityName;
   String currentFieldName;
@@ -71,14 +72,9 @@ sealed class TableSelector {
     this.selector = "",
     this.entityName = "",
     this.currentFieldName = "",
+    this.functionSelector = "s",
     required this.currentClassState,
   });
-
-  @override
-  String toString() {
-    // TODO hack because selector got replaced with tableSelector
-    return selector;
-  }
 }
 
 class TableSelectorBaseDao extends TableSelector {

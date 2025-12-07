@@ -130,7 +130,6 @@ abstract class DaoMethodConverter {
 
   @protected
   ValueResponse<String> getArgumentName(ParameterElement parameter) {
-    // TODO Test Name
     return ValueResponse.value(parameter.name);
   }
 

@@ -1,6 +1,8 @@
 part of 'expression_converter.dart';
 
 class LiteralExpressionConverter extends ExpressionConverter<Literal> {
+  const LiteralExpressionConverter();
+
   @override
   ValueResponse<(String, EExpressionType)> parse(
     Literal<dynamic> expression,

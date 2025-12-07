@@ -4,7 +4,9 @@ class TypeSpecification {
   final EType type;
   final EType firstTypeArgument;
 
-  /// Only works for [firstTypeArgument] == [EQuantity.single]
+  /// If the Type is nullable or not
+  ///
+  /// If the Type is a List, Future, Stream, Future<List> or Stream<List> the nullablility of the type argument is returned
   final bool nullable;
 
   /// ClassElement of the Return Type

@@ -45,6 +45,8 @@ class BaseEntityGenerator
 
     final (fieldsString, mixinString, usedTypeConverters, convertedFields) = valueResult.data;
 
+    result += BaseHelper.getDocumentationForElement(classElement);
+
     final mixinName = "${classElement.name}${ClassHelper.mixinSuffix}";
 
     BaseHelper.addToDriftClassesMap(classElement, mixinName, outputOption, dbState.driftClasses);

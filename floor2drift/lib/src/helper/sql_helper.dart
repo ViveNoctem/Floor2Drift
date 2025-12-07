@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
@@ -15,17 +16,22 @@ class SqlHelper {
 
   static const selectorName = "s";
 
-  ValueResponse<String> addOrderByClause(OrderBy orderBy, MethodElement method, TableSelector selector) {
+  ValueResponse<String> addOrderByClause(
+    OrderBy orderBy,
+    Element element,
+    List<ParameterElement> parameters,
+    TableSelector selector,
+  ) {
     var result = "..orderBy([";
 
     final orderingTermns = <String>[];
 
     for (final orderingTerm in orderBy.terms) {
       if (orderingTerm is! OrderingTerm) {
-        return ValueResponse.error("Order by termin $orderingTerm is not a OrderingTerm", method);
+        return ValueResponse.error("Order by termin $orderingTerm is not a OrderingTerm", element);
       }
 
-      final orderingTermResult = _addOrderingTerm(orderingTerm, selector, method);
+      final orderingTermResult = _addOrderingTerm(orderingTerm, selector, element, parameters);
 
       switch (orderingTermResult) {
         case ValueError<String>():
@@ -43,13 +49,18 @@ class SqlHelper {
     return ValueResponse.value(result);
   }
 
-  ValueResponse<String> _addOrderingTerm(OrderingTerm orderingTerm, TableSelector selector, MethodElement method) {
+  ValueResponse<String> _addOrderingTerm(
+    OrderingTerm orderingTerm,
+    TableSelector selector,
+    Element element,
+    List<ParameterElement> parameters,
+  ) {
     final mode = _getOrderingMode(orderingTerm.orderingMode);
 
     final expressionResult = expressionConverterUtil.parseExpression(
       orderingTerm.expression,
-      method,
-      parameters: method.parameters,
+      element,
+      parameters: parameters,
       selector: selector,
     );
 
@@ -63,7 +74,7 @@ class SqlHelper {
 
     final nulls = _getNulls(orderingTerm.nulls);
 
-    var result = "(${selector.selector}) => OrderingTerm($expression$mode$nulls)";
+    var result = "(${selector.functionSelector}) => OrderingTerm($expression$mode$nulls)";
     return ValueResponse.value(result);
   }
 
@@ -99,19 +110,20 @@ class SqlHelper {
 
   ValueResponse<String> addWhereClause(
     Expression whereExpression,
-    MethodElement method,
+    Element element,
+    List<ParameterElement> parameters,
     bool useTableSelector,
     TableSelector selector,
   ) {
     var result = "..where(";
     if (useTableSelector == false) {
-      result += "($selector) => ";
+      result += "(${selector.functionSelector}) => ";
     }
 
     final whereResult = expressionConverterUtil.parseExpression(
       whereExpression,
-      method,
-      parameters: method.parameters,
+      element,
+      parameters: parameters,
       selector: selector,
     );
 
@@ -166,5 +178,67 @@ class SqlHelper {
 
     getterMethod += "()";
     return getterMethod;
+  }
+
+  /// checks if the given entityName in the [selector] has a typeConverter
+  ///
+  /// if true returns code to convert the give [argumentName] with the correct typeConverter
+  /// if false returns an empty string
+  String checkTypeConverter(TableSelector selector, String argumentName) {
+    if (selector.convertedFields[selector.entityName] == null) {
+      return "";
+    }
+    for (final entry in selector.convertedFields[selector.entityName]!) {
+      if (selector.currentFieldName != entry) {
+        continue;
+      }
+
+      return "${selector.selector}.${selector.currentFieldName}.converter.toSql($argumentName)";
+    }
+    return "";
+  }
+
+  /// returns if the given [type] is a sql native type
+  ///
+  /// Stream, Future, and List are being unwrapped and the result for the type argument is retunred
+  /// TODO is used to determine if the typeConverter should be used or not
+  /// TODO doesn't work with string to string converter.
+  /// TODO The to and from type of the converter is needed to better determine if the converter should be used or not
+  bool isNativeSqlType(DartType type) {
+    var localType = type;
+
+    // unwrap future or stream type argument
+    if (localType.isDartAsyncFuture || localType.isDartAsyncStream) {
+      if (localType is! InterfaceType) {
+        return false;
+      }
+      final nullableType = localType.typeArguments.firstOrNull;
+
+      if (nullableType == null) {
+        return false;
+      }
+
+      localType = nullableType;
+    }
+
+    // unwrap list type argument
+    if (localType.isDartCoreList) {
+      if (localType is! InterfaceType) {
+        return false;
+      }
+      final nullableType = localType.typeArguments.firstOrNull;
+
+      if (nullableType == null) {
+        return false;
+      }
+
+      localType = nullableType;
+    }
+
+    if (localType.isDartCoreInt || localType.isDartCoreBool || localType.isDartCoreString) {
+      return true;
+    }
+
+    return false;
   }
 }

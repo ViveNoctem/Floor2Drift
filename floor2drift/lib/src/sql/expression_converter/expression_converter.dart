@@ -1,5 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/enum/enums.dart';
+import 'package:floor2drift/src/helper/sql_helper.dart';
+import 'package:floor2drift/src/sql/statement_converter/statement_converter.dart';
 import 'package:floor2drift/src/sql/token_converter/token_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -15,6 +17,7 @@ part 'literal_expression_converter.dart';
 part 'parentheses_expression_converter.dart';
 part 'reference_expression_converter.dart';
 part 'string_comparison_expression_converter.dart';
+part 'sub_query_expression_converter.dart';
 part 'tuple_expression_converter.dart';
 
 class ExpressionConverterUtil {
@@ -29,91 +32,98 @@ class ExpressionConverterUtil {
   }) {
     // TODO find a way to remove the EExpressionType
     return switch (expression) {
-      BinaryExpression() => BinaryExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      Parentheses() => ParenthesesExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      Reference() => ReferenceExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      ColonNamedVariable() => ColonNamedVariableExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
+      BinaryExpression() => const BinaryExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      Parentheses() => const ParenthesesExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      Reference() => const ReferenceExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      ColonNamedVariable() => const ColonNamedVariableExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
       // StringComparisonExpression() => "", // LIKE
-      IsExpression() => IsExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      IsNullExpression() => IsNullExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      BetweenExpression() => BetweenExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      InExpression() => InExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      Tuple() => TupleExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      Literal() => LiteralExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      StringComparisonExpression() => StringComparisonExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
-      FunctionExpression() => FunctionExpressionConverter().parse(
-        expression,
-        element,
-        asExpression: asExpression,
-        parameters: parameters,
-        selector: selector,
-      ),
+      IsExpression() => const IsExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      IsNullExpression() => const IsNullExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      BetweenExpression() => const BetweenExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      InExpression() => const InExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      Tuple() => const TupleExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      Literal() => const LiteralExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      StringComparisonExpression() => const StringComparisonExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      FunctionExpression() => const FunctionExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
+      SubQuery() => const SubQueryExpressionConverter().parse(
+          expression,
+          element,
+          asExpression: asExpression,
+          parameters: parameters,
+          selector: selector,
+        ),
       // NumberedVariable() => "",
       _ => ValueResponse.error("Expression $expression is not supported", element),
     };

@@ -2,8 +2,10 @@ part of 'expression_converter.dart';
 
 class InExpressionConverter extends ExpressionConverter<InExpression> {
   final ExpressionConverterUtil expressionConverterUtil;
+  final SqlHelper sqlHelper;
 
-  const InExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  const InExpressionConverter(
+      {this.expressionConverterUtil = const ExpressionConverterUtil(), this.sqlHelper = const SqlHelper()});
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -13,7 +15,6 @@ class InExpressionConverter extends ExpressionConverter<InExpression> {
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    // TODO check if asExpression always true is correct
     final leftResult = expressionConverterUtil.parseExpression(
       expression.left,
       element,
@@ -46,9 +47,10 @@ class InExpressionConverter extends ExpressionConverter<InExpression> {
         return insideResult.wrap();
     }
 
-    return ValueResponse.value((
-      "${leftResult.data.$1}.is${expression.not ? "Not" : ""}In(${insideResult.data.$1})",
-      EExpressionType.unkown,
-    ));
+    final not = expression.not ? "Not" : "";
+    final query = expression.inside is SubQuery ? "Query" : "";
+    final isIn = ".is${not}In$query";
+
+    return ValueResponse.value(("${leftResult.data.$1}$isIn(${insideResult.data.$1})", EExpressionType.unkown));
   }
 }

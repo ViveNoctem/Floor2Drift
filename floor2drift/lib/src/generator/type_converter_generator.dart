@@ -5,12 +5,12 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-// TODO generic is omitted because dao is private
-// TODO override typeChecker
+// generic is omitted because dao is private
 class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
   final String classNameSuffix;
 
@@ -42,10 +42,9 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
     OutputOptionBase outputOption,
     DatabaseState dbState,
   ) {
-    // TODO how to make sure it isn't an drift TypeConverter?
-    if (classElement.supertype?.element.name != "TypeConverter") {
+    if (typeChecker.isSuperOf(classElement) == false) {
       throw InvalidGenerationSourceError(
-        '`@ConvertTypeConverter` can only be used on classes inheriting Floor TypeConverters.',
+        'Cannot convert TypeConverter. It must inherit Floor TypeConverter.',
         element: classElement,
       );
     }
@@ -54,6 +53,8 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
 
     final fromType = (classElement.supertype!).typeArguments[0].getDisplayString(withNullability: true);
     final toType = (classElement.supertype!).typeArguments[1].getDisplayString(withNullability: true);
+
+    result += BaseHelper.getDocumentationForElement(classElement);
 
     result += "class ${classElement.name}$classNameSuffix extends TypeConverter<$fromType, $toType> { \n";
 
@@ -73,7 +74,7 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
         return ("", const {}, null);
       }
 
-      node.body.toSource();
+      result += BaseHelper.getDocumentationForElement(method);
 
       if (method.name == "decode") {
         result += "@override\n$fromType fromSql($toType ${method.parameters[0].name})\n${node.body.toSource()}\n";

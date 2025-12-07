@@ -7,6 +7,7 @@ import 'enums.dart';
 import 'floor_base_task_dao.dart';
 import 'task.dart';
 
+/// Documentation class TestTaskDao
 @dao
 abstract class TestTaskDao extends BaseDao<TestTask> {
   // @Query('SELECT * FROM Task')
@@ -16,6 +17,7 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
   @Query('SELECT * FROM TestTask WHERE id = :id LIMIT 1')
   Future<TestTask?> findTaskById(int id);
 
+  /// Documentation method findTaskIdById
   @Query('SELECT id FROM TestTask WHERE id = :id')
   Future<int?> findTaskIdById(int id);
 
@@ -64,10 +66,10 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
   Future<List<TestTask>> whereOr(int id, bool isRead);
 
   @Query('SELECT * FROM TestTask WHERE id = :id OR (isRead = :isRead AND status = :status)')
-  Future<List<TestTask>> whereAndOr(int id, bool isRead, int status);
+  Future<List<TestTask>> whereAndOr(int id, bool isRead, TaskStatus status);
 
   @Query('SELECT * FROM TestTask WHERE isRead = :isRead AND (type IS NULL OR status = :status)')
-  Future<List<TestTask>> whereAndOr2(bool isRead, int status);
+  Future<List<TestTask>> whereAndOr2(bool isRead, TaskStatus status);
 
   // endregion
 
@@ -351,4 +353,16 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
   @Query("SELECT * FROM testTask WHERE id < :argument ORDER BY id DESC")
   Future<List<TestTask>> getOrderByWhere(int argument);
   // endregion
+
+  // region subQuery
+  @Query("SELECT * FROM testTask WHERE id IN (SELECT id FROM testTask WHERE id IN (:argument))")
+  Future<List<TestTask>> whereInSubquery(List<int> argument);
+
+  // endregion
+
+  @Query("SELECT creation_date FROM testUser WHERE creation_date > :argument")
+  Future<String?> renamedConvertedQuery(DateTime argument);
+
+  @Query("SELECT creation_date FROM testUser WHERE creation_date IN (:argument) OR creation_date = :argument2")
+  Future<List<DateTime>> renamedConvertedQueryList(List<DateTime> argument, String argument2);
 }

@@ -38,8 +38,6 @@ class BinaryExpressionConverter extends ExpressionConverter<BinaryExpression> {
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    // TODO have to now which table is being selected.
-    // TODO have at least the converted fields of the table being selected
     final result1 = expressionConverterUtil.parseExpression(
       expression.left,
       element,

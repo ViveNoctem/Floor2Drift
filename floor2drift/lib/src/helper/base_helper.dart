@@ -26,6 +26,24 @@ class BaseHelper {
 
     final typeArgumentType = EType.getByDartType(typeArgumentDartType);
 
+    if (typeArgumentType != EType.unknown && typeArgumentDartType is InterfaceType) {
+      final secondTypeArgument = typeArgumentDartType.typeArguments.firstOrNull;
+
+      if (secondTypeArgument == null) {
+        return TypeSpecification(
+          mainType,
+          typeArgumentType,
+          typeArgumentDartType.nullabilitySuffix == NullabilitySuffix.question,
+        );
+      }
+
+      return TypeSpecification(
+        mainType,
+        typeArgumentType,
+        secondTypeArgument.nullabilitySuffix == NullabilitySuffix.question,
+      );
+    }
+
     return TypeSpecification(
       mainType,
       typeArgumentType,
@@ -40,7 +58,6 @@ class BaseHelper {
       return null;
     }
 
-    // TODO Test
     // If the analyzer knows the package of the library it generates the correct package import
     if (libraryUri.isScheme("package")) {
       return "import '$libraryUri';";
@@ -75,5 +92,13 @@ class BaseHelper {
       final newpath = outputOption.getFileName("file:${classElement.librarySource.uri.toFilePath()}");
       driftClasses[newClassName] = newpath;
     }
+  }
+
+  static String getDocumentationForElement(Element element) {
+    if (element.documentationComment == null) {
+      return "";
+    }
+
+    return "${element.documentationComment}\n";
   }
 }
