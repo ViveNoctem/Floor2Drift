@@ -12,7 +12,6 @@ import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
 // TODO generic is omitted because dao is private
-// TODO override typeChecker
 class DaoGenerator extends AnnotationGenerator<Null, Null> {
   final String classNameSuffix;
   final DaoHelper daoHelper;
@@ -21,8 +20,7 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
   @override
   TypeChecker get typeChecker => TypeChecker.fromRuntime(dao.runtimeType);
 
-  // TODO need to support multiple databases?
-  DaoGenerator({
+  const DaoGenerator({
     this.classNameSuffix = "",
     this.daoHelper = const DaoHelper(),
     required super.inputOption,
@@ -35,11 +33,6 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     OutputOptionBase outputOption,
     DatabaseState dbState,
   ) {
-    // TODO Add Imports
-    // TODO Entity Import
-    // TODO Drift Table Import
-    // TODO Drift Base Mixin Import
-
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
     final newImports = <String>{};
@@ -100,11 +93,8 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
       }
     }
 
-    //TODO output option needed to resolve the part directive bc the file could be renamed
-
-    var fileName = outputOption.getFileName(classElement.source.shortName);
-
-    fileName = fileName.replaceAll(".dart", ".g.dart");
+    // output option needed to resolve the part directive because the file could be renamed
+    final fileName = outputOption.getFileName(classElement.source.shortName).replaceAll(".dart", ".g.dart");
 
     final partDirective = "part '$fileName';";
 
@@ -145,7 +135,9 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
       mixinClause,
     );
 
-    var result = "$partDirective\n\n$header\n\n${valueResponse.data}\n}\n";
+    final documentation = BaseHelper.getDocumentationForElement(classElement);
+
+    var result = "$partDirective\n\n$documentation$header\n\n${valueResponse.data}\n}\n";
 
     return (result, newImports, null);
   }

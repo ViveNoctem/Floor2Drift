@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:source_gen/source_gen.dart';
@@ -70,13 +71,17 @@ class ClassHelper {
       switch (fieldResult) {
         case ValueError():
           return fieldResult.wrap();
-        case ValueData<(String, ClassElement?, String?, (String, String)?)>():
+        case ValueData<(String, ClassElement?, String?, (String, String)?, bool)>():
       }
 
-      final (dartCode, typeConverter, fieldName, newFieldRename) = fieldResult.data;
+      final (dartCode, typeConverter, fieldName, newFieldRename, isEnum) = fieldResult.data;
       fieldString += dartCode;
+
       if (typeConverter != null) {
         usedTypeConverters.add(typeConverter);
+        convertedFields.add(fieldName!);
+      } else if (isEnum) {
+        // enum count as being converted because the intEnum converter is used
         convertedFields.add(fieldName!);
       }
 
@@ -203,7 +208,8 @@ class ClassHelper {
   }
 
   /// Returns the string of the generated field the used typeConverter or null and the name of the field if the typeConverter is not null
-  ValueResponse<(String, ClassElement?, String?, (String, String)?)> generateField(
+  // TODO clean up the arguments and return value
+  ValueResponse<(String, ClassElement?, String?, (String, String)?, bool isEnum)> generateField(
     FieldElement field,
     InterfaceType fieldType,
     Map<Element, TypeConverterClassElement> typeConverters,
@@ -218,7 +224,7 @@ class ClassHelper {
     for (final annotation in annotations) {
       switch (annotation) {
         case IgnoreAnnotation():
-          return ValueResponse.value(("", null, null, null));
+          return ValueResponse.value(("", null, null, null, false));
         case PrimaryKeyAnnotation():
           metaDataSuffix += annotation.getStringValue;
         case TypeConvertersAnnotation():
@@ -253,10 +259,9 @@ class ClassHelper {
         }
 
         //TODO build_option to change from client_default to server default
-        final valueString =
-            usedTypeConverter == null
-                ? defaultValue
-                : "const ${usedTypeConverter.classElement.name}().toSql($defaultValue)!";
+        final valueString = usedTypeConverter == null
+            ? defaultValue
+            : "const ${usedTypeConverter.classElement.name}().toSql($defaultValue)!";
         metaDataSuffix += ".clientDefault(() => $valueString)";
         break;
       }
@@ -297,14 +302,22 @@ class ClassHelper {
 
     final namedString = namedAnnotation != null ? namedAnnotation.getDriftNamed() : "";
 
+    final documentation = BaseHelper.getDocumentationForElement(field);
+
+    final dartCode =
+        "$documentation$columntype get ${field.name} => $columnCode()$namedString$fieldSuffix$metaDataSuffix();\n";
+
+    // if renamed return the renamed and real name
+    final columnRenamed = namedAnnotation != null && namedAnnotation.name != null
+        ? (namedAnnotation.name!.toLowerCase(), field.name)
+        : null;
+
     return ValueResponse.value((
-      "$columntype get ${field.name} => $columnCode()$namedString$fieldSuffix$metaDataSuffix();\n",
+      dartCode,
       usedTypeConverter?.classElement,
       field.name,
-      // if column is renamed
-      namedAnnotation != null && namedAnnotation.name != null
-          ? (namedAnnotation.name!.toLowerCase(), field.name)
-          : null,
+      columnRenamed,
+      isEnum,
     ));
   }
 
@@ -312,7 +325,6 @@ class ClassHelper {
     var result = "";
 
     if (typeConverter != null) {
-      // TODO check if name is correct
       result += ".map(const ${typeConverter.classElement.name}${EntityGenerator.staticClassNameSuffix}())";
     }
 

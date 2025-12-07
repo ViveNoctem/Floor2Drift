@@ -117,9 +117,8 @@ class ProcessingOptions extends ProcessingOptionBase {
         continue;
       }
 
-      // TODO floor_annotations doesn't work with Dao and BaseDao
-      // TODO delete annotation overrides floor delete
-      // TODO add something to remove imports in generator?
+      // TODO way to remove imports should be added to the generator itself
+      // floor_annotations import doesn't work with Dao and BaseDao
       if (importString.relativeUriString == 'package:floor_annotation/floor_annotation.dart' &&
           (generator is DaoGenerator || generator is BaseDaoGenerator)) {
         continue;

@@ -40,6 +40,7 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
       final whereResult = sqlHelper.addWhereClause(
         where,
         method,
+        method.parameters,
         false,
         tableSelector, //SqlHelper.selectorName,
       );

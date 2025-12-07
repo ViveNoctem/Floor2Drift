@@ -28,24 +28,18 @@ class Floor2DriftGenerator {
 
   final OutputOptionBase outputOption;
 
-  /// TODO Add warning for using this constructor or make it private
-  /// TODO All safety checks done in factory [Floor2DriftGenerator] are not done
+  /// Constructor for custom option support
+  ///
+  /// Use at your own risk.
   Floor2DriftGenerator.custom(this.inputOption, this.processingOption, this.outputOption);
 
   /// [rootPath] path to the root directory of the project to be converted
-  ///
   /// [dbPath] path to the file in which the [Database] annotated class is
-  ///
-  /// [classNameFilter]
-  ///
-  /// [outputFileSuffix]
-  ///
+  /// [classNameFilter] glob pattern to filter which classNames are being converted
+  /// [outputFileSuffix] suffix that is added to all generated file. If left empty floor file will be overridden.
   /// [dryRun] if true no files are written only their paths written to the output
-  ///
   /// [convertDao] should [dao] annotated classes in filed of the [dbPath] class be converted
-  ///
   /// [convertEntity] should [Database.entities] be converted
-  ///
   /// [convertTypeConverter] should found [TypeConverter] classes be converted
   factory Floor2DriftGenerator({
     required String dbPath,
@@ -62,12 +56,6 @@ class Floor2DriftGenerator {
     final rootEntity = _getRootEntity(rootPath);
 
     final dbFile = _getDbFile(dbPath);
-
-    // TODO rename fileGlob
-    // TODO no it is only used on ClassNames
-    // TODO maybe regex? Globs are depending on the system case sensitive or not
-    // TODO makes no sense with classNames
-    // TODO Globs have a optional Parameter to just be case Insensitive
     final classNameGlob = classNameFilter ?? Glob("*");
 
     final inputOption = InputOptions(
@@ -89,7 +77,6 @@ class Floor2DriftGenerator {
 
   static FileSystemEntity _getRootEntity(String rootPath) {
     final type = FileSystemEntity.typeSync(rootPath);
-    // TODO not found message
     final rootEntity = switch (type) {
       // FileSystemEntityType.file => File(rootPath),
       FileSystemEntityType.directory => Directory(rootPath),
@@ -114,9 +101,6 @@ class Floor2DriftGenerator {
       throw ArgumentError("Expected dbPath to be a file", "dbPath");
     }
 
-    // TODO check if file exists?
-    // TODO typeDbLocation probably already checks that
-
     return File(dbPath);
   }
 
@@ -133,20 +117,18 @@ class Floor2DriftGenerator {
 
     final baseEntityGenerator = inputOption.convertDbEntities ? BaseEntityGenerator(inputOption: inputOption) : null;
 
-    final entityGenerator =
-        inputOption.convertDbEntities
-            ? EntityGenerator(
-              classNameSuffix: "",
-              useRowClass: useRowClass,
-              inputOption: inputOption,
-              tableName: tableNameOption,
-            )
-            : null;
+    final entityGenerator = inputOption.convertDbEntities
+        ? EntityGenerator(
+            classNameSuffix: "",
+            useRowClass: useRowClass,
+            inputOption: inputOption,
+            tableName: tableNameOption,
+          )
+        : null;
 
-    final typeConverterGenerator =
-        inputOption.convertDbTypeConverters
-            ? TypeConverterGenerator(classNameSuffix: "", inputOption: inputOption)
-            : null;
+    final typeConverterGenerator = inputOption.convertDbTypeConverters
+        ? TypeConverterGenerator(classNameSuffix: "", inputOption: inputOption)
+        : null;
 
     final databaseGenerator = DatabaseGenerator(inputOption: inputOption, useRowClass: useRowClass);
 
@@ -178,10 +160,10 @@ class Floor2DriftGenerator {
     // allTypeConverters.addAll(dbState.typeConverters.map((s) => s.classElement));
     var newFiles = <String, String>{};
 
-    // TODO order of the generators is specific.
-    // TODO databaseGenerator always first
-    // TODO entityGenerators must come before dao generators. DaoGenerator need the entityClasses in the dbState.
-    // TODO baseDaoGenerator must come before daoGenerator
+    // order of the generators is specific.
+    // databaseGenerator always first
+    // entityGenerators must come before dao generators. DaoGenerator need the entityClasses in the dbState.
+    // baseDaoGenerator must come before daoGenerator
 
     final (text1, isNull) = await _processClassElements(
       [dbState.databaseClass.element!.toClassElement],

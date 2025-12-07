@@ -33,8 +33,8 @@ class DaoHelper {
       if (methodString.isEmpty) {
         continue;
       }
-
-      body += "$methodString\n\n";
+      final documentation = BaseHelper.getDocumentationForElement(method);
+      body += "$documentation$methodString\n\n";
     }
 
     if (body.isEmpty) {

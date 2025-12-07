@@ -15,7 +15,11 @@ class TestUser implements Insertable<TestUser> {
   final String name;
   final String password;
 
-  const TestUser({required this.name, required this.password, required this.id});
+  @TypeConverters([DateTimeConverter])
+  @ColumnInfo(name: "creation_date")
+  final DateTime createdAt;
+
+  const TestUser({required this.name, required this.password, required this.id, required this.createdAt});
 
   @override
   Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
@@ -26,10 +30,17 @@ class TestUser implements Insertable<TestUser> {
 @entity
 @TypeConverters([IntListConverter])
 class TestTask extends BaseClass<TestTask> {
+  // some message
   final String message;
 
+  /// Documentation for isRead
   final bool? isRead;
 
+  /// Multi
+  ///
+  /// Line
+  /// doc comment for
+  /// timestamp
   @TestAnnotation()
   @TypeConverters([DateTimeConverter, TaskTypeConverter])
   final DateTime timestamp;

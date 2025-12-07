@@ -70,7 +70,6 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
     result += _getTableName(tableName, classElement);
     result += fieldsString;
     result += classHelper.closeClass();
-    // TODO Test name
     return (result, newImports, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
   }
 

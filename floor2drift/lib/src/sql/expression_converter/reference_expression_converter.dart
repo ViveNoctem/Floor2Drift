@@ -1,6 +1,8 @@
 part of 'expression_converter.dart';
 
 class ReferenceExpressionConverter extends ExpressionConverter<Reference> {
+  const ReferenceExpressionConverter();
+
   @override
   ValueResponse<(String, EExpressionType)> parse(
     Reference expression,
@@ -14,6 +16,9 @@ class ReferenceExpressionConverter extends ExpressionConverter<Reference> {
     var fieldName = selector.currentClassState?.renames[expression.columnName.toLowerCase()];
     fieldName ??= expression.columnName;
     selector.currentFieldName = fieldName;
-    return ValueResponse.value(("${asExpression ? "$selector." : ""}$fieldName", EExpressionType.reference));
+    return ValueResponse.value((
+      "${asExpression ? "${selector.functionSelector}." : ""}$fieldName",
+      EExpressionType.reference,
+    ));
   }
 }

@@ -21,7 +21,6 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
   @override
   FutureOr<bool> getImport(LibraryReader library) {
     for (final annotatedElement in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
-      // TODO is this correct and does this work with BaseDao / BaseEntity?
       if (inputOption.canAnalyze(annotatedElement.element.name ?? "") == false) {
         continue;
       }
@@ -98,7 +97,9 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     //   state.schemaVersion,
     // );
 
-    return ("$partDirective\n\n$result", newImports, null);
+    final documentation = BaseHelper.getDocumentationForElement(classElement);
+
+    return ("$partDirective\n\n$documentation$result", newImports, null);
   }
 
   // String _convertMigrations(List<Migration> migrations, int schemaVersion) {
@@ -232,10 +233,6 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     ConstantReader annotation,
     InputOptionBase inputOption,
   ) {
-    // TODO ignore convertDbTypeConverters here. TypeConverters are always needed?
-    // if (processingOption.convertDbTypeConverters) {
-    //
-    // }
     final typeConverterAnnotation = typeConverterChecker.firstAnnotationOf(
       classElement,
       throwOnUnresolved: throwOnUnresolved,
@@ -249,22 +246,20 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
 
     // TODO Should Type Converters be always be converted?
     // TODO best solution would be all actually used typeConverters.
-    final typeConverters =
-        annotationReader
-            .read("value")
-            .objectValue
-            .toListValue()
-            ?.map((object) {
-              final name = object.type?.element?.name;
-              if (name == null || inputOption.canAnalyze(name) == false) {
-                return null;
-              }
-              return object.toTypeValue();
-            })
-            .nonNulls
-            .toList();
+    final typeConverters = annotationReader
+        .read("value")
+        .objectValue
+        .toListValue()
+        ?.map((object) {
+          final name = object.type?.element?.name;
+          if (name == null || inputOption.canAnalyze(name) == false) {
+            return null;
+          }
+          return object.toTypeValue();
+        })
+        .nonNulls
+        .toList();
 
-    // TODO sollten alle TypeConverters automatisch generiert werden
     if (typeConverters == null) {
       return const {};
     }
@@ -275,7 +270,6 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
       final element = classType.element!.toClassElement;
       final superType = element.supertype;
 
-      // TODO error because TypeConverter isn't correct
       if (superType == null) {
         continue;
       }
@@ -325,7 +319,6 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
 
       final schemaVersion = generateSchemaVersion(annotatedElement.annotation);
 
-      // TODO databaseName will potentially also get renamed
       result = DatabaseState(
         typeConverters: typeConverters,
         databaseClass: classElement.thisType,

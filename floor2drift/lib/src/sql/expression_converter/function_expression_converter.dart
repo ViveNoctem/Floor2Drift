@@ -105,7 +105,6 @@ class FunctionExpressionConverter extends ExpressionConverter<FunctionExpression
       EAggregateFunctions.max => "max()",
       EAggregateFunctions.sum => "sum()",
       EAggregateFunctions.total => "total()",
-      // TODO Add support for group concat
       EAggregateFunctions.groupConcat =>
         "groupConcat(${distinct ? "distinct: true" : ""}${separator.isNotEmpty ? "${distinct ? ", " : ""}separator: $separator" : ""})",
     };

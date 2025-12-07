@@ -65,7 +65,6 @@ class QueryMethodConverter extends DaoMethodConverter {
     final (metaDataResult, table) = data.data;
     found = true;
     singleMethod += "$metaDataResult\n";
-    // TODO usedTables are here but are needed in tableSelector
     usedTable = table;
     // add method if a query annotation has been found
     if (found) {
@@ -119,7 +118,6 @@ class QueryMethodConverter extends DaoMethodConverter {
       final start = returnTypeString.lastIndexOf("<") + 1;
       final type = returnTypeString.substring(start, end);
 
-      // TODO do not add the suffix to enum
       var isEnum = _checkIfEnum(returnType, method);
 
       oldClassName = type;

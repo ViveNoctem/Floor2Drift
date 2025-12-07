@@ -103,7 +103,9 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
       newImports.add(outputOption.getFileName(databaseimport));
     }
 
-    var result = "$header\n\n${valueResponse.data}\n}\n";
+    final documentation = BaseHelper.getDocumentationForElement(classElement);
+
+    var result = "$documentation$header\n\n${valueResponse.data}\n}\n";
 
     return (result, newImports, null);
   }

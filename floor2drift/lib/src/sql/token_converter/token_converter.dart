@@ -22,9 +22,9 @@ sealed class TokenConverter {
       TokenType.equal => ValueResponse.value("$left.equals${asExpression ? "Exp" : ""}($right)"),
       TokenType.less => ValueResponse.value("$left.isSmallerThan${asExpression ? "" : "Value"}($right)"),
       TokenType.lessEqual => ValueResponse.value("$left.isSmallerOrEqual${asExpression ? "" : "Value"}($right)"),
-      // TODO check if exclamationEqual is always the same as lessMore
       TokenType.exclamationEqual ||
-      TokenType.lessMore => ValueResponse.value("$left.equals${asExpression ? "Exp" : ""}($right).not()"),
+      TokenType.lessMore =>
+        ValueResponse.value("$left.equals${asExpression ? "Exp" : ""}($right).not()"),
       TokenType.more => ValueResponse.value("$left.isBiggerThan${asExpression ? "" : "Value"}($right)"),
       TokenType.moreEqual => ValueResponse.value("$left.isBiggerOrEqual${asExpression ? "" : "Value"}($right)"),
       _ => ValueResponse.error("TokenType $token is not supported", element),

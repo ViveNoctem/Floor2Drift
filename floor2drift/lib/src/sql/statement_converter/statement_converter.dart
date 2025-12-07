@@ -3,6 +3,7 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/sql_helper.dart';
+import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:recase/recase.dart';
