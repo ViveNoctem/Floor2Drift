@@ -13,7 +13,7 @@ class ReferenceExpressionConverter extends ExpressionConverter<Reference> {
   }) {
     // TODO Test how to use that for type converter
     // className Renames are always lowerCase because sqlite is case insensitive
-    var fieldName = selector.currentClassState?.renames[expression.columnName.toLowerCase()];
+    var fieldName = selector.currentClassState?.renamedFields[expression.columnName.toLowerCase()];
     fieldName ??= expression.columnName;
     selector.currentFieldName = fieldName;
     return ValueResponse.value((

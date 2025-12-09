@@ -14,17 +14,13 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   ) {
     final tableFrom = statement.table;
 
-    tableSelector.currentClassState = dbState.renameMap[dbState.tableEntityMap[tableFrom.tableName]];
+    tableSelector.currentClassState = dbState.renameMap[dbState.tableEntityMap[tableFrom.tableName.toLowerCase()]];
 
     final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 
-    // in baseDao use "table" selector
-    // in normal dao use lowerCastableName
-    // TODO if multiple tables are used in one dao, the tableSelector needs to be determined by the return type
-    final tableGetter = switch (tableSelector) {
-      TableSelectorBaseDao() => "updates: {${tableSelector.table}},",
-      TableSelectorDao() => "updates: {$lowerCaseTableName},",
-    };
+    tableSelector = sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
+
+    final tableGetter = "updates: {${tableSelector.selector}},";
 
     final tableName = ReCase(lowerCaseTableName).pascalCase;
     final query = statement.span?.text;

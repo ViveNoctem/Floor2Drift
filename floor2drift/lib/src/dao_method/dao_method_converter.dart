@@ -64,6 +64,32 @@ abstract class DaoMethodConverter {
     TableSelector tableSelector,
     DatabaseState dbState,
   ) {
+    final result = _convertUsedTable(method, tableSelector, dbState);
+
+    switch (result) {
+      case ValueError<String>():
+        return result.wrap();
+      case ValueData<String>():
+    }
+
+    if (result.data.isEmpty) {
+      return result;
+    }
+
+    final tableClassName = dbState.tableEntityMap[result.data.toLowerCase()]?.name;
+
+    if (tableClassName == null) {
+      return result;
+    }
+
+    return ValueResponse.value(ReCase(tableClassName).pascalCase);
+  }
+
+  static ValueResponse<String> _convertUsedTable(
+    MethodElement method,
+    TableSelector tableSelector,
+    DatabaseState dbState,
+  ) {
     const queryChecker = TypeChecker.fromRuntime(Query);
     var annotation = queryChecker.firstAnnotationOfExact(method);
 

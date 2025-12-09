@@ -231,7 +231,7 @@ class Floor2DriftGenerator {
             continue;
           }
 
-          entry.value.renames.addAll(superRenames.renames);
+          entry.value.renamedFields.addAll(superRenames.renamedFields);
         }
       }
     }

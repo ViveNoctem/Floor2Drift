@@ -23,9 +23,9 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
       case ValueError<ParameterElement>():
         return result.wrap();
     }
-    final parameter = result.data;
+    final parameter = result.data.type;
     final isEnum = parameter.element is EnumElement;
-    final isList = parameter.type.isDartCoreList;
+    final isList = parameter.isDartCoreList;
 
     // TODO List of enums isn't supported in FLOOR
     /*var isListEnum = false;
@@ -51,7 +51,7 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
       // TODO e.G. if a String to String converter is used the converter should always be used
       final converted = sqlHelper.checkTypeConverter(selector, name);
 
-      if (converted.isNotEmpty && sqlHelper.isNativeSqlType(parameter.type) == false) {
+      if (converted.isNotEmpty && sqlHelper.isNativeSqlType(parameter) == false) {
         return ValueResponse.value(("Variable($converted)", EExpressionType.colonNamedVariable));
       }
 
@@ -76,10 +76,12 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
       // TODO isNativeSqlType works for some use cases.
       // TODO For a correct solution the typeConverter to-/ from type is needed
       // TODO e.G. if a String to String converter is used the converter should always be used
-      if (converted.isNotEmpty && sqlHelper.isNativeSqlType(parameter.type) == false) {
+      if (converted.isNotEmpty && sqlHelper.isNativeSqlType(parameter) == false) {
         // TODO is '!' needed?
-        return ValueResponse.value(
-            ("...$name.map(($listSelector) => $converted!)", EExpressionType.colonNamedVariable));
+        return ValueResponse.value((
+          "...$name.map(($listSelector) => $converted!)",
+          EExpressionType.colonNamedVariable,
+        ));
       }
 
       return ValueResponse.value(("...$name", EExpressionType.colonNamedVariable));

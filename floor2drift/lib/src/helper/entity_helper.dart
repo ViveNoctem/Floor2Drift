@@ -93,7 +93,7 @@ class ClassHelper {
           classStates[classElement] = map;
         }
 
-        map.renames[newFieldRename.$1] = newFieldRename.$2;
+        map.renamedFields[newFieldRename.$1] = newFieldRename.$2;
       }
     }
 

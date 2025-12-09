@@ -350,10 +350,11 @@ void main() {
     });
 
     test("WHERE NOT EQUAL DATE", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereNotEqualDate(DateTime(2025, 10, 1)),
-        driftTaskDao.whereNotEqualDate(DateTime(2025, 10, 1)),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereNotEqualDate(DateTime(2025, 10, 1)),
+            driftTaskDao.whereNotEqualDate(DateTime(2025, 10, 1)),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -363,10 +364,11 @@ void main() {
     });
 
     test("WHERE SMALLER BIGGER DATE", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereSmallerBiggerDate(DateTime(2025, 10, 1)),
-        driftTaskDao.whereSmallerBiggerDate(DateTime(2025, 10, 1)),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereSmallerBiggerDate(DateTime(2025, 10, 1)),
+            driftTaskDao.whereSmallerBiggerDate(DateTime(2025, 10, 1)),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -406,10 +408,11 @@ void main() {
     });
 
     test("WHERE AND OR", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereAndOr(6, true, TaskStatus.done),
-        driftTaskDao.whereAndOr(6, true, TaskStatus.done),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereAndOr(6, true, TaskStatus.done),
+            driftTaskDao.whereAndOr(6, true, TaskStatus.done),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -421,10 +424,11 @@ void main() {
     test("WHERE AND OR 2", () async {
       // every task in the db has TaskStatus.done
       // TaskStatus in the sql query should not be TaskStatus.done
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereAndOr2(false, TaskStatus.open),
-        driftTaskDao.whereAndOr2(false, TaskStatus.open),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereAndOr2(false, TaskStatus.open.index),
+            driftTaskDao.whereAndOr2(false, TaskStatus.open.index),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -446,10 +450,11 @@ void main() {
     });
 
     test("WHERE IN enum", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereInEnum([TaskStatus.open.index, TaskStatus.inProgress.index]),
-        driftTaskDao.whereInEnum([TaskStatus.open.index, TaskStatus.inProgress.index]),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereInEnum([TaskStatus.open.index, TaskStatus.inProgress.index]),
+            driftTaskDao.whereInEnum([TaskStatus.open.index, TaskStatus.inProgress.index]),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -479,10 +484,11 @@ void main() {
     });
 
     test("WHERE NOT IN enum", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereNotInEnum([TaskStatus.done.index]),
-        driftTaskDao.whereNotInEnum([TaskStatus.done.index]),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereNotInEnum([TaskStatus.done.index]),
+            driftTaskDao.whereNotInEnum([TaskStatus.done.index]),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -502,10 +508,11 @@ void main() {
     });
 
     test("WHERE AND OR IN", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereAndOrIn(3, false, [TaskStatus.inProgress.index, TaskStatus.done.index]),
-        driftTaskDao.whereAndOrIn(3, false, [TaskStatus.inProgress.index, TaskStatus.done.index]),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereAndOrIn(3, false, [TaskStatus.inProgress.index, TaskStatus.done.index]),
+            driftTaskDao.whereAndOrIn(3, false, [TaskStatus.inProgress.index, TaskStatus.done.index]),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -551,10 +558,11 @@ void main() {
     });
 
     test("WHERE BIGGER DATE", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereBiggerDate(DateTime(2025, 9, 1)),
-        driftTaskDao.whereBiggerDate(DateTime(2025, 9, 1)),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereBiggerDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereBiggerDate(DateTime(2025, 9, 1)),
+          ).wait;
 
       for (int i = 0; i < floorTask.length; i++) {
         expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
@@ -562,10 +570,11 @@ void main() {
     });
 
     test("WHERE BIGGER EQUAL DATE", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereBiggerEqualDate(DateTime(2025, 9, 1)),
-        driftTaskDao.whereBiggerEqualDate(DateTime(2025, 9, 1)),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereBiggerEqualDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereBiggerEqualDate(DateTime(2025, 9, 1)),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
@@ -574,10 +583,11 @@ void main() {
     });
 
     test("WHERE SMALLER DATE", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereSmallerDate(DateTime(2025, 9, 1)),
-        driftTaskDao.whereSmallerDate(DateTime(2025, 9, 1)),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereSmallerDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereSmallerDate(DateTime(2025, 9, 1)),
+          ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
@@ -586,10 +596,11 @@ void main() {
     });
 
     test("WHERE SMALLER EQUAL DATE", () async {
-      final (floorTask, driftTask) = await (
-        floorTaskDao.whereSmallerEqualDate(DateTime(2025, 9, 1)),
-        driftTaskDao.whereSmallerEqualDate(DateTime(2025, 9, 1)),
-      ).wait;
+      final (floorTask, driftTask) =
+          await (
+            floorTaskDao.whereSmallerEqualDate(DateTime(2025, 9, 1)),
+            driftTaskDao.whereSmallerEqualDate(DateTime(2025, 9, 1)),
+          ).wait;
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
         expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
@@ -674,10 +685,11 @@ void main() {
       });
 
       test("where Uint8List", () async {
-        final (floorTask, driftTask) = await (
-          floorTaskDao.whereUint8List(Uint8List.fromList(const [4, 5, 6])),
-          driftTaskDao.whereUint8List(Uint8List.fromList(const [4, 5, 6])),
-        ).wait;
+        final (floorTask, driftTask) =
+            await (
+              floorTaskDao.whereUint8List(Uint8List.fromList(const [4, 5, 6])),
+              driftTaskDao.whereUint8List(Uint8List.fromList(const [4, 5, 6])),
+            ).wait;
 
         expect(floorTask.length, equals(driftTask.length));
         for (int i = 0; i < floorTask.length; i++) {
@@ -1008,10 +1020,11 @@ void main() {
           expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
         }
 
-        final (floorDeleteResult, driftDeleteResult) = await (
-          floorTaskDao.annotationDeleteTasks(floorTask.sublist(0, 5)),
-          driftTaskDao.annotationDeleteTasks(driftTask.sublist(0, 5)),
-        ).wait;
+        final (floorDeleteResult, driftDeleteResult) =
+            await (
+              floorTaskDao.annotationDeleteTasks(floorTask.sublist(0, 5)),
+              driftTaskDao.annotationDeleteTasks(driftTask.sublist(0, 5)),
+            ).wait;
 
         expect(floorDeleteResult, equals(5));
 
@@ -1075,6 +1088,27 @@ void main() {
         (floorTask, driftTask) = await (floorTaskDao.findTaskById(15), driftTaskDao.findTaskById(15)).wait;
 
         expect(floorTask, EqualTaskMatcher(driftTask));
+      });
+
+      test("insert user", () async {
+        final now = DateTime.now();
+        final users = [
+          TestUser(name: "name1", password: "password1", id: 11, createdAt: now),
+          TestUser(name: "name2", password: "password2", id: 22, createdAt: now),
+          TestUser(name: "name3", password: "password3", id: 33, createdAt: now),
+          TestUser(name: "name4", password: "password4", id: 44, createdAt: now),
+          TestUser(name: "name5", password: "password5", id: 55, createdAt: now),
+        ];
+
+        for (final user in users) {
+          await (floorTaskDao.annotationInsertUser(user), driftTaskDao.annotationInsertUser(user)).wait;
+        }
+
+        final (floorResult, driftResult) = await (floorTaskDao.getAllUsers(), driftTaskDao.getAllUsers()).wait;
+
+        expect(floorResult.length, equals(5));
+
+        expect(floorResult, equals(driftResult));
       });
     });
 
@@ -1140,10 +1174,13 @@ void main() {
     });
 
     test("check rename in db", () async {
-      final row = await driftDatabase.customSelect(
-        "SELECT DifFeReNt_STRING FROM TESTTASK WHERE id = :id or DifFeReNt_STRING = :renamedString",
-        variables: [Variable(1), Variable("6")],
-      ).getSingleOrNull();
+      final row =
+          await driftDatabase
+              .customSelect(
+                "SELECT DifFeReNt_STRING FROM TASKTEST WHERE id = :id or DifFeReNt_STRING = :renamedString",
+                variables: [Variable(1), Variable("6")],
+              )
+              .getSingleOrNull();
 
       expect(row, isNotNull);
 
