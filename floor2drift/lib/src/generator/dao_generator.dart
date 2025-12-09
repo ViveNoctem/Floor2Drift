@@ -144,8 +144,13 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
 
   String _generateClassHeader(Set<String> tables, String className, String databaseName, String mixinClause) {
     // TODO case insensitivity of sqlite might be a problem
+    final tableList = tables.map((s) => "${s}s");
 
-    final tableString = tables.map((s) => "${s}s").reduce((value, element) => "$value, $element");
+    if (tableList.isEmpty) {
+      print("Couldn't determine tables for $className");
+    }
+
+    final tableString = tableList.isEmpty ? "" : tableList.reduce((value, element) => "$value, $element");
     return '''@DriftAccessor(tables: [$tableString])
   class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}_\$${className}Mixin {
   $className(super.db);''';
