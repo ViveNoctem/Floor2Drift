@@ -38,7 +38,7 @@ class DaoHelper {
     }
 
     if (body.isEmpty) {
-      return ValueResponse.error("No Methods found in class", classElement);
+      print("Couldn't find methods to convert in ${classElement.name}");
     }
 
     return ValueResponse.value(body);
