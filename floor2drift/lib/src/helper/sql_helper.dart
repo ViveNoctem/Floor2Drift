@@ -23,6 +23,7 @@ class SqlHelper {
     Element element,
     List<ParameterElement> parameters,
     TableSelector selector,
+    bool useSelectOnly,
   ) {
     var result = "..orderBy([";
 
@@ -33,7 +34,7 @@ class SqlHelper {
         return ValueResponse.error("Order by termin $orderingTerm is not a OrderingTerm", element);
       }
 
-      final orderingTermResult = _addOrderingTerm(orderingTerm, selector, element, parameters);
+      final orderingTermResult = _addOrderingTerm(orderingTerm, selector, element, parameters, useSelectOnly);
 
       switch (orderingTermResult) {
         case ValueError<String>():
@@ -56,6 +57,7 @@ class SqlHelper {
     TableSelector selector,
     Element element,
     List<ParameterElement> parameters,
+    bool useSelectOnly,
   ) {
     final mode = _getOrderingMode(orderingTerm.orderingMode);
 
@@ -76,7 +78,14 @@ class SqlHelper {
 
     final nulls = _getNulls(orderingTerm.nulls);
 
-    var result = "(${selector.functionSelector}) => OrderingTerm($expression$mode$nulls)";
+    var result = "";
+
+    // if selectOnly is used do not add the function selector
+    if (useSelectOnly == false) {
+      result += "(${selector.functionSelector}) =>";
+    }
+
+    result += "OrderingTerm($expression$mode$nulls)";
     return ValueResponse.value(result);
   }
 

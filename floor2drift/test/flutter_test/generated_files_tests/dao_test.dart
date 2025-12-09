@@ -134,6 +134,7 @@ void main() {
     // TODO why is isRead and attachment not allowed to be null
     TestTask(
       id: 11,
+      message: "Cased",
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
       customDouble: 0,
@@ -143,6 +144,7 @@ void main() {
     ),
     TestTask(
       id: 12,
+      message: "cased",
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
       customDouble: 0,
@@ -276,7 +278,7 @@ void main() {
     ),
     TestTask(
       id: 11,
-      message: 'default',
+      message: "Cased",
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
       customDouble: 0,
@@ -286,7 +288,7 @@ void main() {
     ),
     TestTask(
       id: 12,
-      message: 'default',
+      message: "cased",
       timestamp: DateTime(2025, 1, 1),
       status: TaskStatus.done,
       customDouble: 0,
@@ -1274,6 +1276,55 @@ void main() {
 
       for (int i = 0; i < floorTask.length; i++) {
         expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
+
+  group("bitwise", () {
+    test("OR", () async {
+      final (floorIds, driftIds) = await (floorTaskDao.bitwiseOrId(4, 2), driftTaskDao.bitwiseOrId(4, 2)).wait;
+
+      expect(floorIds.length, equals(driftIds.length));
+
+      for (int i = 0; i < floorIds.length; i++) {
+        expect(floorIds[i], driftIds[i]);
+      }
+    });
+
+    test("AND", () async {
+      final (floorIds, driftIds) = await (floorTaskDao.bitwiseAndId(12, 6), driftTaskDao.bitwiseAndId(12, 6)).wait;
+
+      expect(floorIds.length, equals(driftIds.length));
+
+      for (int i = 0; i < floorIds.length; i++) {
+        expect(floorIds[i], driftIds[i]);
+      }
+    });
+
+    test("NEGATION", () async {
+      final (floorIds, driftIds) =
+          await (floorTaskDao.bitwiseNegationId(4, -3), driftTaskDao.bitwiseNegationId(4, -3)).wait;
+
+      expect(floorIds.length, equals(driftIds.length));
+
+      for (int i = 0; i < floorIds.length; i++) {
+        expect(floorIds[i], driftIds[i]);
+      }
+    });
+  });
+
+  group("COLLATE", () {
+    test("message", () async {
+      final (floorMessages, driftMessages) = await (floorTaskDao.collateMessage(), driftTaskDao.collateMessage()).wait;
+
+      expect(floorMessages.length, equals(driftMessages.length));
+
+      expect(floorMessages[0], equals("default"));
+      expect(floorMessages[1], equals("Cased"));
+      expect(floorMessages[2], equals("cased"));
+
+      for (int i = 0; i < floorMessages.length; i++) {
+        expect(floorMessages[i], driftMessages[i]);
       }
     });
   });

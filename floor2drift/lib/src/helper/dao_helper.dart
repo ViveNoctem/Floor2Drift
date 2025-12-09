@@ -60,6 +60,11 @@ class DaoHelper {
         case ValueData<String>():
       }
 
+      // skip if no table could be determined
+      if (parseResult.data.isEmpty) {
+        continue;
+      }
+
       result.add(parseResult.data);
     }
 

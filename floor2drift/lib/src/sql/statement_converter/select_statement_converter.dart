@@ -58,13 +58,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     final where = statement.where;
     if (where != null) {
-      final whereResult = sqlHelper.addWhereClause(
-        where,
-        element,
-        parameters,
-        useSelectOnly,
-        tableSelector,
-      );
+      final whereResult = sqlHelper.addWhereClause(where, element, parameters, useSelectOnly, tableSelector);
 
       switch (whereResult) {
         case ValueData<String>():
@@ -78,7 +72,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     final orderBy = statement.orderBy;
     if (orderBy != null && orderBy is OrderBy) {
-      final orderByResult = sqlHelper.addOrderByClause(orderBy, element, parameters, tableSelector);
+      final orderByResult = sqlHelper.addOrderByClause(orderBy, element, parameters, tableSelector, useSelectOnly);
 
       switch (orderByResult) {
         case ValueError<String>():
@@ -107,9 +101,8 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
           if (expression is Reference) {
             // TODO does tableSelector.currentFieldName always work?
-            final converted = tableSelector.convertedFields[tableSelector.entityName]?.contains(
-                  tableSelector.currentFieldName,
-                ) ==
+            final converted =
+                tableSelector.convertedFields[tableSelector.entityName]?.contains(tableSelector.currentFieldName) ==
                 true;
 
             // TODO isNativeSqlType works for some use cases.
