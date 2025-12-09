@@ -1,9 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 /// Helper Class to Convert Sql Code to Drift Core Api Calls
@@ -240,5 +242,33 @@ class SqlHelper {
     }
 
     return false;
+  }
+
+  /// initializes different field in the given [tableSelector]
+  ///
+  /// set the selector, currentClassState, and entityName
+  TableSelector configureTableSelector(TableSelector tableSelector, DatabaseState dbState, String fromTableName) {
+    final lowerCaseTableName = "${ReCase(fromTableName).camelCase}s";
+    final tableName = ReCase(lowerCaseTableName).pascalCase;
+
+    switch (tableSelector) {
+      case TableSelectorBaseDao():
+        tableSelector.selector = tableSelector.table;
+      // currentClassState is set when creating the TableSelectorBaseDao
+      case TableSelectorDao():
+        final tableClassElement = dbState.tableEntityMap[tableName.toLowerCase().substring(0, tableName.length - 1)];
+        tableSelector.currentClassState = dbState.renameMap[tableClassElement];
+        final selectorName = tableClassElement?.name;
+
+        if (selectorName == null) {
+          tableSelector.selector = lowerCaseTableName;
+          tableSelector.entityName = ReCase(fromTableName).pascalCase;
+        } else {
+          tableSelector.selector = "${ReCase(selectorName).camelCase}s";
+          tableSelector.entityName = ReCase(selectorName).pascalCase;
+        }
+    }
+
+    return tableSelector;
   }
 }

@@ -14,21 +14,11 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
   ) {
     final tableFrom = statement.from;
 
-    tableSelector.currentClassState = dbState.renameMap[dbState.tableEntityMap[tableFrom.tableName]];
+    tableSelector.currentClassState = dbState.renameMap[dbState.tableEntityMap[tableFrom.tableName.toLowerCase()]];
 
     final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 
-    // in baseDao use "table" selector
-    // in normal dao use lowerCastableName
-    // TODO if multiple tables are used in one dao, the tableSelector needs to be determined by the return type
-    switch (tableSelector) {
-      case TableSelectorBaseDao():
-        tableSelector.selector = tableSelector.table;
-      case TableSelectorDao():
-        // TODO entityName is being set here and in base_dao_generator  and select_statement converter copied this too
-        tableSelector.entityName = ReCase(tableFrom.tableName).pascalCase;
-        tableSelector.selector = lowerCaseTableName;
-    }
+    tableSelector = sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
 
     final tableName = "${lowerCaseTableName[0].toUpperCase()}${lowerCaseTableName.substring(1)}";
 

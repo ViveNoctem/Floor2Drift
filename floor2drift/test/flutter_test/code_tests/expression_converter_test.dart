@@ -92,8 +92,7 @@ void main() {
     });
 
     test(("list as expression"), () {
-      const String mockParameterTypeName = "List";
-      when(mockParameterElement.name).thenReturn(mockParameterTypeName);
+      when(mockParameterType.isDartCoreList).thenReturn(true);
 
       final expression = ColonNamedVariable.synthetic(":test");
 
@@ -114,8 +113,7 @@ void main() {
     });
 
     test(("list as expression"), () {
-      const String mockParameterTypeName = "List";
-      when(mockParameterElement.name).thenReturn(mockParameterTypeName);
+      when(mockParameterType.isDartCoreList).thenReturn(true);
 
       final expression = ColonNamedVariable.synthetic(":test");
 
@@ -270,7 +268,7 @@ void main() {
 
     test("renamed", () {
       final classState = ClassState(classType: MockDartType());
-      classState.renames["test"] = "renamed";
+      classState.renamedFields["test"] = "renamed";
       selector.currentClassState = classState;
 
       final expression = Reference(columnName: "test");

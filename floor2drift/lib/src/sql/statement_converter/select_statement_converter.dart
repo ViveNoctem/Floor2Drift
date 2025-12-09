@@ -171,17 +171,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     final tableName = ReCase(lowerCaseTableName).pascalCase;
 
-    switch (tableSelector) {
-      case TableSelectorBaseDao():
-        tableSelector.selector = tableSelector.table;
-      // currentClassState is set when creating the TableSelectorBaseDao
-      case TableSelectorDao():
-        // copied from delete_statement_converter
-        tableSelector.entityName = ReCase(tableFrom.tableName).pascalCase;
-        tableSelector.selector = lowerCaseTableName;
-        tableSelector.currentClassState =
-            dbState.renameMap[dbState.tableEntityMap[tableName.substring(0, tableName.length - 1)]];
-    }
+    tableSelector = sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
 
     final typeSpecification = BaseHelper.getTypeSpecification(method.returnType);
 

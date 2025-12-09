@@ -7,10 +7,10 @@ import 'enums.dart';
 import 'type_converters.dart';
 import 'type_convertersDrift.dart' as drift;
 
-@entity
+@Entity(tableName: "UserTest")
 class TestUser implements Insertable<TestUser> {
-  @PrimaryKey(autoGenerate: true)
-  final int? id;
+  @primaryKey
+  final int id;
 
   final String name;
   final String password;
@@ -23,11 +23,26 @@ class TestUser implements Insertable<TestUser> {
 
   @override
   Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
-    return {"id": Variable(id), "name": Variable(name), "password": Variable(password)};
+    return {
+      "id": Variable(id),
+      "name": Variable(name),
+      "password": Variable(password),
+      "creation_date": Variable(createdAt),
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! TestUser) {
+      return false;
+    }
+
+    return identical(this, other) ||
+        runtimeType == other.runtimeType && id == other.id && name == other.name && password == other.password;
   }
 }
 
-@entity
+@Entity(tableName: "taskTest")
 @TypeConverters([IntListConverter])
 class TestTask extends BaseClass<TestTask> {
   // some message

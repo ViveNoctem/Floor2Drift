@@ -58,7 +58,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
     //
     final floorTableName = _getFloorTableName(classElement);
     dbState.entityTableMap[classElement] = floorTableName;
-    dbState.tableEntityMap[floorTableName] = classElement;
+    dbState.tableEntityMap[floorTableName.toLowerCase()] = classElement;
 
     final (fieldsString, mixinString, usedTypeConverters, convertedFields) = data.data;
 
