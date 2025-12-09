@@ -23,10 +23,14 @@ sealed class TokenConverter {
       TokenType.less => ValueResponse.value("$left.isSmallerThan${asExpression ? "" : "Value"}($right)"),
       TokenType.lessEqual => ValueResponse.value("$left.isSmallerOrEqual${asExpression ? "" : "Value"}($right)"),
       TokenType.exclamationEqual ||
-      TokenType.lessMore =>
-        ValueResponse.value("$left.equals${asExpression ? "Exp" : ""}($right).not()"),
+      TokenType.lessMore => ValueResponse.value("$left.equals${asExpression ? "Exp" : ""}($right).not()"),
       TokenType.more => ValueResponse.value("$left.isBiggerThan${asExpression ? "" : "Value"}($right)"),
       TokenType.moreEqual => ValueResponse.value("$left.isBiggerOrEqual${asExpression ? "" : "Value"}($right)"),
+      TokenType.ampersand => ValueResponse.value("$left.bitwiseAnd($right)"),
+      TokenType.pipe => ValueResponse.value("$left.bitwiseOr($right)"),
+      // TODO how to shift in drift?
+      TokenType.shiftLeft => ValueResponse.error("TokenType $token is not supported", element),
+      TokenType.shiftRight => ValueResponse.error("TokenType $token is not supported", element),
       _ => ValueResponse.error("TokenType $token is not supported", element),
     };
   }

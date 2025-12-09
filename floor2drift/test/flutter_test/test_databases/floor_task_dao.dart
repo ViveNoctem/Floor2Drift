@@ -363,9 +363,32 @@ abstract class TestTaskDao extends BaseDao<TestTask> {
 
   // endregion
 
+  // region bitwise operations
+
+  @Query("SELECT id FROM TaskTest WHERE id > :argument & :argument2")
+  Future<List<int>> bitwiseAndId(int argument, int argument2);
+
+  @Query("SELECT id FROM TaskTest WHERE id > :argument | :argument2")
+  Future<List<int>> bitwiseOrId(int argument, int argument2);
+
+  @Query("SELECT id FROM TaskTest WHERE id > :argument | ~:argument2")
+  Future<List<int>> bitwiseNegationId(int argument, int argument2);
+
+  // TODO Support Shift Operations
+  // @Query("SELECT id FROM TaskTest WHERE id > :argument << :argument2")
+  // Future<List<int>> bitwiseShLId(int argument, int argument2);
+  //
+  // @Query("SELECT id FROM TaskTest WHERE id > :argument >> :argument2")
+  // Future<List<int>> bitwiseShRId(int argument, int argument2);
+
+  // endregion
+
   @Query("SELECT creation_date FROM UserTest WHERE creation_date > :argument")
   Future<String?> renamedConvertedQuery(DateTime argument);
 
   @Query("SELECT creation_date FROM UserTest WHERE creation_date IN (:argument) OR creation_date = :argument2")
   Future<List<DateTime>> renamedConvertedQueryList(List<DateTime> argument, String argument2);
+
+  @Query("SELECT message FROM TaskTest ORDER BY message COLLATE nocase DESC;")
+  Future<List<String>> collateMessage();
 }
