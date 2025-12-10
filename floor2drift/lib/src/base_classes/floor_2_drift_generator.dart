@@ -14,6 +14,7 @@ import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
 import 'package:floor2drift/src/generator/database_generator.dart';
 import 'package:floor2drift/src/generator/entity_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:glob/glob.dart';
@@ -117,18 +118,20 @@ class Floor2DriftGenerator {
 
     final baseEntityGenerator = inputOption.convertDbEntities ? BaseEntityGenerator(inputOption: inputOption) : null;
 
-    final entityGenerator = inputOption.convertDbEntities
-        ? EntityGenerator(
-            classNameSuffix: "",
-            useRowClass: useRowClass,
-            inputOption: inputOption,
-            tableName: tableNameOption,
-          )
-        : null;
+    final entityGenerator =
+        inputOption.convertDbEntities
+            ? EntityGenerator(
+              classNameSuffix: "",
+              useRowClass: useRowClass,
+              inputOption: inputOption,
+              tableName: tableNameOption,
+            )
+            : null;
 
-    final typeConverterGenerator = inputOption.convertDbTypeConverters
-        ? TypeConverterGenerator(classNameSuffix: "", inputOption: inputOption)
-        : null;
+    final typeConverterGenerator =
+        inputOption.convertDbTypeConverters
+            ? TypeConverterGenerator(classNameSuffix: "", inputOption: inputOption)
+            : null;
 
     final databaseGenerator = DatabaseGenerator(inputOption: inputOption, useRowClass: useRowClass);
 
@@ -158,7 +161,7 @@ class Floor2DriftGenerator {
     }
 
     // allTypeConverters.addAll(dbState.typeConverters.map((s) => s.classElement));
-    var newFiles = <String, String>{};
+    var newFiles = <String, GeneratedSource>{};
 
     // order of the generators is specific.
     // databaseGenerator always first
@@ -280,16 +283,16 @@ class Floor2DriftGenerator {
     final formatter = DartFormatter();
 
     for (final entry in newFiles.entries) {
-      final formattedContent = formatter.format(entry.value);
+      final formattedContent = formatter.format(entry.value.toFileContent());
       outputOption.writeFile(File(entry.key), formattedContent);
     }
   }
 
-  Future<(Map<String, String>, List<S>)> _processClassElements<T, S>(
+  Future<(Map<String, GeneratedSource>, List<S>)> _processClassElements<T, S>(
     Iterable<ClassElement> classElements,
     DatabaseState dbState,
     AnnotationGenerator<T, S> generator,
-    Map<String, String> newFiles,
+    Map<String, GeneratedSource> newFiles,
   ) async {
     final generatorResult = <S>[];
 
@@ -301,18 +304,9 @@ class Floor2DriftGenerator {
         continue;
       }
 
-      // TODO this is wrong.
-      // TODO this is about a specific class to be converted.
-      // TODO because entity.libary the whole library gets converted
-      // final reader = LibraryReader(classElement.library);
+      final (generatedSource, genResult) = await processingOption.processClassElement(classElement, dbState, generator);
 
-      final (imports, fileContent, genResult) = await processingOption.processClassElement(
-        classElement,
-        dbState,
-        generator,
-      );
-
-      if (fileContent.isEmpty) {
+      if (generatedSource.isEmpty) {
         continue;
       }
 
@@ -320,12 +314,12 @@ class Floor2DriftGenerator {
 
       String newPath = outputOption.getNewPath(source.file.path);
 
-      // if the to be written result already contains a file appen only the new class File content
+      // if the to be written result already contains a file append only the new class File content
       if (newFiles.containsKey(newPath)) {
         final oldValue = newFiles[newPath];
-        newFiles[newPath] = "$oldValue\n\n$fileContent";
+        newFiles[newPath] = oldValue! + generatedSource;
       } else {
-        newFiles[newPath] = "$imports\n\n$fileContent";
+        newFiles[newPath] = generatedSource;
       }
     }
 

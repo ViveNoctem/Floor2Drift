@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:source_gen/source_gen.dart';
 
 abstract class AnnotationGenerator<T, S> {
@@ -15,14 +16,14 @@ abstract class AnnotationGenerator<T, S> {
 
   const AnnotationGenerator({required this.inputOption, this.throwOnUnresolved = true});
 
-  FutureOr<(String, Set<String>, S)> generateClass(
+  FutureOr<(GeneratedSource, S)> generateClass(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
   ) async {
-    final (value, imports, result) = generateForAnnotatedElement(classElement, outputOption, dbState);
+    final result = generateForAnnotatedElement(classElement, outputOption, dbState);
 
-    return ("$value\n\n", imports, result);
+    return result;
   }
 
   /// returns if the generator would generate code for the given library
@@ -39,7 +40,7 @@ abstract class AnnotationGenerator<T, S> {
   }
 
   /// Returns Dart Code String, Set of Imports and the result of the builder
-  (String, Set<String>, S) generateForAnnotatedElement(
+  (GeneratedSource, S) generateForAnnotatedElement(
     ClassElement element,
     OutputOptionBase outputOption,
     DatabaseState dbState,

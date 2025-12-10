@@ -7,6 +7,7 @@ import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:floor_annotation/floor_annotation.dart';
@@ -32,15 +33,11 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
   }
 
   @override
-  (String, Set<String>, Null) generateForAnnotatedElement(
+  (GeneratedSource, Null) generateForAnnotatedElement(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState state,
   ) {
-    var fileName = outputOption.getFileName(classElement.source.shortName);
-    fileName = fileName.replaceAll(".dart", ".g.dart");
-    final partDirective = "part '$fileName';";
-
     final className = classElement.name;
     final schemaVersion = state.schemaVersion;
     var tables = "";
@@ -98,8 +95,15 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     // );
 
     final documentation = BaseHelper.getDocumentationForElement(classElement);
+    final code = "$documentation$result";
 
-    return ("$partDirective\n\n$documentation$result", newImports, null);
+    var fileName = outputOption.getFileName(classElement.source.shortName);
+    fileName = fileName.replaceAll(".dart", ".g.dart");
+    final partDirective = "part '$fileName';";
+
+    final generatedSource = GeneratedSource(code: code, imports: newImports, parts: {partDirective});
+
+    return (generatedSource, null);
   }
 
   // String _convertMigrations(List<Migration> migrations, int schemaVersion) {
@@ -246,19 +250,20 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
 
     // TODO Should Type Converters be always be converted?
     // TODO best solution would be all actually used typeConverters.
-    final typeConverters = annotationReader
-        .read("value")
-        .objectValue
-        .toListValue()
-        ?.map((object) {
-          final name = object.type?.element?.name;
-          if (name == null || inputOption.canAnalyze(name) == false) {
-            return null;
-          }
-          return object.toTypeValue();
-        })
-        .nonNulls
-        .toList();
+    final typeConverters =
+        annotationReader
+            .read("value")
+            .objectValue
+            .toListValue()
+            ?.map((object) {
+              final name = object.type?.element?.name;
+              if (name == null || inputOption.canAnalyze(name) == false) {
+                return null;
+              }
+              return object.toTypeValue();
+            })
+            .nonNulls
+            .toList();
 
     if (typeConverters == null) {
       return const {};

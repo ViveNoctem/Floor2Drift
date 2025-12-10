@@ -4,6 +4,7 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/annotation_helper.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
@@ -32,7 +33,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
   });
 
   @override
-  (String, Set<String>, MapEntry<String, (Set<ClassElement>, List<String>)>) generateForAnnotatedElement(
+  (GeneratedSource, MapEntry<String, (Set<ClassElement>, List<String>)>) generateForAnnotatedElement(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
@@ -55,7 +56,6 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
         break;
     }
 
-    //
     final floorTableName = _getFloorTableName(classElement);
     dbState.entityTableMap[classElement] = floorTableName;
     dbState.tableEntityMap[floorTableName.toLowerCase()] = classElement;
@@ -70,7 +70,10 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
     result += _getTableName(tableName, classElement);
     result += fieldsString;
     result += classHelper.closeClass();
-    return (result, newImports, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
+
+    final generatedSource = GeneratedSource(code: result, imports: newImports);
+
+    return (generatedSource, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
   }
 
   String _getTableName(ETableNameOption tableName, ClassElement classElement) {

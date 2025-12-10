@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
@@ -27,7 +28,7 @@ class BaseEntityGenerator
   }
 
   @override
-  (String, Set<String>, MapEntry<String, (Set<ClassElement>, List<String>)>) generateForAnnotatedElement(
+  (GeneratedSource, MapEntry<String, (Set<ClassElement>, List<String>)>) generateForAnnotatedElement(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
@@ -55,6 +56,8 @@ class BaseEntityGenerator
     result += fieldsString;
     result += classHelper.closeClass();
 
-    return (result, const {}, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
+    final generatedSource = GeneratedSource(code: result);
+
+    return (generatedSource, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
   }
 }
