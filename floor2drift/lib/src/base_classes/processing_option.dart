@@ -10,6 +10,7 @@ import 'package:floor2drift/src/generator/base_entity_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
 import 'package:floor2drift/src/generator/database_generator.dart';
 import 'package:floor2drift/src/generator/entity_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -49,7 +50,7 @@ abstract class ProcessingOptionBase {
 
   Future<DatabaseState?> processDatabaseGenerator(AnalysisContext context, String path, InputOptionBase inputOption);
 
-  Future<(String, String, List<S>)> processClassElement<T, S>(
+  Future<(GeneratedSource, List<S>)> processClassElement<T, S>(
     ClassElement classElement,
     DatabaseState dbState,
     AnnotationGenerator<T, S> generator,
@@ -87,14 +88,12 @@ class ProcessingOptions extends ProcessingOptionBase {
   }
 
   @override
-  Future<(String, String, List<S>)> processClassElement<T, S>(
+  Future<(GeneratedSource, List<S>)> processClassElement<T, S>(
     ClassElement classElement,
     DatabaseState dbState,
     AnnotationGenerator<T, S> generator,
   ) async {
-    var values = <String>{};
-
-    final imports = <String>{};
+    var generatedSource = GeneratedSource.empty();
     final generatorResult = <S>[];
 
     final libraryImports = classElement.library.definingCompilationUnit.libraryImports;
@@ -136,21 +135,19 @@ class ProcessingOptions extends ProcessingOptionBase {
       }
 
       final newImportString = outputOption.rewriteImport((changed, importString));
-      imports.add(newImportString);
+      generatedSource = generatedSource.copyWith(imports: {...generatedSource.imports, newImportString});
     }
 
-    final (text, newImports, result) = await generator.generateClass(classElement, outputOption, dbState);
+    final (generatedSourceResult, result) = await generator.generateClass(classElement, outputOption, dbState);
 
-    imports.addAll(newImports);
-    values.add(text);
+    generatedSource += generatedSourceResult;
+
     generatorResult.add(result);
 
-    var returnValue = values.join("\n\n");
-
-    if (returnValue.trim().isNotEmpty) {
-      return (imports.join("\n"), returnValue, generatorResult);
+    if (generatedSource.isNotEmpty) {
+      return (generatedSource, generatorResult);
     } else {
-      return ("", "", <S>[]);
+      return (GeneratedSource.empty(), <S>[]);
     }
   }
 }

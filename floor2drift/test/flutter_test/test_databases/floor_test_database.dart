@@ -5,7 +5,6 @@ import 'package:floor/floor.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'enums.dart';
-import 'floor_empty_task_dao.dart';
 import 'floor_task_dao.dart';
 import 'task.dart';
 import 'type_converters.dart';

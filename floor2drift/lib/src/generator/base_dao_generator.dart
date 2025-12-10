@@ -6,6 +6,7 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
@@ -30,7 +31,7 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
   }
 
   @override
-  (String, Set<String>, Null) generateForAnnotatedElement(
+  (GeneratedSource, Null) generateForAnnotatedElement(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
@@ -106,8 +107,9 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
     final documentation = BaseHelper.getDocumentationForElement(classElement);
 
     var result = "$documentation$header\n\n${valueResponse.data}\n}\n";
+    final generatedSource = GeneratedSource(code: result, imports: newImports);
 
-    return (result, newImports, null);
+    return (generatedSource, null);
   }
 
   String _generateMixinHeader(

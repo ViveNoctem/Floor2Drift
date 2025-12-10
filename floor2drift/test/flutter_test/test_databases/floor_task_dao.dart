@@ -7,6 +7,9 @@ import 'enums.dart';
 import 'floor_base_task_dao.dart';
 import 'task.dart';
 
+@dao
+abstract class EmptyTestTaskDao extends BaseDao<TestTask> {}
+
 /// Documentation class TestTaskDao
 @dao
 abstract class TestTaskDao extends BaseDao<TestTask> {

@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor_annotation/floor_annotation.dart';
@@ -37,7 +38,7 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
   }
 
   @override
-  (String, Set<String>, Null) generateForAnnotatedElement(
+  (GeneratedSource, Null) generateForAnnotatedElement(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
@@ -71,7 +72,7 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
       final node = method.getNode();
 
       if (node is! MethodDeclaration) {
-        return ("", const {}, null);
+        return (GeneratedSource.empty(), null);
       }
 
       result += BaseHelper.getDocumentationForElement(method);
@@ -84,7 +85,8 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
     }
 
     result += "}\n";
-
-    return (result, const {"import 'package:drift/drift.dart';"}, null);
+    final imports = const {"import 'package:drift/drift.dart';"};
+    final generatedSource = GeneratedSource(code: result, imports: imports);
+    return (generatedSource, null);
   }
 }

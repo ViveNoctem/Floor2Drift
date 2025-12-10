@@ -4,6 +4,7 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
@@ -11,7 +12,7 @@ import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-// TODO generic is omitted because dao is private
+// generic is omitted because dao annotation is private
 class DaoGenerator extends AnnotationGenerator<Null, Null> {
   final String classNameSuffix;
   final DaoHelper daoHelper;
@@ -28,7 +29,7 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
   });
 
   @override
-  (String, Set<String>, Null) generateForAnnotatedElement(
+  (GeneratedSource, Null) generateForAnnotatedElement(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
@@ -93,11 +94,6 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
       }
     }
 
-    // output option needed to resolve the part directive because the file could be renamed
-    final fileName = outputOption.getFileName(classElement.source.shortName).replaceAll(".dart", ".g.dart");
-
-    final partDirective = "part '$fileName';";
-
     final databaseimport = BaseHelper.getImport(dbState.databaseClass.element!.librarySource!.uri, targetFilePath);
 
     if (databaseimport != null) {
@@ -136,10 +132,15 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     );
 
     final documentation = BaseHelper.getDocumentationForElement(classElement);
+    var result = "$documentation$header${valueResponse.data}\n}\n";
 
-    var result = "$partDirective\n\n$documentation$header\n\n${valueResponse.data}\n}\n";
+    // output option needed to resolve the part directive because the file could be renamed
+    final fileName = outputOption.getFileName(classElement.source.shortName).replaceAll(".dart", ".g.dart");
+    final partDirective = "part '$fileName';";
 
-    return (result, newImports, null);
+    final generatedSource = GeneratedSource(code: result, imports: newImports, parts: {partDirective});
+
+    return (generatedSource, null);
   }
 
   String _generateClassHeader(Set<String> tables, String className, String databaseName, String mixinClause) {
