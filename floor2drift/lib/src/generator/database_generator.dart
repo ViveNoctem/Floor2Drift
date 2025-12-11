@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
@@ -20,7 +19,7 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
   DatabaseGenerator({required super.inputOption, required this.useRowClass});
 
   @override
-  FutureOr<bool> getImport(LibraryReader library) {
+  bool getImport(LibraryReader library) {
     for (final annotatedElement in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
       if (inputOption.canAnalyze(annotatedElement.element.name ?? "") == false) {
         continue;
@@ -232,7 +231,7 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     return (entities, baseEntities);
   }
 
-  Set<TypeConverterClassElement> generateTypeConverterSet(
+  Set<TypeConverterState> generateTypeConverterSet(
     ClassElement classElement,
     ConstantReader annotation,
     InputOptionBase inputOption,
@@ -248,28 +247,25 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
 
     final annotationReader = ConstantReader(typeConverterAnnotation);
 
-    // TODO Should Type Converters be always be converted?
-    // TODO best solution would be all actually used typeConverters.
-    final typeConverters =
-        annotationReader
-            .read("value")
-            .objectValue
-            .toListValue()
-            ?.map((object) {
-              final name = object.type?.element?.name;
-              if (name == null || inputOption.canAnalyze(name) == false) {
-                return null;
-              }
-              return object.toTypeValue();
-            })
-            .nonNulls
-            .toList();
+    final typeConverters = annotationReader
+        .read("value")
+        .objectValue
+        .toListValue()
+        ?.map((object) {
+          final name = object.type?.element?.name;
+          if (name == null || inputOption.canAnalyze(name) == false) {
+            return null;
+          }
+          return object.toTypeValue();
+        })
+        .nonNulls
+        .toList();
 
     if (typeConverters == null) {
       return const {};
     }
 
-    Set<TypeConverterClassElement> result = {};
+    Set<TypeConverterState> result = {};
 
     for (final classType in typeConverters) {
       final element = classType.element!.toClassElement;
@@ -283,15 +279,10 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
         continue;
       }
 
-      final fromType = superType.typeArguments[0].element;
-
+      final fromType = superType.typeArguments[0];
       final toType = superType.typeArguments[1];
 
-      if (fromType == null) {
-        throw ArgumentError("Couldn't determine generic elements for typeConverter $classType");
-      }
-
-      result.add(TypeConverterClassElement(element.toClassElement, fromType, toType));
+      result.add(TypeConverterState(element.toClassElement, fromType, toType));
     }
 
     return result;

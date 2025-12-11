@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:floor_annotation/floor_annotation.dart';
 
-import '../additional_classes/annotation.dart';
-import 'enums.dart';
+import '../../additional_classes/annotation.dart';
+import '../entities/task.dart';
+import '../support_classes/enums.dart';
 import 'floor_base_task_dao.dart';
-import 'task.dart';
 
 @dao
 abstract class EmptyTestTaskDao extends BaseDao<TestTask> {}

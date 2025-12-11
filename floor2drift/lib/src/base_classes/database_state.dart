@@ -10,26 +10,23 @@ class DatabaseState {
   final Set<ClassElement> daos;
   final Set<ClassElement> baseDaos;
 
-  final Set<TypeConverterClassElement> typeConverters;
+  final Set<TypeConverterState> typeConverters;
 
   final int schemaVersion;
-
-  var convertedFields = <String, List<String>>{};
 
   /// contains all Generated Drift classes Names and their path
   /// at the moment only contains generated entities and base entities
   var driftClasses = <String, String>{};
   final floorClasses = <String, ClassElement>{};
 
-  var tableEntityMap = <String, Element>{};
-  var entityTableMap = <Element, String>{};
-
   // TODO implement migration conversion
   // final List<Migration> migrations;
 
-  late final Map<Element, TypeConverterClassElement> typeConverterMap;
+  // TODO maybe this can be remove
+  late final Map<Element, TypeConverterState> typeConverterMap;
 
-  final Map<Element, ClassState> renameMap = {};
+  /// class states of all (base-)entities used in the floor db
+  Set<ClassState> entityClassStates = {};
 
   DatabaseState({
     required this.typeConverters,
@@ -41,7 +38,7 @@ class DatabaseState {
     required this.schemaVersion,
     // required this.migrations,
   }) {
-    typeConverterMap = {for (var entry in typeConverters) entry.fromType: entry};
+    typeConverterMap = {for (var entry in typeConverters) entry.fromType.element!: entry};
 
     for (final entity in entities) {
       floorClasses[entity.name] = entity;
@@ -63,12 +60,4 @@ class DatabaseState {
       floorClasses[typeConverter.classElement.name] = typeConverter.classElement;
     }
   }
-}
-
-class TypeConverterClassElement {
-  final ClassElement classElement;
-  final Element fromType;
-  final DartType toType;
-
-  const TypeConverterClassElement(this.classElement, this.fromType, this.toType);
 }

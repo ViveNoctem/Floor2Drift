@@ -14,7 +14,10 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   ) {
     final tableFrom = statement.table;
 
-    tableSelector.currentClassState = dbState.renameMap[dbState.tableEntityMap[tableFrom.tableName.toLowerCase()]];
+    final currentClassState =
+        dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == tableFrom.tableName.toLowerCase());
+
+    tableSelector.currentClassState = currentClassState;
 
     final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 
@@ -57,7 +60,6 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   @override
   ValueResponse<String> parseUsedTable(UpdateStatement statement, MethodElement method, TableSelector tableSelector) {
     // TODO what to do in baseDao?
-
     return ValueResponse.value(ReCase(statement.table.tableName).pascalCase);
   }
 }

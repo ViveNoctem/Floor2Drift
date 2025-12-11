@@ -30,7 +30,22 @@ class QueryMethodConverter extends DaoMethodConverter {
     }
 
     final rootNode = parsedResult.data.rootNode;
-    return StatementConverter.parseStatementUsedTable(rootNode, method, tableSelector);
+    final result = StatementConverter.parseStatementUsedTable(rootNode, method, tableSelector);
+
+    switch (result) {
+      case ValueError<String>():
+        return result.wrap();
+      case ValueData<String>():
+    }
+
+    tableSelector.currentClassState =
+        dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == result.data.toLowerCase());
+
+    if (tableSelector.currentClassState == null) {
+      return ValueResponse.error("Couldn't determine classState for used Table", method);
+    }
+
+    return ValueResponse.value(tableSelector.currentClassState!.className);
   }
 
   ValueResponse<(String, String)> parse(

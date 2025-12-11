@@ -20,14 +20,12 @@ class ClassHelper {
   static String mixinSuffix = "Mixin";
 
   /// returns the dart code for the generated fields and a set of used TypeConverters
-  ValueResponse<(String, Set<ClassElement>, List<String>)> generateFields(
+  ValueResponse<(String code, Set<FieldState> fieldStates)> generateFields(
     ClassElement classElement,
-    Map<Element, TypeConverterClassElement> typeConverters,
-    Map<Element, ClassState> classStates,
+    Map<Element, TypeConverterState> typeConverters,
   ) {
     var fieldString = "";
-    final usedTypeConverters = <ClassElement>{};
-    final convertedFields = <String>[];
+    final fieldStates = <FieldState>{};
 
     for (final field in classElement.fields) {
       final fieldType = field.type;
@@ -69,43 +67,27 @@ class ClassHelper {
       );
 
       switch (fieldResult) {
-        case ValueError():
+        case ValueError<(String, FieldState?)>():
           return fieldResult.wrap();
-        case ValueData<(String, ClassElement?, String?, (String, String)?, bool)>():
+        case ValueData<(String, FieldState?)>():
       }
 
-      final (dartCode, typeConverter, fieldName, newFieldRename, isEnum) = fieldResult.data;
-      fieldString += dartCode;
+      final (dartCode, fieldState) = fieldResult.data;
 
-      if (typeConverter != null) {
-        usedTypeConverters.add(typeConverter);
-        convertedFields.add(fieldName!);
-      } else if (isEnum) {
-        // enum count as being converted because the intEnum converter is used
-        convertedFields.add(fieldName!);
-      }
-
-      if (newFieldRename != null) {
-        var map = classStates[classElement];
-
-        if (map == null) {
-          map = ClassState(classType: classElement.thisType);
-          classStates[classElement] = map;
-        }
-
-        map.renamedFields[newFieldRename.$1] = newFieldRename.$2;
+      if (fieldState != null) {
+        fieldString += "$dartCode\n\n";
+        fieldStates.add(fieldState);
       }
     }
 
-    return ValueResponse.value((fieldString, usedTypeConverters, convertedFields));
+    return ValueResponse.value((fieldString, fieldStates));
   }
 
-  ValueResponse<(String, String, Set<ClassElement>, List<String>)> generateInheritanceFields(
+  ValueResponse<(String code, ClassState classState)> generateInheritanceFields(
     ClassElement annotatedClass,
     DatabaseState dbState,
   ) {
     var typeConverters = dbState.typeConverterMap;
-    ClassElement? currentElement = annotatedClass;
 
     final annotationResult = getAnnotations(annotatedClass.metadata);
 
@@ -116,6 +98,8 @@ class ClassHelper {
         return annotationResult.wrap();
     }
 
+    String? renamedTableName;
+
     // only TypeConverter annotation is supported at the moment
     for (final annotation in annotationResult.data) {
       switch (annotation) {
@@ -125,36 +109,42 @@ class ClassHelper {
         case ColumnInfoAnnotation():
           continue;
         case TypeConvertersAnnotation():
-          typeConverters = <Element, TypeConverterClassElement>{...typeConverters, ...annotation.value};
+          typeConverters = <Element, TypeConverterState>{...typeConverters, ...annotation.value};
+        case EntityAnnotation():
+          renamedTableName = annotation.tableName;
       }
     }
 
-    var fieldString = "";
-    var mixinString = "";
-    var isSuperType = false;
+    final result = generateFields(annotatedClass, typeConverters);
 
-    final usedTypeConverters = <ClassElement>{};
-    final convertedFields = <String>[];
+    switch (result) {
+      case ValueError<(String, Set<FieldState>)>():
+        return result.wrap();
+      case ValueData<(String, Set<FieldState>)>():
+    }
+
+    final (dartCode, fieldStates) = result.data;
+    final mixins = _getSuperClasses(annotatedClass);
+
+    final classState = ClassState(
+      classType: annotatedClass.thisType,
+      renamed: renamedTableName,
+      className: annotatedClass.name,
+      superClasses: mixins,
+      fieldStates: fieldStates,
+    );
+
+    return ValueResponse.value((dartCode, classState));
+  }
+
+  Set<ClassElement> _getSuperClasses(ClassElement annotatedClass) {
+    final mixins = <ClassElement>{};
+
+    ClassElement? currentElement = annotatedClass;
 
     while (currentElement != null) {
       // generate drift code only for methods in this class
       // add a with mixin clause for every inherited class
-      if (isSuperType == false) {
-        final result = generateFields(currentElement, typeConverters, dbState.renameMap);
-
-        switch (result) {
-          case ValueError():
-            return result.wrap();
-          case ValueData<(String, Set<ClassElement>, List<String>)>():
-        }
-
-        final (dartCode, typeconverterResult, convertedFieldResult) = result.data;
-
-        usedTypeConverters.addAll(typeconverterResult);
-        convertedFields.addAll(convertedFieldResult);
-
-        fieldString = dartCode + fieldString;
-      }
 
       final superType = currentElement.supertype?.element;
 
@@ -162,7 +152,6 @@ class ClassHelper {
         break;
       }
 
-      isSuperType = true;
       currentElement = superType;
 
       final reader = LibraryReader(superType.library);
@@ -170,24 +159,10 @@ class ClassHelper {
         break;
       }
 
-      // add superElement to classState. To add the renames from baseClasses to this class
-      final renamed = dbState.renameMap[annotatedClass];
-      if (renamed != null) {
-        renamed.superElement.add(superType);
-      }
-
-      if (mixinString.isNotEmpty) {
-        mixinString += ", ";
-      }
-
-      mixinString += "${currentElement.name}$mixinSuffix";
+      mixins.add(currentElement);
     }
 
-    if (mixinString.isNotEmpty) {
-      mixinString = "with $mixinString";
-    }
-
-    return ValueResponse.value((fieldString, mixinString, usedTypeConverters, convertedFields));
+    return mixins;
   }
 
   ValueResponse<List<AnnotationType>> getAnnotations(List<ElementAnnotation> annotations) {
@@ -209,14 +184,14 @@ class ClassHelper {
 
   /// Returns the string of the generated field the used typeConverter or null and the name of the field if the typeConverter is not null
   // TODO clean up the arguments and return value
-  ValueResponse<(String, ClassElement?, String?, (String, String)?, bool isEnum)> generateField(
+  ValueResponse<(String, FieldState? field)> generateField(
     FieldElement field,
     InterfaceType fieldType,
-    Map<Element, TypeConverterClassElement> typeConverters,
+    Map<Element, TypeConverterState> typeConverters,
     List<AnnotationType> annotations,
     ConstructorElement? constructor,
   ) {
-    final localTypeConverters = Map<Element, TypeConverterClassElement>.from(typeConverters);
+    final localTypeConverters = Map<Element, TypeConverterState>.from(typeConverters);
 
     var metaDataSuffix = "";
     ColumnInfoAnnotation? namedAnnotation;
@@ -224,19 +199,20 @@ class ClassHelper {
     for (final annotation in annotations) {
       switch (annotation) {
         case IgnoreAnnotation():
-          return ValueResponse.value(("", null, null, null, false));
+          return ValueResponse.value(("", null));
         case PrimaryKeyAnnotation():
           metaDataSuffix += annotation.getStringValue;
         case TypeConvertersAnnotation():
           localTypeConverters.addAll(annotation.value);
-        case UnknownAnnotation():
-          break;
         case ColumnInfoAnnotation():
           if (namedAnnotation != null) {
             print("Field $field has mulitple ColumnInfo Annotations");
             break;
           }
           namedAnnotation = annotation;
+        case UnknownAnnotation():
+        case EntityAnnotation():
+          break;
       }
     }
 
@@ -259,9 +235,19 @@ class ClassHelper {
         }
 
         //TODO build_option to change from client_default to server default
-        final valueString = usedTypeConverter == null
-            ? defaultValue
-            : "const ${usedTypeConverter.classElement.name}().toSql($defaultValue)!";
+        var valueString = "";
+        if (usedTypeConverter != null) {
+          valueString = "const ${usedTypeConverter.classElement.name}().toSql($defaultValue)!";
+        } else {
+          valueString = defaultValue;
+
+          final isEnum = parameter.type.element is EnumElement;
+
+          if (isEnum) {
+            valueString += ".index";
+          }
+        }
+
         metaDataSuffix += ".clientDefault(() => $valueString)";
         break;
       }
@@ -281,7 +267,7 @@ class ClassHelper {
       return ValueResponse.error("Couldn't determine returnType for $field", field);
     }
 
-    var isEnum = fieldType.element is EnumElement;
+    final isEnum = fieldType.element is EnumElement;
 
     final (columntype, columnCode) = switch (returnTypName) {
       "bool" => const ("BoolColumn", "boolean"),
@@ -307,21 +293,13 @@ class ClassHelper {
     final dartCode =
         "$documentation$columntype get ${field.name} => $columnCode()$namedString$fieldSuffix$metaDataSuffix();\n";
 
-    // if renamed return the renamed and real name
-    final columnRenamed = namedAnnotation != null && namedAnnotation.name != null
-        ? (namedAnnotation.name!.toLowerCase(), field.name)
-        : null;
+    final fieldState = FieldState(
+        fieldElement: field, fieldName: field.name, renamed: namedAnnotation?.name, converted: usedTypeConverter);
 
-    return ValueResponse.value((
-      dartCode,
-      usedTypeConverter?.classElement,
-      field.name,
-      columnRenamed,
-      isEnum,
-    ));
+    return ValueResponse.value((dartCode, fieldState));
   }
 
-  String generateFieldSuffix(FieldElement field, InterfaceType fieldType, TypeConverterClassElement? typeConverter) {
+  String generateFieldSuffix(FieldElement field, InterfaceType fieldType, TypeConverterState? typeConverter) {
     var result = "";
 
     if (typeConverter != null) {
@@ -351,8 +329,15 @@ class ClassHelper {
   }
 
   /// Appends s to the entity name, drift strips the s for the entity class.
-  String getClassHeader(String className, String mixins, String classNameSuffix, bool useRowClass) {
-    return "${useRowClass ? "@UseRowClass($className)\n" : ""}class ${getClassName(className, classNameSuffix)} extends Table $mixins {\n";
+  String getClassHeader(String className, Set<ClassElement> mixinSet, String classNameSuffix, bool useRowClass) {
+    var mixinString = "";
+    if (mixinSet.isNotEmpty) {
+      mixinString = "with ";
+    }
+
+    mixinString += mixinSet.map((s) => "${s.name}$mixinSuffix").join(", ");
+
+    return "${useRowClass ? "@UseRowClass($className)\n" : ""}class ${getClassName(className, classNameSuffix)} extends Table $mixinString {\n";
   }
 
   String getClassName(String className, String classNameSuffix) {
@@ -365,6 +350,17 @@ class ClassHelper {
 
   String closeClass() {
     return "}\n";
+  }
+
+  bool isEnum(ParameterElement parameter) {
+    TypeChecker enumChecker = const TypeChecker.fromRuntime(Enum);
+    final typeElement = parameter.type.element;
+
+    if (typeElement == null) {
+      return false;
+    }
+
+    return enumChecker.isSuperOf(typeElement);
   }
 }
 

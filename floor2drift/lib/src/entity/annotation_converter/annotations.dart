@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
-
-import '../../base_classes/database_state.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 
 sealed class AnnotationType {
   const AnnotationType();
@@ -21,7 +20,7 @@ class PrimaryKeyAnnotation extends AnnotationType {
 }
 
 class TypeConvertersAnnotation extends AnnotationType {
-  final Map<Element, TypeConverterClassElement> value;
+  final Map<Element, TypeConverterState> value;
 
   const TypeConvertersAnnotation(this.value);
 }
@@ -38,4 +37,10 @@ class ColumnInfoAnnotation extends AnnotationType {
   String getDriftNamed() {
     return name != null ? ".named(\"$name\")" : "";
   }
+}
+
+class EntityAnnotation extends AnnotationType {
+  final String? tableName;
+
+  const EntityAnnotation(this.tableName);
 }

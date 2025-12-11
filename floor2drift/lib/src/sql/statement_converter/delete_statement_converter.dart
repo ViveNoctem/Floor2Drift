@@ -14,7 +14,9 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
   ) {
     final tableFrom = statement.from;
 
-    tableSelector.currentClassState = dbState.renameMap[dbState.tableEntityMap[tableFrom.tableName.toLowerCase()]];
+    final currentClassState =
+        dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == tableFrom.tableName.toLowerCase());
+    tableSelector.currentClassState = currentClassState;
 
     final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
 

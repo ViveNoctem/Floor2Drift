@@ -1,8 +1,8 @@
 import 'package:test/test.dart';
 
-import '../test_databases/enums.dart';
-import '../test_databases/type_converters.dart' as floor;
-import '../test_databases/type_convertersDrift.dart' as drift;
+import '../test_databases/support_classes/enums.dart';
+import '../test_databases/type_converters/type_converters.dart' as floor;
+import '../test_databases/type_converters/type_convertersDrift.dart' as drift;
 
 void main() {
   setUp(() {});

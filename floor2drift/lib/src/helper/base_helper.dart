@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:path/path.dart' as path;
@@ -100,5 +102,29 @@ class BaseHelper {
     }
 
     return "${element.documentationComment}\n";
+  }
+
+  static ClassState? getClassState(DatabaseState dbState, String className) {
+    for (final state in dbState.entityClassStates) {
+      if (state.className.toLowerCase() != className.toLowerCase()) {
+        continue;
+      }
+
+      return state;
+    }
+
+    return null;
+  }
+
+  static String? getClassImport(String targetFilePath, ClassState? classState) {
+    final classUri = classState?.classType.element?.librarySource?.uri;
+
+    if (classUri == null) {
+      return null;
+    }
+
+    final classImport = BaseHelper.getImport(classUri, targetFilePath);
+
+    return classImport;
   }
 }

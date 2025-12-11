@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
@@ -10,8 +11,8 @@ import 'package:source_span/source_span.dart' show FileSpan;
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
-import '../mocks/mock_function_parameters.dart';
-import '../mocks/mock_literal.dart';
+import '../flutter_test/mocks/mock_function_parameters.dart';
+import '../flutter_test/mocks/mock_literal.dart';
 import 'expression_converter_test.mocks.dart';
 
 @GenerateNiceMocks([
@@ -21,6 +22,9 @@ import 'expression_converter_test.mocks.dart';
   MockSpec<EnumElement>(),
   MockSpec<DartType>(),
   MockSpec<ExpressionConverterUtil>(),
+  MockSpec<ClassState>(),
+  MockSpec<FieldState>(),
+  MockSpec<FileSource>(),
 ])
 void main() {
   late Element mockElement;
@@ -30,13 +34,17 @@ void main() {
   late Element mockParameterElement;
   late MockExpressionConverterUtil mockExpressionConverterUtil;
   late MockDartType mockParameterType;
+  late MockClassState mockClassState;
+  late MockFieldState mockFieldState;
   const String mockParameterName = "test";
   const String mockParameterTypeName = "temp";
 
   setUp(() {
     mockElement = MockElement();
+    mockClassState = MockClassState();
+    mockFieldState = MockFieldState();
 
-    selector = TableSelectorDao({}, selector: "s", currentClassState: null);
+    selector = TableSelectorDao(selector: "s", currentClassState: mockClassState, currentFieldState: mockFieldState);
 
     mockParameter = MockParameterElement();
     mockParameterElement = MockElement();
@@ -53,6 +61,13 @@ void main() {
   });
 
   group("ColonNamedVariable", () {
+    setUp(() {
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("test");
+      when(mockFieldState.sqlColumnName).thenReturn("test");
+      when(mockFieldState.renamed).thenReturn(null);
+    });
+
     test(("default"), () {
       final expression = ColonNamedVariable.synthetic(":test");
 
@@ -202,10 +217,18 @@ void main() {
 
     group("typeConverter", () {
       setUp(() {
-        selector.entityName = "testEntity";
-        selector.convertedFields["testEntity"] = ["field", "test"];
-        selector.currentFieldName = "field";
+        when(mockFieldState.isConverted).thenReturn(true);
+        when(mockFieldState.fieldName).thenReturn("field");
+        when(mockFieldState.sqlColumnName).thenReturn("");
+        when(mockFieldState.renamed).thenReturn(null);
+
+        MockFileSource mockFileSource = MockFileSource();
+
+        when(mockParameterType.element).thenReturn(mockElement);
+        when(mockElement.librarySource).thenReturn(mockFileSource);
+        when(mockFileSource.uri).thenReturn(Uri());
       });
+
       test("default", () {
         final expression = ColonNamedVariable.synthetic(":test");
 
@@ -228,6 +251,24 @@ void main() {
   });
 
   group("reference", () {
+    setUp(() {
+      final mockFieldState2 = MockFieldState();
+      when(mockFieldState.isConverted).thenReturn(true);
+      when(mockFieldState.fieldName).thenReturn("testColumn");
+      when(mockFieldState.sqlColumnName).thenReturn("testColumn");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("test");
+      when(mockFieldState.sqlColumnName).thenReturn("test");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockClassState.allFieldStates).thenReturn({
+        mockFieldState2,
+        mockFieldState,
+      });
+    });
+
     test("default", () {
       final expression = Reference(columnName: "test");
 
@@ -242,6 +283,7 @@ void main() {
       switch (result) {
         case ValueData<(String, EExpressionType)>():
           expect(result.data.$1, equals("test"));
+          expect(selector.currentFieldState, equals(mockFieldState));
         case ValueError<(String, EExpressionType)>():
           expect(false, isTrue, reason: result.error);
       }
@@ -261,15 +303,16 @@ void main() {
       switch (result) {
         case ValueData<(String, EExpressionType)>():
           expect(result.data.$1, equals("s.test"));
+          expect(selector.currentFieldState, equals(mockFieldState));
         case ValueError<(String, EExpressionType)>():
           expect(false, isTrue, reason: result.error);
       }
     });
 
     test("renamed", () {
-      final classState = ClassState(classType: MockDartType());
-      classState.renamedFields["test"] = "renamed";
-      selector.currentClassState = classState;
+      when(mockFieldState.fieldName).thenReturn("renamed");
+      when(mockFieldState.sqlColumnName).thenReturn("test");
+      when(mockFieldState.renamed).thenReturn("test");
 
       final expression = Reference(columnName: "test");
 
@@ -284,7 +327,7 @@ void main() {
       switch (result) {
         case ValueData<(String, EExpressionType)>():
           expect(result.data.$1, equals("renamed"));
-          expect(selector.currentFieldName, "renamed");
+          expect(selector.currentFieldState, equals(mockFieldState));
         case ValueError<(String, EExpressionType)>():
           expect(false, isTrue, reason: result.error);
       }
@@ -448,6 +491,24 @@ void main() {
   });
 
   group("IS NOT NULL", () {
+    setUp(() {
+      final mockFieldState2 = MockFieldState();
+      when(mockFieldState.isConverted).thenReturn(true);
+      when(mockFieldState.fieldName).thenReturn("testColumn");
+      when(mockFieldState.sqlColumnName).thenReturn("testColumn");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("test");
+      when(mockFieldState.sqlColumnName).thenReturn("test");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockClassState.allFieldStates).thenReturn({
+        mockFieldState2,
+        mockFieldState,
+      });
+    });
+
     test("reference", () {
       final reference = Reference(columnName: "test");
       final expression = IsNullExpression(reference, false);
@@ -550,6 +611,24 @@ void main() {
   });
 
   group("IS", () {
+    setUp(() {
+      final mockFieldState2 = MockFieldState();
+      when(mockFieldState.isConverted).thenReturn(true);
+      when(mockFieldState.fieldName).thenReturn("testColumn");
+      when(mockFieldState.sqlColumnName).thenReturn("testColumn");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("test");
+      when(mockFieldState.sqlColumnName).thenReturn("test");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockClassState.allFieldStates).thenReturn({
+        mockFieldState2,
+        mockFieldState,
+      });
+    });
+
     test("reference", () {
       final left = Reference(columnName: "test");
       final right = NumericLiteral(1);
@@ -855,6 +934,24 @@ void main() {
   });
 
   group("IN", () {
+    setUp(() {
+      final mockFieldState2 = MockFieldState();
+      when(mockFieldState.isConverted).thenReturn(true);
+      when(mockFieldState.fieldName).thenReturn("testColumn");
+      when(mockFieldState.sqlColumnName).thenReturn("testColumn");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("id");
+      when(mockFieldState.sqlColumnName).thenReturn("id");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockClassState.allFieldStates).thenReturn({
+        mockFieldState2,
+        mockFieldState,
+      });
+    });
+
     test("reference in numeric", () {
       final left = Reference(columnName: "id");
       final inside = Tuple(expressions: [NumericLiteral(5), NumericLiteral(6)]);
@@ -1032,6 +1129,24 @@ void main() {
   });
 
   group("LIKE", () {
+    setUp(() {
+      final mockFieldState2 = MockFieldState();
+      when(mockFieldState.isConverted).thenReturn(true);
+      when(mockFieldState.fieldName).thenReturn("testColumn");
+      when(mockFieldState.sqlColumnName).thenReturn("testColumn");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("id");
+      when(mockFieldState.sqlColumnName).thenReturn("id");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockClassState.allFieldStates).thenReturn({
+        mockFieldState2,
+        mockFieldState,
+      });
+    });
+
     test("reference like String", () {
       final left = Reference(columnName: "id");
       final right = StringLiteral("%test%");
@@ -1215,6 +1330,24 @@ void main() {
   });
 
   group("function", () {
+    setUp(() {
+      final mockFieldState2 = MockFieldState();
+      when(mockFieldState.isConverted).thenReturn(true);
+      when(mockFieldState.fieldName).thenReturn("testColumn");
+      when(mockFieldState.sqlColumnName).thenReturn("testColumn");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("id");
+      when(mockFieldState.sqlColumnName).thenReturn("id");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockClassState.allFieldStates).thenReturn({
+        mockFieldState2,
+        mockFieldState,
+      });
+    });
+
     test("count id", () {
       // final parameters = StarFunctionParameter();
       final parameters = ExprFunctionParameters(parameters: [Reference(columnName: "id")], distinct: false);
@@ -1627,6 +1760,31 @@ void main() {
   });
 
   group("binary expression", () {
+    setUp(() {
+      final mockFieldState2 = MockFieldState();
+      when(mockFieldState.isConverted).thenReturn(true);
+      when(mockFieldState.fieldName).thenReturn("testColumn");
+      when(mockFieldState.sqlColumnName).thenReturn("testColumn");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      final mockFieldState3 = MockFieldState();
+      when(mockFieldState3.isConverted).thenReturn(true);
+      when(mockFieldState3.fieldName).thenReturn("test");
+      when(mockFieldState3.sqlColumnName).thenReturn("test");
+      when(mockFieldState3.renamed).thenReturn(null);
+
+      when(mockFieldState.isConverted).thenReturn(false);
+      when(mockFieldState.fieldName).thenReturn("id");
+      when(mockFieldState.sqlColumnName).thenReturn("id");
+      when(mockFieldState.renamed).thenReturn(null);
+
+      when(mockClassState.allFieldStates).thenReturn({
+        mockFieldState2,
+        mockFieldState3,
+        mockFieldState,
+      });
+    });
+
     test("reference equal reference", () {
       Expression left = Reference(columnName: "id");
       Token operator = Token(TokenType.equal, MockFileSpan());

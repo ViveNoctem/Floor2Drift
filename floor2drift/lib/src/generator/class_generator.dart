@@ -27,7 +27,7 @@ abstract class AnnotationGenerator<T, S> {
   }
 
   /// returns if the generator would generate code for the given library
-  FutureOr<bool> getImport(LibraryReader library) {
+  bool getImport(LibraryReader library) {
     for (final annotatedElement in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
       if (inputOption.canAnalyze(annotatedElement.element.name ?? "") == false) {
         continue;

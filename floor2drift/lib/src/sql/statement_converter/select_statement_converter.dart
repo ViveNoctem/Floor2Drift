@@ -100,14 +100,8 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
           final expression = column.expression;
 
           if (expression is Reference) {
-            // TODO does tableSelector.currentFieldName always work?
-            final converted =
-                tableSelector.convertedFields[tableSelector.entityName]?.contains(tableSelector.currentFieldName) ==
-                true;
+            final converted = tableSelector.currentFieldState?.isConverted == true;
 
-            // TODO isNativeSqlType works for some use cases.
-            // TODO For a correct solution the typeConverter to-/ from type is needed
-            // TODO e.G. if a String to String converter is used the converter should always be used
             if (converted && (element is! MethodElement || sqlHelper.isNativeSqlType(element.returnType) == false)) {
               read = ".readWithConverter($selectOnlyFunctionResult)";
             }

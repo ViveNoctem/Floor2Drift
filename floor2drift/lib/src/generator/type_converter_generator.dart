@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
@@ -25,7 +23,7 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
   // TOOD both imports are needed but only the converted import is added.
   // TODO probably a small edgde case? all TypeConverters should be converted anyways
   @override
-  FutureOr<bool> getImport(LibraryReader library) {
+  bool getImport(LibraryReader library) {
     for (final classElement in library.classes) {
       if (typeChecker.isSuperOf(classElement) == false) {
         continue;
