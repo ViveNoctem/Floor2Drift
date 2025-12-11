@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
@@ -22,7 +20,7 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
   const BaseDaoGenerator({this.daoHelper = const DaoHelper(), required super.inputOption});
 
   @override
-  FutureOr<bool> getImport(LibraryReader library) {
+  bool getImport(LibraryReader library) {
     for (final _ in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
       return true;
     }
@@ -40,7 +38,10 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
     final typeDeclaration = classElement.typeParameters.firstOrNull?.declaration;
     final baseEntityDeclaration = typeDeclaration?.toString();
     final genericName = typeDeclaration?.name;
-    final baseEntityName = typeDeclaration?.bound?.element?.name;
+    final baseEntityElement = typeDeclaration?.bound?.element;
+    final baseEntityName = baseEntityElement?.name;
+
+    final classState = dbState.entityClassStates.firstWhere((s) => s.classType.element == baseEntityElement);
 
     final valueResponse = daoHelper.generateClassBody(
       classElement,
@@ -48,9 +49,7 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
       "",
       TableSelectorBaseDao(
         tableSelector,
-        dbState.convertedFields,
-        entityName: classElement.name,
-        currentClassState: dbState.renameMap[typeDeclaration?.bound?.element],
+        currentClassState: classState,
       ),
       dbState,
     );
@@ -80,14 +79,10 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
     BaseHelper.addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
-    final baseEntityClassUri = dbState.floorClasses[baseEntityName];
 
-    if (baseEntityClassUri != null) {
-      final tableImport = BaseHelper.getImport(baseEntityClassUri.librarySource.uri, targetFilePath);
-
-      if (tableImport != null) {
-        newImports.add(tableImport);
-      }
+    final tableImport = BaseHelper.getClassImport(targetFilePath, classState);
+    if (tableImport != null) {
+      newImports.add(tableImport);
     }
 
     final header = _generateMixinHeader(

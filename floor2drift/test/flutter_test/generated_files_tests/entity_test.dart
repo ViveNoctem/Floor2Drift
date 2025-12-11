@@ -3,10 +3,10 @@ import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../additional_classes/test_helper.dart';
-import '../test_databases/enums.dart';
-import '../test_databases/floor_test_database.dart' as floor;
-import '../test_databases/floor_test_databaseDrift.dart' as drift;
-import '../test_databases/task.dart';
+import '../test_databases/database/floor_test_database.dart' as floor;
+import '../test_databases/database/floor_test_databaseDrift.dart' as drift;
+import '../test_databases/entities/task.dart';
+import '../test_databases/support_classes/enums.dart';
 
 // TODO test that all type converters are used. And with corrent priority db -> class -> field
 // TODO test type converter with enum as db entity type

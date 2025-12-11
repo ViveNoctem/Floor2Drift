@@ -16,6 +16,8 @@ abstract class OutputOptionBase {
 
   String rewriteImportString(bool willImportedChange, String path);
 
+  String rewriteExistingImport(String importDirective);
+
   String getFileName(String fileName);
 
   bool writeFile(File newFile, String content);
@@ -57,6 +59,12 @@ class OutputOptions extends OutputOptionBase {
     return rewriteImportString(import.$1, import.$2.relativeUriString);
   }
 
+  @override
+  String rewriteExistingImport(String importDirective) {
+    return _addSuffixToString(importDirective);
+  }
+
+  @override
   String rewriteImportString(bool willImportedChange, String path) {
     if (willImportedChange) {
       return "import '${_addSuffixToString(path)}';";

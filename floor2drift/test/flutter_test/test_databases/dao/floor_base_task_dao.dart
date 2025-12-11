@@ -1,7 +1,7 @@
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 
-import 'base_class.dart';
+import '../entities/base_class.dart';
 
 @convertBaseDao
 // TODO create new Dao, to have separate Dao Tests and BaseDao Tests

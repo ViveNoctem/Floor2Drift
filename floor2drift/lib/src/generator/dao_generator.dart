@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
@@ -40,10 +41,9 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     // always needs drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final tableSelector = TableSelectorDao(dbState.convertedFields, currentClassState: null);
+    final tableSelector = TableSelectorDao(currentClassState: null);
 
     final usedTablesResponse = daoHelper.getUsedTables(classElement, dbState, tableSelector);
-
     switch (usedTablesResponse) {
       case ValueError<Set<String>>():
         throw InvalidGenerationSource(usedTablesResponse.error, element: usedTablesResponse.element);
@@ -73,16 +73,6 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
       mixinName = "$superTypeName${ClassHelper.mixinSuffix}";
       mixinClause = "$mixinName<$tableName, $entityName>";
 
-      final entityClassUri = dbState.floorClasses[entityName];
-
-      if (entityClassUri != null) {
-        final tableImport = BaseHelper.getImport(entityClassUri.librarySource.uri, targetFilePath);
-
-        if (tableImport != null) {
-          newImports.add(tableImport);
-        }
-      }
-
       final mixinClassUri = dbState.driftClasses[mixinName];
 
       if (mixinClassUri != null) {
@@ -100,6 +90,8 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
       newImports.add(outputOption.getFileName(databaseimport));
     }
 
+    final tableClassNames = <String>{};
+
     for (final table in usedTablesResponse.data) {
       final driftClassUri = dbState.driftClasses["${table}s"];
 
@@ -111,21 +103,21 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
         }
       }
 
-      if (useRowClass) {
-        final floorEntitiyUri = dbState.floorClasses[table.substring(0, table.length - 1)];
+      final classState = _getClassState(dbState, table);
 
-        if (floorEntitiyUri != null) {
-          final floorEntityImport = BaseHelper.getImport(floorEntitiyUri.librarySource.uri, targetFilePath);
+      if (classState != null) {
+        tableClassNames.add(classState.className);
+      }
 
-          if (floorEntityImport != null) {
-            newImports.add(floorEntityImport);
-          }
-        }
+      final entityImport = _getEntityImport(targetFilePath, classState);
+
+      if (entityImport != null) {
+        newImports.add(entityImport);
       }
     }
 
     final header = _generateClassHeader(
-      usedTablesResponse.data,
+      tableClassNames,
       "${classElement.name}$classNameSuffix",
       dbState.databaseClass.element!.name!,
       mixinClause,
@@ -144,7 +136,6 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
   }
 
   String _generateClassHeader(Set<String> tables, String className, String databaseName, String mixinClause) {
-    // TODO case insensitivity of sqlite might be a problem
     final tableList = tables.map((s) => "${s}s");
 
     if (tableList.isEmpty) {
@@ -155,5 +146,33 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     return '''@DriftAccessor(tables: [$tableString])
   class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}_\$${className}Mixin {
   $className(super.db);''';
+  }
+
+  ClassState? _getClassState(DatabaseState dbState, String tableName) {
+    for (final state in dbState.entityClassStates) {
+      if (state.className.toLowerCase() != tableName.toLowerCase()) {
+        continue;
+      }
+
+      return state;
+    }
+
+    return null;
+  }
+
+  String? _getEntityImport(String targetFilePath, ClassState? classState) {
+    if (useRowClass == false) {
+      return null;
+    }
+
+    final floorEntityUri = classState?.classType.element?.librarySource?.uri;
+
+    if (floorEntityUri == null) {
+      return null;
+    }
+
+    final floorEntityImport = BaseHelper.getImport(floorEntityUri, targetFilePath);
+
+    return floorEntityImport;
   }
 }

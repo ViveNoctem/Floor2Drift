@@ -59,19 +59,14 @@ enum ETableNameOption {
 }
 
 sealed class TableSelector {
-  final Map<String, List<String>> convertedFields;
-
   String functionSelector;
   String selector;
-  String entityName;
-  String currentFieldName;
+  FieldState? currentFieldState;
   ClassState? currentClassState;
 
-  TableSelector(
-    this.convertedFields, {
+  TableSelector({
     this.selector = "",
-    this.entityName = "",
-    this.currentFieldName = "",
+    this.currentFieldState,
     this.functionSelector = "s",
     required this.currentClassState,
   });
@@ -80,21 +75,17 @@ sealed class TableSelector {
 class TableSelectorBaseDao extends TableSelector {
   final String table;
   TableSelectorBaseDao(
-    this.table,
-    super.convertedFields, {
+    this.table, {
     super.selector,
-    super.entityName,
-    super.currentFieldName,
+    super.currentFieldState,
     required super.currentClassState,
   });
 }
 
 class TableSelectorDao extends TableSelector {
-  TableSelectorDao(
-    super.convertedFields, {
+  TableSelectorDao({
     super.selector,
-    super.entityName,
-    super.currentFieldName,
+    super.currentFieldState,
     required super.currentClassState,
   });
 }

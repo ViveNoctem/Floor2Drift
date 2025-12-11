@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../test_databases/task.dart';
+import '../test_databases/entities/task.dart';
 
 class TestHelper {
   const TestHelper();

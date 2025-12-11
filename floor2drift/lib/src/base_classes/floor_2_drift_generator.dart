@@ -7,6 +7,7 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/processing_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';
@@ -116,22 +117,23 @@ class Floor2DriftGenerator {
     final daoGenerator =
         inputOption.convertDbDaos ? DaoGenerator(inputOption: inputOption, useRowClass: useRowClass) : null;
 
-    final baseEntityGenerator = inputOption.convertDbEntities ? BaseEntityGenerator(inputOption: inputOption) : null;
+    final typeConverterGenerator = inputOption.convertDbTypeConverters
+        ? TypeConverterGenerator(classNameSuffix: "", inputOption: inputOption)
+        : null;
 
-    final entityGenerator =
-        inputOption.convertDbEntities
-            ? EntityGenerator(
-              classNameSuffix: "",
-              useRowClass: useRowClass,
-              inputOption: inputOption,
-              tableName: tableNameOption,
-            )
-            : null;
+    final baseEntityGenerator = inputOption.convertDbEntities
+        ? BaseEntityGenerator(inputOption: inputOption, typeConverterGenerator: typeConverterGenerator)
+        : null;
 
-    final typeConverterGenerator =
-        inputOption.convertDbTypeConverters
-            ? TypeConverterGenerator(classNameSuffix: "", inputOption: inputOption)
-            : null;
+    final entityGenerator = inputOption.convertDbEntities
+        ? EntityGenerator(
+            classNameSuffix: "",
+            useRowClass: useRowClass,
+            inputOption: inputOption,
+            tableName: tableNameOption,
+            typeConverterGenerator: typeConverterGenerator,
+          )
+        : null;
 
     final databaseGenerator = DatabaseGenerator(inputOption: inputOption, useRowClass: useRowClass);
 
@@ -160,7 +162,6 @@ class Floor2DriftGenerator {
       throw InvalidGenerationSource("Expected one Class with @Database Annotation");
     }
 
-    // allTypeConverters.addAll(dbState.typeConverters.map((s) => s.classElement));
     var newFiles = <String, GeneratedSource>{};
 
     // order of the generators is specific.
@@ -177,12 +178,12 @@ class Floor2DriftGenerator {
 
     newFiles = text1;
 
-    final usedTypeConverters = <ClassElement>{};
-    final entityFieldConverted = <String, List<String>>{};
+    final entityClassStates = <ClassState>{};
+    final baseEntityClassStates = <ClassState>{};
 
     if (inputOption.convertDbEntities) {
       if (processingOption.entityGenerator != null) {
-        final (text, genResult) = await _processClassElements(
+        final (text, classStates) = await _processClassElements(
           dbState.entities,
           dbState,
           processingOption.entityGenerator!,
@@ -190,16 +191,11 @@ class Floor2DriftGenerator {
         );
         newFiles = text;
 
-        for (final entry in genResult) {
-          usedTypeConverters.addAll(entry.value.$1);
-          if (entry.value.$2.isNotEmpty) {
-            entityFieldConverted[entry.key] = entry.value.$2;
-          }
-        }
+        entityClassStates.addAll(classStates);
       }
 
       if (processingOption.baseEntityGenerator != null) {
-        final (text, genResult) = await _processClassElements(
+        final (text, classStates) = await _processClassElements(
           dbState.baseEntities,
           dbState,
           processingOption.baseEntityGenerator!,
@@ -207,39 +203,30 @@ class Floor2DriftGenerator {
         );
 
         newFiles = text;
-        // TODO does entityFieldConverted sense?
-        // TODO the key is always the base entity name
-        // TODO probably for baseDao conversion?
-        for (final entry in genResult) {
-          usedTypeConverters.addAll(entry.value.$1);
-          if (entry.value.$2.isNotEmpty) {
-            if (entityFieldConverted.containsKey(entry.key)) {
-              entityFieldConverted[entry.key]!.addAll(entry.value.$2);
-            } else {
-              entityFieldConverted[entry.key] = entry.value.$2;
-            }
-          }
-        }
+        baseEntityClassStates.addAll(classStates);
       }
 
       // TODO try to find better solution
-      // TODO dao generators need to know which field in the current class and super classes are renamed with @ColumnInfo
-      // TODO entityGenerator and baseEntityGenerator fill the renameMaps
-      // TODO here the renameMaps of the class and the renameMaps of its super classes are being merged.
-      for (final entry in dbState.renameMap.entries) {
-        for (final superElement in entry.value.superElement) {
-          final superRenames = dbState.renameMap[superElement];
+      // TODO adding the States of the super type from the entities.
+      // TODO to have access to all fields and type converters from super classes
+      for (final entityState in entityClassStates) {
+        final superStates = <ClassState>{};
 
-          if (superRenames == null) {
-            continue;
+        for (final superClass in entityState.superClasses) {
+          for (final baseState in baseEntityClassStates) {
+            if (superClass != baseState.classType.element) {
+              continue;
+            }
+            superStates.add(baseState);
           }
-
-          entry.value.renamedFields.addAll(superRenames.renamedFields);
         }
+
+        final filledState = entityState.copyWith(superStates: superStates);
+        dbState.entityClassStates.add(filledState);
       }
+
+      dbState.entityClassStates.addAll(baseEntityClassStates);
     }
-    // TODO ok to just add it to the db State?
-    dbState.convertedFields = entityFieldConverted;
 
     if (inputOption.convertDbDaos) {
       if (processingOption.baseDaoGenerator != null) {
@@ -266,11 +253,12 @@ class Floor2DriftGenerator {
 
     if (inputOption.convertDbTypeConverters) {
       if (processingOption.typeConverterGenerator != null) {
-        // TODO see doc comment allTypeConverters
-        // TODO test usedTypeConverters
-        // TODO check if not used TypeConverters are ignored
+        final typeConverters = {
+          for (final state in dbState.entityClassStates) ...state.usedTypeConverters.map((s) => s.classElement)
+        };
+
         final (text, isNull) = await _processClassElements(
-          usedTypeConverters,
+          typeConverters,
           dbState,
           processingOption.typeConverterGenerator!,
           newFiles,

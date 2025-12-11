@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
@@ -6,6 +8,7 @@ import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:recase/recase.dart';
+import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 /// Helper Class to Convert Sql Code to Drift Core Api Calls
@@ -196,25 +199,29 @@ class SqlHelper {
   /// if true returns code to convert the give [argumentName] with the correct typeConverter
   /// if false returns an empty string
   String checkTypeConverter(TableSelector selector, String argumentName) {
-    if (selector.convertedFields[selector.entityName] == null) {
+    final currentField = selector.currentFieldState;
+
+    assert(currentField != null, "currentFieldState must always be set here");
+
+    if (currentField == null) {
       return "";
     }
-    for (final entry in selector.convertedFields[selector.entityName]!) {
-      if (selector.currentFieldName != entry) {
-        continue;
-      }
 
-      return "${selector.selector}.${selector.currentFieldName}.converter.toSql($argumentName)";
+    if (currentField.isConverted == false) {
+      return "";
     }
-    return "";
+
+    return "${selector.selector}.${currentField.fieldName}.converter.toSql($argumentName)";
   }
 
   /// returns if the given [type] is a sql native type
   ///
   /// Stream, Future, and List are being unwrapped and the result for the type argument is retunred
-  /// TODO is used to determine if the typeConverter should be used or not
-  /// TODO doesn't work with string to string converter.
-  /// TODO The to and from type of the converter is needed to better determine if the converter should be used or not
+  // TODO is used to determine if the typeConverter should be used or not
+  // TODO doesn't work with string to string converter.
+  // TODO The to and from type of the converter is needed to better determine if the converter should be used or not
+  // TODO For a correct solution the typeConverter to-/ from type is needed
+  // TODO floor seems to use somthing similar. these cases don't seem to work either
   bool isNativeSqlType(DartType type) {
     var localType = type;
 
@@ -246,7 +253,14 @@ class SqlHelper {
       localType = nullableType;
     }
 
-    if (localType.isDartCoreInt || localType.isDartCoreBool || localType.isDartCoreString) {
+    if (localType.isDartCoreInt ||
+        localType.isDartCoreBool ||
+        localType.isDartCoreString ||
+        localType.isDartCoreDouble) {
+      return true;
+    }
+
+    if (const TypeChecker.fromRuntime(Uint8List).isExactlyType(localType)) {
       return true;
     }
 
@@ -265,17 +279,12 @@ class SqlHelper {
         tableSelector.selector = tableSelector.table;
       // currentClassState is set when creating the TableSelectorBaseDao
       case TableSelectorDao():
-        final tableClassElement = dbState.tableEntityMap[tableName.toLowerCase().substring(0, tableName.length - 1)];
-        tableSelector.currentClassState = dbState.renameMap[tableClassElement];
-        final selectorName = tableClassElement?.name;
+        final currentClassState =
+            dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == fromTableName.toLowerCase());
+        tableSelector.currentClassState = currentClassState;
 
-        if (selectorName == null) {
-          tableSelector.selector = lowerCaseTableName;
-          tableSelector.entityName = ReCase(fromTableName).pascalCase;
-        } else {
-          tableSelector.selector = "${ReCase(selectorName).camelCase}s";
-          tableSelector.entityName = ReCase(selectorName).pascalCase;
-        }
+        final selectorName = currentClassState.className;
+        tableSelector.selector = "${ReCase(selectorName).camelCase}s";
     }
 
     return tableSelector;

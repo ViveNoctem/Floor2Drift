@@ -128,7 +128,7 @@ class ProcessingOptions extends ProcessingOptionBase {
       var changed = false;
 
       for (final generator in generators) {
-        if (await generator.getImport(reader2)) {
+        if (generator.getImport(reader2)) {
           changed = true;
           break;
         }

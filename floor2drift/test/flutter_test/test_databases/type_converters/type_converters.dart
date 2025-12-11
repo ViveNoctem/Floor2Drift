@@ -1,7 +1,7 @@
 // need to import as floor to avoid namespace problem with TypeConverter
 import 'package:floor/floor.dart';
 
-import 'enums.dart';
+import '../support_classes/enums.dart';
 
 class DateTimeConverter extends TypeConverter<DateTime, String> {
   @override

@@ -6,6 +6,7 @@ import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
+import 'package:recase/recase.dart';
 
 class DaoHelper {
   const DaoHelper();
@@ -100,11 +101,13 @@ class DaoHelper {
         entityType = type.element;
     }
 
-    final tableName = dbState.entityTableMap[entityType];
+    tableSelector.currentClassState = dbState.entityClassStates.firstWhere((s) => s.classType.element == entityType);
 
-    if (tableName == null) {
-      return ValueResponse.error("Couldn't determine table for entity $type", method);
+    if (tableSelector.currentClassState == null) {
+      return ValueResponse.error("Couldn't determine classState for $annotation", method);
     }
+
+    final tableName = ReCase(tableSelector.currentClassState!.className).camelCase;
 
     return ValueResponse.value(tableName);
   }

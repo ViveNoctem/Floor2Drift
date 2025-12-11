@@ -2,18 +2,19 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
+import 'package:floor2drift/src/generator/type_converter_generator.dart';
 import 'package:floor2drift/src/helper/annotation_helper.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
-import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
-class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<ClassElement>, List<String>)>> {
+class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
   static List<String> generatedMixins = List.empty(growable: true);
 
   static String staticClassNameSuffix = "";
@@ -22,8 +23,10 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
   final ETableNameOption tableName;
   final ClassHelper classHelper;
   final AnnotationHelper annotationHelper;
+  final TypeConverterGenerator? typeConverterGenerator;
 
   EntityGenerator({
+    required this.typeConverterGenerator,
     required this.classNameSuffix,
     required this.useRowClass,
     this.classHelper = const ClassHelper(),
@@ -33,7 +36,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
   });
 
   @override
-  (GeneratedSource, MapEntry<String, (Set<ClassElement>, List<String>)>) generateForAnnotatedElement(
+  (GeneratedSource, ClassState) generateForAnnotatedElement(
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
@@ -47,33 +50,62 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
 
     final newImports = <String>{if (import != null) import};
 
+    // alway add drift import
+    newImports.add("import 'package:drift/drift.dart';");
+
     final data = classHelper.generateInheritanceFields(classElement, dbState);
 
     switch (data) {
       case ValueError():
         throw InvalidGenerationSource(data.error, element: data.element);
-      case ValueData<(String, String, Set<ClassElement>, List<String>)>():
-        break;
+      case ValueData<(String, ClassState)>():
     }
 
-    final floorTableName = _getFloorTableName(classElement);
-    dbState.entityTableMap[classElement] = floorTableName;
-    dbState.tableEntityMap[floorTableName.toLowerCase()] = classElement;
-
-    final (fieldsString, mixinString, usedTypeConverters, convertedFields) = data.data;
+    final (fieldsCode, classState) = data.data;
 
     final className = classHelper.getClassName(classElement.name, staticClassNameSuffix);
 
+    // add mixin/base entity imports
+    for (final mixin in classState.superClasses) {
+      var importString = BaseHelper.getImport(mixin.librarySource.uri, targetFilePath);
+
+      if (importString == null) {
+        continue;
+      }
+
+      importString = outputOption.rewriteExistingImport(importString);
+      newImports.add(importString);
+    }
+
+    // add typeConverter imports
+    for (final typeConverter in classState.usedTypeConverters) {
+      final libraryReader = LibraryReader(typeConverter.classElement.library);
+
+      final willChange = typeConverterGenerator?.getImport(libraryReader);
+      var importString = BaseHelper.getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
+
+      if (importString == null) {
+        continue;
+      }
+
+      if (willChange == true) {
+        importString = outputOption.rewriteExistingImport(importString);
+      }
+
+      newImports.add(importString);
+    }
+
     BaseHelper.addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
-    result += classHelper.getClassHeader(classElement.name, mixinString, staticClassNameSuffix, useRowClass);
+    result +=
+        classHelper.getClassHeader(classElement.name, classState.superClasses, staticClassNameSuffix, useRowClass);
     result += _getTableName(tableName, classElement);
-    result += fieldsString;
+    result += fieldsCode;
     result += classHelper.closeClass();
 
     final generatedSource = GeneratedSource(code: result, imports: newImports);
 
-    return (generatedSource, MapEntry(ReCase(classElement.name).pascalCase, (usedTypeConverters, convertedFields)));
+    return (generatedSource, classState);
   }
 
   String _getTableName(ETableNameOption tableName, ClassElement classElement) {
@@ -92,6 +124,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, MapEntry<String, (Set<
     return """
     @override
     String? get tableName => "$newTableName";
+
     """;
   }
 

@@ -64,25 +64,7 @@ abstract class DaoMethodConverter {
     TableSelector tableSelector,
     DatabaseState dbState,
   ) {
-    final result = _convertUsedTable(method, tableSelector, dbState);
-
-    switch (result) {
-      case ValueError<String>():
-        return result.wrap();
-      case ValueData<String>():
-    }
-
-    if (result.data.isEmpty) {
-      return result;
-    }
-
-    final tableClassName = dbState.tableEntityMap[result.data.toLowerCase()]?.name;
-
-    if (tableClassName == null) {
-      return result;
-    }
-
-    return ValueResponse.value(ReCase(tableClassName).pascalCase);
+    return _convertUsedTable(method, tableSelector, dbState);
   }
 
   static ValueResponse<String> _convertUsedTable(
@@ -121,6 +103,7 @@ abstract class DaoMethodConverter {
     return ValueResponse.value("");
   }
 
+  /// This methods is required to set the currentClassState of the tableSelector
   ValueResponse<String> parseUsedTable(
     MethodElement method,
     DartObject annotation,

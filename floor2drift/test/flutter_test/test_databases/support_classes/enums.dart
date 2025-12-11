@@ -17,3 +17,5 @@ enum TaskType {
 
   const TaskType(this.title);
 }
+
+enum UserStatus { active, inactive, deleted }

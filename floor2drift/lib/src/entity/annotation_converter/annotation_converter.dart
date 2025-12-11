@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
-import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/element_extension.dart';
+import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
@@ -9,6 +8,7 @@ import 'package:source_gen/source_gen.dart';
 import 'annotations.dart';
 
 part 'column_info_annotation_converter.dart';
+part 'entity_annotation_converter.dart';
 part 'ignore_annotation_converter.dart';
 part 'primary_key_annotation_converter.dart';
 part 'type_converters_annotation_converter.dart';
@@ -25,6 +25,7 @@ sealed class AnnotationConverter<S, T extends AnnotationType> {
     const typeConverterConverter = TypeConvertersAnnotationConverter();
     const ignoreConverter = IgnoreAnnotationConverter();
     const columnInfoConverter = ColumnInfoAnnotationConverter();
+    const entityConverter = EntityAnnotationConverter();
 
     final annotationElement = annotation.element;
 
@@ -58,6 +59,10 @@ sealed class AnnotationConverter<S, T extends AnnotationType> {
 
     if (columnInfoConverter.typeChecker.isExactlyType(classElement)) {
       return columnInfoConverter.parse(annotation);
+    }
+
+    if (entityConverter.typeChecker.isExactlyType(classElement)) {
+      return entityConverter.parse(annotation);
     }
 
     return ValueResponse.value(const UnknownAnnotation());

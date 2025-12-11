@@ -11,13 +11,29 @@ class ReferenceExpressionConverter extends ExpressionConverter<Reference> {
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    // TODO Test how to use that for type converter
-    // className Renames are always lowerCase because sqlite is case insensitive
-    var fieldName = selector.currentClassState?.renamedFields[expression.columnName.toLowerCase()];
-    fieldName ??= expression.columnName;
-    selector.currentFieldName = fieldName;
+    final lowerCaseColumnName = expression.columnName.toLowerCase();
+
+    FieldState? currentFieldState;
+
+    if (selector.currentClassState == null) {
+      return ValueResponse.error("Couldn't determine class state for $expression", element);
+    }
+
+    for (final fieldState in selector.currentClassState!.allFieldStates) {
+      if (fieldState.sqlColumnName.toLowerCase() == lowerCaseColumnName) {
+        currentFieldState = fieldState;
+        break;
+      }
+    }
+
+    if (currentFieldState == null) {
+      return ValueResponse.error("Couldn't determine class field for $expression", element);
+    }
+
+    selector.currentFieldState = currentFieldState;
+
     return ValueResponse.value((
-      "${asExpression ? "${selector.functionSelector}." : ""}$fieldName",
+      "${asExpression ? "${selector.functionSelector}." : ""}${currentFieldState.fieldName}",
       EExpressionType.reference,
     ));
   }

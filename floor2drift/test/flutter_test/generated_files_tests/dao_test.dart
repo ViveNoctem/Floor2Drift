@@ -3,12 +3,12 @@ import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../additional_classes/test_helper.dart';
-import '../test_databases/enums.dart';
-import '../test_databases/floor_task_dao.dart' as floorDao;
-import '../test_databases/floor_task_daoDrift.dart' as driftDao;
-import '../test_databases/floor_test_database.dart' as floor;
-import '../test_databases/floor_test_databaseDrift.dart' as drift;
-import '../test_databases/task.dart';
+import '../test_databases/dao/floor_task_dao.dart' as floorDao;
+import '../test_databases/dao/floor_task_daoDrift.dart' as driftDao;
+import '../test_databases/database/floor_test_database.dart' as floor;
+import '../test_databases/database/floor_test_databaseDrift.dart' as drift;
+import '../test_databases/entities/task.dart';
+import '../test_databases/support_classes/enums.dart';
 
 // TODO Add test for integers with IntListConverter
 // TODO Add tests for aggregate functions with filter clause

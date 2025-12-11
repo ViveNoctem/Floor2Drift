@@ -46,9 +46,6 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
         return ValueResponse.error("List not supported in ColonNamedVariable as Expression", element);
       }
 
-      // TODO isNativeSqlType works for some use cases.
-      // TODO For a correct solution the typeConverter to-/ from type is needed
-      // TODO e.G. if a String to String converter is used the converter should always be used
       final converted = sqlHelper.checkTypeConverter(selector, name);
 
       if (converted.isNotEmpty && sqlHelper.isNativeSqlType(parameter) == false) {

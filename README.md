@@ -63,7 +63,7 @@ DB Migrations have to be converted manually to drift migrations.
 
 ## General Problems with the converter
 
-see TODOs section
+see TODO.md
 
 ### Annotations
 Most of the result of methods annotated with `@Insert` `@Update` `@delete` will be different than the floor equivalent at the moment.
@@ -196,74 +196,3 @@ Override the default option objects or implement them yourself.
 Beware that some checks to guarantee that the configuration is valid are not done with the custom constructor.
 
 ## Contribute
-
-## Todos
-
-### General
-- call dart fix on all generated files?
-  - remove unused imports etc.
-- many features aren't tested
-- code structure clean up
-    - EntityGenerator
-    - BaseEntityGenerator
-    - BaseDaoGenerator
-    - TypeConverterGenerator
-- 2 classes aren't allowed to have the same name
-  - the code internally uses a map of all generated classnames, if 2 classes have the same name they would override each other.
-- add github ci for tests and protect main branch
-- option to print warnings. ValueResponse can only be used for errors.
-- add documentation for available build_options
-- add the doc comments on fields methods classes from the old files to the generated new files.
-- import rewriting doesn't work properly when only converting part of all files
-  - to many imports are rewritten
-- merge or cleanUp dbState and tableSelector
-
-### Floor2DriftGenerator
-
-### (Base)Dao Generator
-- WHERE IN doesn't work in custom update statement
-- implement limit
-- make an empty dao a warning not an error
-- like with escape clause
-- group by? (does floor support it?)
-- add tests for fields with type converters
-    - check why floor doesn't work with `IntListConverter` and empty lists
-- @delete
-    - maybe use customUpdate? 
-    - delete List<Entity> always returns void
-        - if the return type is int, then an empty List is returned.
-- @insert
-    - maybe use customInsert? 
-    - insert List<Entity> always returns void
-        - if the return type is int, then an empty List is returned.
-- @update
-    - maybe use customUpdate? 
-    - it always returns void at the moment.
-        - update single could easily be changed to return 1 if ok or 0 if not.
-- custom update
-  - doesn't work with List<int> as a parameter.
-- custom insert
-- add tests for renaming in expression_converter_test
-#### DaoGenerator 
-
-##### BaseDaoGenerator
-- aggregate functions (count, avg, etc.) don't work
-  - Could work need to be cast for `avg` to work
-  - final a = table.columnsByName[""]!.count();
-- check: different Drift Dao Mixin name if a modular build is used
-
-### (Base)EntityGenerator
-- generate toColumns method when using @UseRowClass
-- default value
-    - default value on field not in constructor
-- what to do with "real" implemented functions in entities, daos, etc.
-  - copy them to the generated file?
-#### EntityGenerator
-- @Entity(tablename: "TableName") doesn't work
-  - The dao Generator uses the tableName to get the entity Class Name
-- tests
-    - useRowClass test
-
-#### BaseEntityGenerator
-
-### TypeConverterGenerator
