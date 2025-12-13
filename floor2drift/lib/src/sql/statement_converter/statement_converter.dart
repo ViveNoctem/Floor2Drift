@@ -13,23 +13,27 @@ part 'delete_statement_converter.dart';
 part 'select_statement_converter.dart';
 part 'update_statement_converter.dart';
 
+/// {@template StatementConverter}
+/// Class for converting a specifict type of custom SQL statement to its drift counterpart}
+/// {@endtemplate}
 sealed class StatementConverter<S extends AstNode> {
   const StatementConverter();
 
-  ValueResponse<(String, String)> parse(
+  ValueResponse<String> _parse(
     S statement,
     MethodElement method,
     TableSelector tableSelector,
     DatabaseState dbState,
   );
 
-  static ValueResponse<(String, String)> parseStatement(
+  /// parses the give [statement] to the equivalent drift code
+  static ValueResponse<String> parseStatement(
     AstNode statement,
     MethodElement method,
     TableSelector tableSelector,
     DatabaseState dbState,
   ) {
-    final converter = getStatementConverterForNode(statement, method);
+    final converter = _getStatementConverterForNode(statement, method);
 
     switch (converter) {
       case ValueError<StatementConverter<AstNode>>():
@@ -37,17 +41,18 @@ sealed class StatementConverter<S extends AstNode> {
       case ValueData<StatementConverter<AstNode>>():
     }
 
-    return converter.data.parse(statement, method, tableSelector, dbState);
+    return converter.data._parse(statement, method, tableSelector, dbState);
   }
 
-  ValueResponse<String> parseUsedTable(S statement, MethodElement method, TableSelector tableSelector);
+  ValueResponse<String> _parseUsedTable(S statement, MethodElement method, TableSelector tableSelector);
 
+  /// returns all tables used in [statement]
   static ValueResponse<String> parseStatementUsedTable(
     AstNode statement,
     MethodElement method,
     TableSelector tableSelector,
   ) {
-    final converter = getStatementConverterForNode(statement, method);
+    final converter = _getStatementConverterForNode(statement, method);
 
     switch (converter) {
       case ValueError<StatementConverter<AstNode>>():
@@ -55,10 +60,10 @@ sealed class StatementConverter<S extends AstNode> {
       case ValueData<StatementConverter<AstNode>>():
     }
 
-    return converter.data.parseUsedTable(statement, method, tableSelector);
+    return converter.data._parseUsedTable(statement, method, tableSelector);
   }
 
-  static ValueResponse<StatementConverter> getStatementConverterForNode(AstNode node, Element element) {
+  static ValueResponse<StatementConverter> _getStatementConverterForNode(AstNode node, Element element) {
     return switch (node) {
       SelectStatement() => ValueResponse.value(const SelectStatementConverter()),
       DeleteStatement() => ValueResponse.value(const DeleteStatementConverter()),

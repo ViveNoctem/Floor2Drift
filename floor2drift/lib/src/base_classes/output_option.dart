@@ -1,31 +1,56 @@
 import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:floor2drift/floor2drift.dart';
 
+/// {@template OutputOptionBase}
+/// All options for the [Floor2DriftGenerator] for where and how the files should be output to
+/// {@endtemplate}
 abstract class OutputOptionBase {
+  /// dryRun the generator
+  ///
+  /// will not output any files but write the location of files that would be written to the console
   final bool dryRun;
-  final FileSystemEntity root;
+
+  /// Suffix that will be added to the name of Floor files to create the drift file
+  ///
+  /// If the suffix is empty the existing floor files will be overwritten
   final String fileSuffix;
 
-  const OutputOptionBase({required this.dryRun, required this.root, required this.fileSuffix});
+  /// {@macro OutputOptionBase}
+  const OutputOptionBase({required this.dryRun, required this.fileSuffix});
 
-  /// [filePath] the current absolute Path of the file to be written
+  /// converts the given [filePath] to the corresponding output path
   String getNewPath(String filePath);
 
-  String rewriteImport((bool willChange, DirectiveUriWithLibrary currentImport) import);
+  /// rewrites the given name corresponding to the output options
+  ///
+  /// [willChange] should be true if the class that is being imported will be converted to a drift class
+  /// [currentImport] the import directive that should be rewritten
+  /// outputs the package or relative import directive as a string
+  String rewriteImport(bool willChange, DirectiveUriWithLibrary currentImport);
 
+  /// rewrites the given name corresponding to the output options
+  ///
+  /// [willChange] should be true if the class that is being imported will be converted to a drift class
+  /// [currentImport] the import directive that should be rewritten
+  /// outputs the package or relative import directive as a string
   String rewriteImportString(bool willImportedChange, String path);
 
+  /// rewrites the given name corresponding to the output options
   String rewriteExistingImport(String importDirective);
 
+  /// returns the new fileName of the give [fileName]
   String getFileName(String fileName);
 
+  /// writes [content] to the given [newFile]
   bool writeFile(File newFile, String content);
 }
 
-/// Create a new file with the name being filename+[fileSuffix]
+/// {@macro OutputOptionBase}
 class OutputOptions extends OutputOptionBase {
-  const OutputOptions({required super.fileSuffix, required super.dryRun, required super.root});
+  /// {@macro OutputOptionBase}
+  const OutputOptions({required super.fileSuffix, required super.dryRun});
 
   @override
   bool writeFile(File newFile, String content) {
@@ -55,8 +80,8 @@ class OutputOptions extends OutputOptionBase {
   }
 
   @override
-  String rewriteImport((bool willChange, DirectiveUriWithLibrary currentImport) import) {
-    return rewriteImportString(import.$1, import.$2.relativeUriString);
+  String rewriteImport(bool willChange, DirectiveUriWithLibrary currentImport) {
+    return rewriteImportString(willChange, currentImport.relativeUriString);
   }
 
   @override

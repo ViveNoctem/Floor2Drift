@@ -1,9 +1,12 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class FunctionExpressionConverter extends ExpressionConverter<FunctionExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const FunctionExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const FunctionExpressionConverter({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -37,7 +40,7 @@ class FunctionExpressionConverter extends ExpressionConverter<FunctionExpression
 
       if (aggregateTypeResult.data == EAggregateFunctions.groupConcat && feld.parameters.length >= 2) {
         // asExpression = false, drift only accepts String as separator
-        final separatorResult = expressionConverterUtil.parseExpression(
+        final separatorResult = _expressionConverterUtil.parseExpression(
           feld.parameters[1],
           element,
           asExpression: false,
@@ -55,7 +58,7 @@ class FunctionExpressionConverter extends ExpressionConverter<FunctionExpression
         separator = separatorResult.data.$1;
       }
 
-      final dataResult = parseExpressionName(aggregateTypeResult.data, feld.distinct, element, separator);
+      final dataResult = _parseAggregateExpressionName(aggregateTypeResult.data, feld.distinct, element, separator);
 
       final inside = feld.parameters.firstOrNull;
       if (inside == null) {
@@ -63,7 +66,7 @@ class FunctionExpressionConverter extends ExpressionConverter<FunctionExpression
       }
 
       // asExpression = false to get a reference without the selector
-      final insideResult = expressionConverterUtil.parseExpression(
+      final insideResult = _expressionConverterUtil.parseExpression(
         inside,
         element,
         asExpression: true,
@@ -97,7 +100,12 @@ class FunctionExpressionConverter extends ExpressionConverter<FunctionExpression
     };
   }
 
-  String parseExpressionName(EAggregateFunctions functionType, bool distinct, Element element, String separator) {
+  String _parseAggregateExpressionName(
+    EAggregateFunctions functionType,
+    bool distinct,
+    Element element,
+    String separator,
+  ) {
     return switch (functionType) {
       EAggregateFunctions.count => "count(${distinct ? "distinct: true" : ""})",
       EAggregateFunctions.avg => "avg()",

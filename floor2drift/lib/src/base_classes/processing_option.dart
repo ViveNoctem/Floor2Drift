@@ -2,32 +2,58 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:floor2drift/floor2drift.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
-import 'package:floor2drift/src/base_classes/input_option.dart';
-import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
 import 'package:floor2drift/src/generator/database_generator.dart';
+import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/entity_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
+import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-import '../generator/class_generator.dart';
-
+/// {@template ProcessingOptionBase}
+/// All options for the [Floor2DriftGenerator] on how to process the floor database
+/// {@endtemplate}
 abstract class ProcessingOptionBase {
-  late final List<AnnotationGenerator> generators;
+  /// contains all generators that will be used
+  late final List<DriftClassGenerator> generators;
+
+  /// The Output options that will be used
   final OutputOptionBase outputOption;
 
+  /// The [DatabaseGenerator] used while converting
   final DatabaseGenerator databaseGenerator;
 
+  /// The generator for base dao classes
+  ///
+  /// is null if base dao classes are not generated
   final BaseDaoGenerator? baseDaoGenerator;
+
+  /// The generator for dao classes
+  ///
+  /// is null if dao classes are not generated
   final DaoGenerator? daoGenerator;
+
+  /// The generator for base entity classes
+  ///
+  /// is null if base entity classes are not generated
   final BaseEntityGenerator? baseEntityGenerator;
+
+  /// The generator for entitiy classes
+  ///
+  /// is null if entity classes are not generated
   final EntityGenerator? entityGenerator;
+
+  /// The generator for type converters
+  ///
+  /// is null if type converters are not generated
   final TypeConverterGenerator? typeConverterGenerator;
 
+  /// {@macro ProcessingOptionBase}
   ProcessingOptionBase({
     required this.databaseGenerator,
     required this.outputOption,
@@ -48,16 +74,22 @@ abstract class ProcessingOptionBase {
     ];
   }
 
+  /// Generates the [DatabaseState] for the floor database
+  ///
+  /// throws [InvalidGenerationSource] exception if multiple [Database] classes are in one class
   Future<DatabaseState?> processDatabaseGenerator(AnalysisContext context, String path, InputOptionBase inputOption);
 
-  Future<(GeneratedSource, List<S>)> processClassElement<T, S>(
+  /// processes a Class with the given [DriftClassGenerator]
+  (GeneratedSource, List<S>) processClassElement<T, S>(
     ClassElement classElement,
     DatabaseState dbState,
-    AnnotationGenerator<T, S> generator,
+    DriftClassGenerator<T, S> generator,
   );
 }
 
+/// {@macro ProcessingOptionBase}
 class ProcessingOptions extends ProcessingOptionBase {
+  /// {@macro ProcessingOptionBase}
   ProcessingOptions({
     required super.databaseGenerator,
     required super.outputOption,
@@ -88,11 +120,11 @@ class ProcessingOptions extends ProcessingOptionBase {
   }
 
   @override
-  Future<(GeneratedSource, List<S>)> processClassElement<T, S>(
+  (GeneratedSource, List<S>) processClassElement<T, S>(
     ClassElement classElement,
     DatabaseState dbState,
-    AnnotationGenerator<T, S> generator,
-  ) async {
+    DriftClassGenerator<T, S> generator,
+  ) {
     var generatedSource = GeneratedSource.empty();
     final generatorResult = <S>[];
 
@@ -134,11 +166,11 @@ class ProcessingOptions extends ProcessingOptionBase {
         }
       }
 
-      final newImportString = outputOption.rewriteImport((changed, importString));
+      final newImportString = outputOption.rewriteImport(changed, importString);
       generatedSource = generatedSource.copyWith(imports: {...generatedSource.imports, newImportString});
     }
 
-    final (generatedSourceResult, result) = await generator.generateClass(classElement, outputOption, dbState);
+    final (generatedSourceResult, result) = generator.generateForAnnotatedElement(classElement, outputOption, dbState);
 
     generatedSource += generatedSourceResult;
 

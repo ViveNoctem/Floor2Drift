@@ -6,11 +6,17 @@ import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
+import 'package:floor_annotation/floor_annotation.dart';
 import 'package:recase/recase.dart';
 
+/// {@template DaoHelper}
+/// Helper class to provide general methods for handling in dao classes
+/// {@endtemplate}
 class DaoHelper {
+  /// {@macro DaoHelper}
   const DaoHelper();
 
+  /// return the dart code for the class body [classElement] in a dao
   ValueResponse<String> generateClassBody(
     ClassElement classElement,
     String classNameSuffix,
@@ -23,13 +29,14 @@ class DaoHelper {
       final result = DaoMethodConverter.parseMethod(method, tableSelector, dbState);
 
       switch (result) {
-        case ValueData<(String, String)>():
+        case ValueData<String>():
           break;
-        case ValueError<(String, String)>():
-          return result.wrap();
+        case ValueError<String>():
+          result.printError();
+          continue;
       }
 
-      final (methodString, table) = result.data;
+      final methodString = result.data;
 
       if (methodString.isEmpty) {
         continue;
@@ -45,6 +52,7 @@ class DaoHelper {
     return ValueResponse.value(body);
   }
 
+  /// returns the entity names of all tables used in [classElement]
   ValueResponse<Set<String>> getUsedTables(
     ClassElement classElement,
     DatabaseState dbState,
@@ -56,8 +64,8 @@ class DaoHelper {
 
       switch (parseResult) {
         case ValueError<String>():
-          return parseResult.wrap();
-
+          parseResult.printError();
+          continue;
         case ValueData<String>():
       }
 
@@ -72,6 +80,9 @@ class DaoHelper {
     return ValueResponse.value(result);
   }
 
+  /// returns the entity name used in [method]
+  ///
+  /// specifically for use in [delete] [insert] [update] methods, because the return type need to be analyzed instead of an actual sql query
   ValueResponse<String> parseUsedTableAnnotation(
     MethodElement method,
     DartObject annotation,
@@ -101,10 +112,18 @@ class DaoHelper {
         entityType = type.element;
     }
 
-    tableSelector.currentClassState = dbState.entityClassStates.firstWhere((s) => s.classType.element == entityType);
+    if (tableSelector is TableSelectorDao) {
+      for (final state in dbState.entityClassStates) {
+        if (state.classType.element != entityType) {
+          continue;
+        }
+        tableSelector.currentClassState = state;
+        break;
+      }
 
-    if (tableSelector.currentClassState == null) {
-      return ValueResponse.error("Couldn't determine classState for $annotation", method);
+      if (tableSelector.currentClassState == null) {
+        return ValueResponse.error("Couldn't determine classState for $annotation", method);
+      }
     }
 
     final tableName = ReCase(tableSelector.currentClassState!.className).camelCase;

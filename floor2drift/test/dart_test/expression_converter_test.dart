@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/source/file_source.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
@@ -32,7 +32,6 @@ void main() {
   late List<ParameterElement> mockParameters;
   late MockParameterElement mockParameter;
   late Element mockParameterElement;
-  late MockExpressionConverterUtil mockExpressionConverterUtil;
   late MockDartType mockParameterType;
   late MockClassState mockClassState;
   late MockFieldState mockFieldState;
@@ -49,8 +48,6 @@ void main() {
     mockParameter = MockParameterElement();
     mockParameterElement = MockElement();
     mockParameterType = MockDartType();
-
-    mockExpressionConverterUtil = MockExpressionConverterUtil();
 
     mockParameters = [mockParameter];
 

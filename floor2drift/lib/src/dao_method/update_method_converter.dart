@@ -1,21 +1,14 @@
-import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
-import 'package:floor2drift/src/base_classes/database_state.dart';
-import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
-import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/helper/annotation_helper.dart';
-import 'package:floor2drift/src/helper/base_helper.dart';
-import 'package:floor2drift/src/return_type.dart';
-import 'package:floor2drift/src/value_response.dart';
+part of 'dao_method_converter.dart';
 
-import '../helper/dao_helper.dart';
-
+/// {@template UpdateMethodConverter}
+/// Generates dar code fopr floor methods annotatedd with [Update]
+/// {@endtemplate}
 class UpdateMethodConverter extends DaoMethodConverter {
-  final AnnotationHelper annotationHelper;
+  /// {@macro UpdateMethodConverter}
+  const UpdateMethodConverter();
 
-  const UpdateMethodConverter({this.annotationHelper = const AnnotationHelper()});
   @override
-  ValueResponse<(String, String)> parse(
+  ValueResponse<String> _parse(
     MethodElement method,
     DartObject insertAnnotation,
     TableSelector tableSelector,
@@ -64,7 +57,7 @@ class UpdateMethodConverter extends DaoMethodConverter {
     $methodBody
     }""";
 
-    return ValueResponse.value((result, ""));
+    return ValueResponse.value(result);
   }
 
   ValueResponse<String> _getMethodBody(
@@ -83,17 +76,7 @@ class UpdateMethodConverter extends DaoMethodConverter {
     }
 
     final tableName = tableNameResult.data;
-
-    final argumentNameResult = getArgumentName(parameter);
-
-    switch (argumentNameResult) {
-      case ValueData<String>():
-        break;
-      case ValueError<String>():
-        return argumentNameResult.wrap();
-    }
-
-    final argumentName = argumentNameResult.data;
+    final argumentName = parameter.name;
 
     ValueResponse<String> quantityResult = switch (parameterType.type) {
       EType.unknown => ValueResponse.value("await update($tableName).replace($argumentName);"),

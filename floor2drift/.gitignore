@@ -9,3 +9,5 @@ pubspec.lock
 
 # Do not commit generated code
 *.g.dart
+
+*_drift.dart

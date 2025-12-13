@@ -1,9 +1,12 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class CollateExpressionConverter extends ExpressionConverter<CollateExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const CollateExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const CollateExpressionConverter({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -13,7 +16,7 @@ class CollateExpressionConverter extends ExpressionConverter<CollateExpression> 
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    final innerResult = expressionConverterUtil.parseExpression(
+    final innerResult = _expressionConverterUtil.parseExpression(
       expression.inner,
       element,
       parameters: parameters,

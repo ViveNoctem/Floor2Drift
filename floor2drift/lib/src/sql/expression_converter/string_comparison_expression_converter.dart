@@ -1,9 +1,13 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class StringComparisonExpressionConverter extends ExpressionConverter<StringComparisonExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const StringComparisonExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const StringComparisonExpressionConverter(
+      {ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -13,7 +17,7 @@ class StringComparisonExpressionConverter extends ExpressionConverter<StringComp
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    final leftResult = expressionConverterUtil.parseExpression(
+    final leftResult = _expressionConverterUtil.parseExpression(
       expression.left,
       element,
       parameters: parameters,
@@ -28,7 +32,7 @@ class StringComparisonExpressionConverter extends ExpressionConverter<StringComp
         return leftResult.wrap();
     }
 
-    final rightResult = expressionConverterUtil.parseExpression(
+    final rightResult = _expressionConverterUtil.parseExpression(
       expression.right,
       element,
       parameters: parameters,

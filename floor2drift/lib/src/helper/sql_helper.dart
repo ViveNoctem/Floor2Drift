@@ -11,16 +11,20 @@ import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+/// {@template SqlHelper}
 /// Helper Class to Convert Sql Code to Drift Core Api Calls
+/// {@endtemplate}
 class SqlHelper {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const SqlHelper({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  /// {@macro SqlHelper}
+  const SqlHelper({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
+  /// static sqlEngine to parse SQL code to AST
   static final sqlEngine = SqlEngine();
 
-  static const selectorName = "s";
-
+  /// returns the drift code for a ORDER by clause
   ValueResponse<String> addOrderByClause(
     OrderBy orderBy,
     Element element,
@@ -64,7 +68,7 @@ class SqlHelper {
   ) {
     final mode = _getOrderingMode(orderingTerm.orderingMode);
 
-    final expressionResult = expressionConverterUtil.parseExpression(
+    final expressionResult = _expressionConverterUtil.parseExpression(
       orderingTerm.expression,
       element,
       parameters: parameters,
@@ -122,6 +126,7 @@ class SqlHelper {
     return result;
   }
 
+  /// returns the drift code for a WHERE clause
   ValueResponse<String> addWhereClause(
     Expression whereExpression,
     Element element,
@@ -134,7 +139,7 @@ class SqlHelper {
       result += "(${selector.functionSelector}) => ";
     }
 
-    final whereResult = expressionConverterUtil.parseExpression(
+    final whereResult = _expressionConverterUtil.parseExpression(
       whereExpression,
       element,
       parameters: parameters,
@@ -153,6 +158,7 @@ class SqlHelper {
     return ValueResponse.value(result);
   }
 
+  /// depending on [returnType] returns the different calls on how to execute the sql query
   String getGetter(TypeSpecification returnType) {
     var getterMethod = ".";
 
@@ -160,7 +166,6 @@ class SqlHelper {
       case EType.future:
         switch (returnType.firstTypeArgument) {
           case EType.unknown:
-            // getterMethod += returnType.nullable ? "getSingleOrNull" : "getSingle";
             getterMethod += "getSingleOrNull";
           case EType.list:
             getterMethod += "get";
@@ -174,7 +179,6 @@ class SqlHelper {
       case EType.stream:
         switch (returnType.firstTypeArgument) {
           case EType.unknown:
-            // getterMethod += returnType.nullable ? "watchSingleOrNull" : "watchSingleOrNull";
             getterMethod += "watchSingleOrNull";
           case EType.list:
             getterMethod += "watch";
@@ -271,19 +275,24 @@ class SqlHelper {
   ///
   /// set the selector, currentClassState, and entityName
   TableSelector configureTableSelector(TableSelector tableSelector, DatabaseState dbState, String fromTableName) {
-    final lowerCaseTableName = "${ReCase(fromTableName).camelCase}s";
-    final tableName = ReCase(lowerCaseTableName).pascalCase;
-
     switch (tableSelector) {
       case TableSelectorBaseDao():
         tableSelector.selector = tableSelector.table;
       // currentClassState is set when creating the TableSelectorBaseDao
       case TableSelectorDao():
-        final currentClassState =
-            dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == fromTableName.toLowerCase());
-        tableSelector.currentClassState = currentClassState;
+        for (final state in dbState.entityClassStates) {
+          if (state.sqlTablename.toLowerCase() != fromTableName.toLowerCase()) {
+            continue;
+          }
+          tableSelector.currentClassState = state;
+          break;
+        }
 
-        final selectorName = currentClassState.className;
+        if (tableSelector.currentClassState == null) {
+          return tableSelector;
+        }
+
+        final selectorName = tableSelector.currentClassState!.className;
         tableSelector.selector = "${ReCase(selectorName).camelCase}s";
     }
 

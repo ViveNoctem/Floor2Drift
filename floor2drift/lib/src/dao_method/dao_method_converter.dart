@@ -2,72 +2,82 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
-import 'package:floor2drift/src/dao_method/delete_method_converter.dart';
-import 'package:floor2drift/src/dao_method/insert_method_converter.dart';
-import 'package:floor2drift/src/dao_method/query_method_converter.dart';
-import 'package:floor2drift/src/dao_method/update_method_converter.dart';
 import 'package:floor2drift/src/enum/enums.dart';
+import 'package:floor2drift/src/helper/base_helper.dart';
+import 'package:floor2drift/src/helper/dao_helper.dart';
+import 'package:floor2drift/src/helper/sql_helper.dart';
 import 'package:floor2drift/src/return_type.dart';
+import 'package:floor2drift/src/sql/statement_converter/statement_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
+import 'package:sqlparser/sqlparser.dart';
 
+part 'delete_method_converter.dart';
+part 'insert_method_converter.dart';
+part 'query_method_converter.dart';
+part 'update_method_converter.dart';
+
+/// {@template DaoMethodConverter}
+/// base class for all methods that are contained in a floor [dao]
+/// {@endtemplate}
 abstract class DaoMethodConverter {
+  /// {@macro DaoMethodConverter}
   const DaoMethodConverter();
-  static ValueResponse<(String, String)> parseMethod(
+
+  /// Parses a [MethodElement] and
+  /// calls the right [DaoMethodConverter]
+  static ValueResponse<String> parseMethod(
     MethodElement method,
     TableSelector tableSelector,
     DatabaseState dbState,
   ) {
     const queryChecker = TypeChecker.fromRuntime(Query);
     var annotation = queryChecker.firstAnnotationOfExact(method);
-
     if (annotation != null) {
-      return const QueryMethodConverter().parse(method, annotation, tableSelector, dbState);
+      return const QueryMethodConverter()._parse(method, annotation, tableSelector, dbState);
     }
 
     final deleteChecker = TypeChecker.fromRuntime(delete.runtimeType);
     annotation = deleteChecker.firstAnnotationOfExact(method);
 
     if (annotation != null) {
-      return const DeleteMethodConverter().parse(method, annotation, tableSelector, dbState);
+      return const DeleteMethodConverter()._parse(method, annotation, tableSelector, dbState);
     }
 
     const insertChecker = TypeChecker.fromRuntime(Insert);
     annotation = insertChecker.firstAnnotationOfExact(method);
 
     if (annotation != null) {
-      return const InsertMethodConverter().parse(method, annotation, tableSelector, dbState);
+      return const InsertMethodConverter()._parse(method, annotation, tableSelector, dbState);
     }
 
     const updateChecker = TypeChecker.fromRuntime(Update);
     annotation = updateChecker.firstAnnotationOfExact(method);
 
     if (annotation != null) {
-      return const UpdateMethodConverter().parse(method, annotation, tableSelector, dbState);
+      return const UpdateMethodConverter()._parse(method, annotation, tableSelector, dbState);
     }
 
-    return ValueResponse.value(("", ""));
+    return ValueResponse.value("");
   }
 
-  ValueResponse<(String, String)> parse(
+  // is unused because all calls are directly on the inheriting classes
+  // ignore: unused_element
+  ValueResponse<String> _parse(
     MethodElement method,
     DartObject annotation,
     TableSelector tableSelector,
     DatabaseState dbState,
   );
 
+  /// returns which table is used in the given [MethodElement]
+  ///
+  /// The return value is the name of the corresponding floor entity class.
+  /// Not the actual sql table name
   static ValueResponse<String> parseMethodUsedTable(
-    MethodElement method,
-    TableSelector tableSelector,
-    DatabaseState dbState,
-  ) {
-    return _convertUsedTable(method, tableSelector, dbState);
-  }
-
-  static ValueResponse<String> _convertUsedTable(
     MethodElement method,
     TableSelector tableSelector,
     DatabaseState dbState,
@@ -111,6 +121,24 @@ abstract class DaoMethodConverter {
     DatabaseState dbState,
   );
 
+  /// returns the drift tablename for the given [parameter]
+  ///
+  /// TODO can probably be removed and replaces with tableSelector.currentClassState
+  @protected
+  ValueResponse<String> getTableName(
+    TableSelector tableSelector,
+    ParameterElement parameter,
+    TypeSpecification parameterSpecification,
+  ) {
+    return switch (tableSelector) {
+      TableSelectorBaseDao() => ValueResponse.value(tableSelector.table),
+      TableSelectorDao() => getDaoTablename(tableSelector, parameter, parameterSpecification),
+    };
+  }
+
+  /// returns the drift tablename for the [parameter] return type
+  ///
+  /// TODO can probably be removed and replaces with tableSelector.currentClassState
   @protected
   ValueResponse<String> getDaoTablename(
     TableSelectorDao tableSelector,
@@ -137,27 +165,11 @@ abstract class DaoMethodConverter {
     return ValueResponse.value(tablename);
   }
 
-  @protected
-  ValueResponse<String> getArgumentName(ParameterElement parameter) {
-    return ValueResponse.value(parameter.name);
-  }
-
+  /// returns the standard method header for the given [method]
   @protected
   ValueResponse<String> getMethodHeader(MethodElement method) {
     final methodName = method.getDisplayString();
 
     return ValueResponse.value("$methodName async {");
-  }
-
-  @protected
-  ValueResponse<String> getTableName(
-    TableSelector tableSelector,
-    ParameterElement parameter,
-    TypeSpecification parameterSpecification,
-  ) {
-    return switch (tableSelector) {
-      TableSelectorBaseDao() => ValueResponse.value(tableSelector.table),
-      TableSelectorDao() => getDaoTablename(tableSelector, parameter, parameterSpecification),
-    };
   }
 }

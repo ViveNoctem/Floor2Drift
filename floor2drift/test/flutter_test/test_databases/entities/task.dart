@@ -4,7 +4,7 @@ import 'package:floor_annotation/floor_annotation.dart';
 import '../../additional_classes/annotation.dart';
 import '../support_classes/enums.dart';
 import '../type_converters/type_converters.dart';
-import '../type_converters/type_convertersDrift.dart' as drift;
+import '../type_converters/type_converters_drift.dart' as drift;
 import 'base_class.dart';
 
 @Entity(tableName: "UserTest")
@@ -103,6 +103,7 @@ class TestTask extends BaseClass<TestTask> {
     this.type = TaskType.story,
     this.integers,
     // DO NOT REMOVE redundant initializer. generator should not include null initialization
+    // ignore: avoid_init_to_null
     this.attachment = null,
     // this.tempText = "tempText",
     required this.customDouble,

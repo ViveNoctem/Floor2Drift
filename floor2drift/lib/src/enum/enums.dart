@@ -1,5 +1,9 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:analyzer/dart/element/type.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
+import 'package:floor2drift/src/generator/base_dao_generator.dart';
+import 'package:floor2drift/src/generator/dao_generator.dart';
 
 enum EExpressionType { reference, colonNamedVariable, unkown }
 
@@ -58,10 +62,18 @@ enum ETableNameOption {
   driftSchemeWithOverride,
 }
 
+/// Represents the current state in an sql query
 sealed class TableSelector {
+  /// selectorName which should be used for functions
   String functionSelector;
+
+  /// selector name for the current field
   String selector;
+
+  /// FieldState of the current field being converted
   FieldState? currentFieldState;
+
+  /// ClassState of the current doa class being converted
   ClassState? currentClassState;
 
   TableSelector({
@@ -72,8 +84,14 @@ sealed class TableSelector {
   });
 }
 
+/// {@template TableSelectorBaseDao}
+/// Represents the current state in an sql query for a [BaseDaoGenerator]
+/// {@endtemplate}
 class TableSelectorBaseDao extends TableSelector {
+  /// Selector name to access the inherited table
   final String table;
+
+  /// {@macro TableSelectorBaseDao}
   TableSelectorBaseDao(
     this.table, {
     super.selector,
@@ -82,7 +100,11 @@ class TableSelectorBaseDao extends TableSelector {
   });
 }
 
+/// {@template TableSelectorDao}
+/// Represents the current state in an sql query for a [DaoGenerator]
+/// {@endtemplate}
 class TableSelectorDao extends TableSelector {
+  /// {@macro TableSelectorDao}
   TableSelectorDao({
     super.selector,
     super.currentFieldState,

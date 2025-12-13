@@ -1,13 +1,16 @@
 part of 'statement_converter.dart';
 
+/// {@macro StatementConverter}
 class SelectStatementConverter extends StatementConverter<SelectStatement> {
-  final SqlHelper sqlHelper;
-  final ExpressionConverterUtil expressionConverterUtil;
+  final SqlHelper _sqlHelper;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
+  /// {@macro StatementConverter}
   const SelectStatementConverter({
-    this.sqlHelper = const SqlHelper(),
-    this.expressionConverterUtil = const ExpressionConverterUtil(),
-  });
+    SqlHelper sqlHelper = const SqlHelper(),
+    ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil(),
+  })  : _expressionConverterUtil = expressionConverterUtil,
+        _sqlHelper = sqlHelper;
 
   ValueResponse<String> _temp(
     SelectStatement statement,
@@ -30,7 +33,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
     if (useSelectOnly) {
       tableSelector.functionSelector = tableSelector.selector;
       if (column is ExpressionResultColumn) {
-        final functionResult = expressionConverterUtil.parseExpression(
+        final functionResult = _expressionConverterUtil.parseExpression(
           column.expression,
           element,
           parameters: parameters,
@@ -58,7 +61,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     final where = statement.where;
     if (where != null) {
-      final whereResult = sqlHelper.addWhereClause(where, element, parameters, useSelectOnly, tableSelector);
+      final whereResult = _sqlHelper.addWhereClause(where, element, parameters, useSelectOnly, tableSelector);
 
       switch (whereResult) {
         case ValueData<String>():
@@ -72,7 +75,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     final orderBy = statement.orderBy;
     if (orderBy != null && orderBy is OrderBy) {
-      final orderByResult = sqlHelper.addOrderByClause(orderBy, element, parameters, tableSelector, useSelectOnly);
+      final orderByResult = _sqlHelper.addOrderByClause(orderBy, element, parameters, tableSelector, useSelectOnly);
 
       switch (orderByResult) {
         case ValueError<String>():
@@ -102,7 +105,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
           if (expression is Reference) {
             final converted = tableSelector.currentFieldState?.isConverted == true;
 
-            if (converted && (element is! MethodElement || sqlHelper.isNativeSqlType(element.returnType) == false)) {
+            if (converted && (element is! MethodElement || _sqlHelper.isNativeSqlType(element.returnType) == false)) {
               read = ".readWithConverter($selectOnlyFunctionResult)";
             }
           }
@@ -138,7 +141,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
   }
 
   @override
-  ValueResponse<(String, String)> parse(
+  ValueResponse<String> _parse(
     SelectStatement statement,
     MethodElement method,
     TableSelector tableSelector,
@@ -150,15 +153,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
       return ValueResponse.error("Only table select statements are supported // $statement", method);
     }
 
-    final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
-
-    // in baseDao use "table" selector
-    // in normal dao use lowerCastableName
-    // TODO if multiple tables are used in one dao, the tableSelector needs to be determined by the return type
-
-    final tableName = ReCase(lowerCaseTableName).pascalCase;
-
-    tableSelector = sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
+    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
 
     final typeSpecification = BaseHelper.getTypeSpecification(method.returnType);
 
@@ -179,10 +174,10 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     var result = "return ${resultValue.data}";
 
-    result += sqlHelper.getGetter(typeSpecification);
+    result += _sqlHelper.getGetter(typeSpecification);
     result += ";";
 
-    return ValueResponse.value((result, tableName));
+    return ValueResponse.value(result);
   }
 
   String _getSelectMap(
@@ -199,7 +194,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
       return "";
     }
 
-    final result = expressionConverterUtil.parseExpression(
+    final result = _expressionConverterUtil.parseExpression(
       column.expression,
       element,
       parameters: parameters,
@@ -219,7 +214,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
   }
 
   @override
-  ValueResponse<String> parseUsedTable(SelectStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<String> _parseUsedTable(SelectStatement statement, MethodElement method, TableSelector tableSelector) {
     final table = statement.table;
 
     if (table == null) {

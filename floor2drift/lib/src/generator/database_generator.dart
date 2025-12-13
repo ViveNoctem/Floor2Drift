@@ -4,19 +4,23 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
-import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
+import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
-  final typeConverterChecker = TypeChecker.fromRuntime(TypeConverters);
-  final bool useRowClass;
+/// {@template DatabaseGenerator}
+/// Converts a database class to the equivalent drift code
+/// {@endtemplate}
+class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
+  final _typeConverterChecker = TypeChecker.fromRuntime(TypeConverters);
+  final bool _useRowClass;
 
-  DatabaseGenerator({required super.inputOption, required this.useRowClass});
+  /// {@macro DatabaseGenerator}
+  DatabaseGenerator({required super.inputOption, required bool useRowClass}) : _useRowClass = useRowClass;
 
   @override
   bool getImport(LibraryReader library) {
@@ -50,7 +54,8 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
 
     for (final entity in state.entities) {
       // If useRowClass is used the Entity needs to be imported for the drift .g.dart file
-      if (useRowClass) {
+      if (_useRowClass) {
+        // ignore: deprecated_member_use_from_same_package
         final entityClassUri = state.floorClasses[entity.name];
 
         if (entityClassUri != null) {
@@ -140,7 +145,7 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
   //   }""";
   // }
 
-  (Set<ClassElement>, Set<ClassElement>) generateDaoSet(
+  (Set<ClassElement>, Set<ClassElement>) _generateDaoSet(
     ClassElement classElement,
     ConstantReader annotation,
     InputOptionBase inputOption,
@@ -180,7 +185,7 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     return (daos, baseDaos);
   }
 
-  (Set<ClassElement>, Set<ClassElement>) generateEntitySet(
+  (Set<ClassElement>, Set<ClassElement>) _generateEntitySet(
     ClassElement classElement,
     ConstantReader annotation,
     InputOptionBase inputOption,
@@ -231,12 +236,12 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     return (entities, baseEntities);
   }
 
-  Set<TypeConverterState> generateTypeConverterSet(
+  Set<TypeConverterState> _generateTypeConverterSet(
     ClassElement classElement,
     ConstantReader annotation,
     InputOptionBase inputOption,
   ) {
-    final typeConverterAnnotation = typeConverterChecker.firstAnnotationOf(
+    final typeConverterAnnotation = _typeConverterChecker.firstAnnotationOf(
       classElement,
       throwOnUnresolved: throwOnUnresolved,
     );
@@ -288,7 +293,7 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     return result;
   }
 
-  int generateSchemaVersion(ConstantReader annotation) {
+  int _generateSchemaVersion(ConstantReader annotation) {
     final version = annotation.read("version");
     if (version.isInt == false) {
       throw InvalidGenerationSource("Version in the database annotation is not an int");
@@ -297,6 +302,9 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
     return version.intValue;
   }
 
+  /// analyses the database from [library] and return a [DatabaseState] for the class
+  ///
+  /// returns null if no database is found. Throws an [InvalidGenerationSource] exception if multiple databases are found
   DatabaseState? generateDatabaseState(LibraryReader library, InputOptionBase inputOption) {
     DatabaseState? result;
 
@@ -307,13 +315,13 @@ class DatabaseGenerator extends AnnotationGenerator<Database, Null> {
 
       final classElement = annotatedElement.element.toClassElement;
 
-      final typeConverters = generateTypeConverterSet(classElement, annotatedElement.annotation, inputOption);
+      final typeConverters = _generateTypeConverterSet(classElement, annotatedElement.annotation, inputOption);
 
-      final (daos, baseDaos) = generateDaoSet(classElement, annotatedElement.annotation, inputOption);
+      final (daos, baseDaos) = _generateDaoSet(classElement, annotatedElement.annotation, inputOption);
 
-      final (entities, baseEnities) = generateEntitySet(classElement, annotatedElement.annotation, inputOption);
+      final (entities, baseEnities) = _generateEntitySet(classElement, annotatedElement.annotation, inputOption);
 
-      final schemaVersion = generateSchemaVersion(annotatedElement.annotation);
+      final schemaVersion = _generateSchemaVersion(annotatedElement.annotation);
 
       result = DatabaseState(
         typeConverters: typeConverters,

@@ -1,6 +1,7 @@
 import 'package:sqlparser/sqlparser.dart';
 
 class MockLiteral<T> extends Literal<T> {
+  @override
   final T value;
 
   MockLiteral(this.value);

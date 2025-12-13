@@ -1,9 +1,12 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class UnaryExpressionConverter extends ExpressionConverter<UnaryExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const UnaryExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const UnaryExpressionConverter({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -13,7 +16,7 @@ class UnaryExpressionConverter extends ExpressionConverter<UnaryExpression> {
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    final innerResult = expressionConverterUtil.parseExpression(
+    final innerResult = _expressionConverterUtil.parseExpression(
       expression.inner,
       element,
       parameters: parameters,

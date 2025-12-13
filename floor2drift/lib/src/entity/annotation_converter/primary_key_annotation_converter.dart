@@ -1,7 +1,10 @@
 part of 'annotation_converter.dart';
 
-// TODO if autoGenerate == false maybe override Set<Column<Object>>? get primaryKey => super.primaryKey; to set primary key
+/// {@template PrimaryKeyAnnotationConverter}
+/// Converts a [PrimaryKey] annotation to the [PrimaryKeyAnnotation] data class
+/// {@endtemplate}
 class PrimaryKeyAnnotationConverter extends AnnotationConverter<PrimaryKey, PrimaryKeyAnnotation> {
+  /// {@macro PrimaryKeyAnnotationConverter}
   const PrimaryKeyAnnotationConverter();
 
   @override

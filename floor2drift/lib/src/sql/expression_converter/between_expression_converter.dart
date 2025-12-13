@@ -1,9 +1,12 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class BetweenExpressionConverter extends ExpressionConverter<BetweenExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const BetweenExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const BetweenExpressionConverter({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -14,7 +17,7 @@ class BetweenExpressionConverter extends ExpressionConverter<BetweenExpression> 
     required TableSelector selector,
   }) {
     // always as expression to make it possible to call .isBetween
-    final checkResult = expressionConverterUtil.parseExpression(
+    final checkResult = _expressionConverterUtil.parseExpression(
       expression.check,
       element,
       asExpression: true,
@@ -29,7 +32,7 @@ class BetweenExpressionConverter extends ExpressionConverter<BetweenExpression> 
         return checkResult.wrap();
     }
 
-    final lowerResult = expressionConverterUtil.parseExpression(
+    final lowerResult = _expressionConverterUtil.parseExpression(
       expression.lower,
       element,
       asExpression: asExpression,
@@ -44,7 +47,7 @@ class BetweenExpressionConverter extends ExpressionConverter<BetweenExpression> 
         return lowerResult.wrap();
     }
 
-    final upperResult = expressionConverterUtil.parseExpression(
+    final upperResult = _expressionConverterUtil.parseExpression(
       expression.upper,
       element,
       asExpression: asExpression,

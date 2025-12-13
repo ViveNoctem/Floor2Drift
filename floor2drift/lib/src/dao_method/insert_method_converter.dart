@@ -1,21 +1,14 @@
-import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
-import 'package:floor2drift/src/base_classes/database_state.dart';
-import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
-import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/helper/annotation_helper.dart';
-import 'package:floor2drift/src/helper/base_helper.dart';
-import 'package:floor2drift/src/helper/dao_helper.dart';
-import 'package:floor2drift/src/return_type.dart';
-import 'package:floor2drift/src/value_response.dart';
-import 'package:source_gen/source_gen.dart';
+part of 'dao_method_converter.dart';
 
+/// {@template InsertMethodConverter}
+/// Generates dart code for floor methods annotated with [Insert]
+/// {@endtemplate}
 class InsertMethodConverter extends DaoMethodConverter {
-  final AnnotationHelper annotationHelper;
+  /// {@macro InsertMethodConverter}
+  const InsertMethodConverter();
 
-  const InsertMethodConverter({this.annotationHelper = const AnnotationHelper()});
   @override
-  ValueResponse<(String, String)> parse(
+  ValueResponse<String> _parse(
     MethodElement method,
     DartObject insertAnnotation,
     TableSelector tableSelector,
@@ -64,7 +57,7 @@ class InsertMethodConverter extends DaoMethodConverter {
     $methodBody
     }""";
 
-    return ValueResponse.value((result, ""));
+    return ValueResponse.value(result);
   }
 
   ValueResponse<String> _getMethodBody(
@@ -84,17 +77,7 @@ class InsertMethodConverter extends DaoMethodConverter {
     }
 
     final tableName = tableNameResult.data;
-
-    final argumentNameResult = getArgumentName(parameter);
-
-    switch (argumentNameResult) {
-      case ValueData<String>():
-        break;
-      case ValueError<String>():
-        return argumentNameResult.wrap();
-    }
-
-    final argumentName = argumentNameResult.data;
+    final argumentName = parameter.name;
 
     final insertMode = _getInsertMode(insertAnnotation);
 

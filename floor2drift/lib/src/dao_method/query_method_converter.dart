@@ -1,17 +1,10 @@
-import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
-import 'package:floor2drift/src/base_classes/database_state.dart';
-import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
-import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/helper/base_helper.dart';
-import 'package:floor2drift/src/helper/sql_helper.dart';
-import 'package:floor2drift/src/return_type.dart';
-import 'package:floor2drift/src/sql/statement_converter/statement_converter.dart';
-import 'package:floor2drift/src/value_response.dart';
-import 'package:sqlparser/sqlparser.dart';
+part of 'dao_method_converter.dart';
 
+/// {@template QueryMethodConverter}
+/// Generates dart code for floor methods annotated with [Query]
+/// {@endtemplate}
 class QueryMethodConverter extends DaoMethodConverter {
+  /// {@macro QueryMethodConverter}
   const QueryMethodConverter();
 
   @override
@@ -38,24 +31,31 @@ class QueryMethodConverter extends DaoMethodConverter {
       case ValueData<String>():
     }
 
-    tableSelector.currentClassState =
-        dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == result.data.toLowerCase());
+    if (tableSelector is TableSelectorDao) {
+      for (final state in dbState.entityClassStates) {
+        if (state.sqlTablename.toLowerCase() != result.data.toLowerCase()) {
+          continue;
+        }
+        tableSelector.currentClassState = state;
+        break;
+      }
 
-    if (tableSelector.currentClassState == null) {
-      return ValueResponse.error("Couldn't determine classState for used Table", method);
+      if (tableSelector.currentClassState == null) {
+        return ValueResponse.error("Couldn't determine classState for used Table", method);
+      }
     }
 
     return ValueResponse.value(tableSelector.currentClassState!.className);
   }
 
-  ValueResponse<(String, String)> parse(
+  @override
+  ValueResponse<String> _parse(
     MethodElement method,
     DartObject queryAnnotation,
     TableSelector tableSelector,
     DatabaseState dbState,
   ) {
     var body = "";
-    var usedTable = "";
 
     final returnType = BaseHelper.getTypeSpecification(method.returnType);
 
@@ -65,22 +65,21 @@ class QueryMethodConverter extends DaoMethodConverter {
     final data = _handleQueryAnnotation(method, queryAnnotation, tableSelector, dbState);
 
     switch (data) {
-      case ValueData<(String, String)>():
+      case ValueData<String>():
         break;
 
-      case ValueError<(String, String)>():
+      case ValueError<String>():
         return data.wrap();
     }
 
     // TODO find better way to cut methods than check isEmpty
-    if (data.data.$1.isEmpty) {
-      return ValueResponse.value(("", ""));
+    if (data.data.isEmpty) {
+      return ValueResponse.value("");
     }
 
-    final (metaDataResult, table) = data.data;
+    final metaDataResult = data.data;
     found = true;
     singleMethod += "$metaDataResult\n";
-    usedTable = table;
     // add method if a query annotation has been found
     if (found) {
       body += _generateMethodHeader(returnType, method, "");
@@ -88,7 +87,7 @@ class QueryMethodConverter extends DaoMethodConverter {
       body += "}\n\n";
     }
 
-    return ValueResponse.value((body, usedTable));
+    return ValueResponse.value(body);
   }
 
   ValueResponse<ParseResult> _parseQueryAnnotation(DartObject metaData, MethodElement method) {
@@ -105,7 +104,7 @@ class QueryMethodConverter extends DaoMethodConverter {
     return ValueResponse.value(parseResult);
   }
 
-  ValueResponse<(String, String)> _handleQueryAnnotation(
+  ValueResponse<String> _handleQueryAnnotation(
     MethodElement method,
     DartObject metaData,
     TableSelector tableSelector,

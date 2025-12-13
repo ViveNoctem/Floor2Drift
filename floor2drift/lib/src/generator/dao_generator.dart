@@ -2,9 +2,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
@@ -13,21 +13,28 @@ import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-// generic is omitted because dao annotation is private
-class DaoGenerator extends AnnotationGenerator<Null, Null> {
-  final String classNameSuffix;
-  final DaoHelper daoHelper;
-  final bool useRowClass;
+/// {@template DaoGenerator}
+/// Converts a dao class to the equivalent drift code
+///
+/// generic is omitted because [dao] is a private class and [typeChecker] is overridden
+/// {@endtemplate}
+class DaoGenerator extends DriftClassGenerator<Null, Null> {
+  final String _classNameSuffix;
+  final DaoHelper _daoHelper;
+  final bool _useRowClass;
 
   @override
   TypeChecker get typeChecker => TypeChecker.fromRuntime(dao.runtimeType);
 
+  /// {@macro DaoGenerator}
   const DaoGenerator({
-    this.classNameSuffix = "",
-    this.daoHelper = const DaoHelper(),
+    String classNameSuffix = "",
+    DaoHelper daoHelper = const DaoHelper(),
     required super.inputOption,
-    required this.useRowClass,
-  });
+    required bool useRowClass,
+  })  : _classNameSuffix = classNameSuffix,
+        _useRowClass = useRowClass,
+        _daoHelper = daoHelper;
 
   @override
   (GeneratedSource, Null) generateForAnnotatedElement(
@@ -43,14 +50,14 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
 
     final tableSelector = TableSelectorDao(currentClassState: null);
 
-    final usedTablesResponse = daoHelper.getUsedTables(classElement, dbState, tableSelector);
+    final usedTablesResponse = _daoHelper.getUsedTables(classElement, dbState, tableSelector);
     switch (usedTablesResponse) {
       case ValueError<Set<String>>():
         throw InvalidGenerationSource(usedTablesResponse.error, element: usedTablesResponse.element);
       case ValueData<Set<String>>():
     }
 
-    final valueResponse = daoHelper.generateClassBody(classElement, classNameSuffix, tableSelector, dbState);
+    final valueResponse = _daoHelper.generateClassBody(classElement, _classNameSuffix, tableSelector, dbState);
 
     switch (valueResponse) {
       case ValueData<String>():
@@ -68,8 +75,8 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
     if (superType != null && superType.isDartCoreObject == false) {
       final typeArgument = superType.typeArguments.firstOrNull;
       final superTypeName = superType.element.name;
-      final tableName = "\$$typeArgument${classNameSuffix}sTable";
-      final entityName = "$typeArgument$classNameSuffix";
+      final tableName = "\$$typeArgument${_classNameSuffix}sTable";
+      final entityName = "$typeArgument$_classNameSuffix";
       mixinName = "$superTypeName${ClassHelper.mixinSuffix}";
       mixinClause = "$mixinName<$tableName, $entityName>";
 
@@ -118,7 +125,7 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
 
     final header = _generateClassHeader(
       tableClassNames,
-      "${classElement.name}$classNameSuffix",
+      "${classElement.name}$_classNameSuffix",
       dbState.databaseClass.element!.name!,
       mixinClause,
     );
@@ -161,7 +168,7 @@ class DaoGenerator extends AnnotationGenerator<Null, Null> {
   }
 
   String? _getEntityImport(String targetFilePath, ClassState? classState) {
-    if (useRowClass == false) {
+    if (_useRowClass == false) {
       return null;
     }
 

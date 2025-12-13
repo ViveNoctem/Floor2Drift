@@ -2,8 +2,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
@@ -12,12 +13,18 @@ import 'package:floor2drift/src/value_response.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
-  final DaoHelper daoHelper;
+/// {@template BaseDaoGenerator}
+/// Converts a base dao class to the equivalent drift code
+/// {@endtemplate}
+class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
+  final DaoHelper _daoHelper;
 
+  /// name of the table file in base dao classes
   static String tableSelector = "table";
 
-  const BaseDaoGenerator({this.daoHelper = const DaoHelper(), required super.inputOption});
+  /// {@macro BaseDaoGenerator}
+  const BaseDaoGenerator({DaoHelper daoHelper = const DaoHelper(), required super.inputOption})
+      : _daoHelper = daoHelper;
 
   @override
   bool getImport(LibraryReader library) {
@@ -41,9 +48,17 @@ class BaseDaoGenerator extends AnnotationGenerator<ConvertBaseDao, Null> {
     final baseEntityElement = typeDeclaration?.bound?.element;
     final baseEntityName = baseEntityElement?.name;
 
-    final classState = dbState.entityClassStates.firstWhere((s) => s.classType.element == baseEntityElement);
+    ClassState? classState;
 
-    final valueResponse = daoHelper.generateClassBody(
+    for (final state in dbState.entityClassStates) {
+      if (state.classType.element != baseEntityElement) {
+        continue;
+      }
+      classState = state;
+      break;
+    }
+
+    final valueResponse = _daoHelper.generateClassBody(
       classElement,
       // do not use classNameSuffix. The Type Name should always be a generic type
       "",

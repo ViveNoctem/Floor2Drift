@@ -4,7 +4,7 @@ import 'package:initial_project/floor/base_class.dart';
 
 import '../enums.dart';
 import '../type_converters.dart';
-import '../type_convertersDrift.dart' as drift;
+import '../type_converters_drift.dart' as drift;
 
 @Entity()
 @TypeConverters([IntListConverter])

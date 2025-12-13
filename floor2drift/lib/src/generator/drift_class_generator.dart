@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/input_option.dart';
@@ -7,24 +5,21 @@ import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:source_gen/source_gen.dart';
 
-abstract class AnnotationGenerator<T, S> {
+/// {@template DriftClassGenerator}
+/// Class to convert a specific type of Class to the drift equivalent
+/// {@endtemplate}
+abstract class DriftClassGenerator<T, S> {
+  /// shoud the typeChecker throw an exception on an unresolved class
   final bool throwOnUnresolved;
 
+  /// InputOptions
   final InputOptionBase inputOption;
 
+  /// TypeChecker for the annotation of current class type
   TypeChecker get typeChecker => TypeChecker.fromRuntime(T);
 
-  const AnnotationGenerator({required this.inputOption, this.throwOnUnresolved = true});
-
-  FutureOr<(GeneratedSource, S)> generateClass(
-    ClassElement classElement,
-    OutputOptionBase outputOption,
-    DatabaseState dbState,
-  ) async {
-    final result = generateForAnnotatedElement(classElement, outputOption, dbState);
-
-    return result;
-  }
+  /// {@macro DriftClassGenerator}
+  const DriftClassGenerator({required this.inputOption, this.throwOnUnresolved = true});
 
   /// returns if the generator would generate code for the given library
   bool getImport(LibraryReader library) {
