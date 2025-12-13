@@ -1,9 +1,12 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class BinaryExpressionConverter extends ExpressionConverter<BinaryExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const BinaryExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const BinaryExpressionConverter({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -38,7 +41,7 @@ class BinaryExpressionConverter extends ExpressionConverter<BinaryExpression> {
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    final result1 = expressionConverterUtil.parseExpression(
+    final result1 = _expressionConverterUtil.parseExpression(
       expression.left,
       element,
       asExpression: true,
@@ -55,7 +58,7 @@ class BinaryExpressionConverter extends ExpressionConverter<BinaryExpression> {
 
     final (firstString, firstType) = result1.data;
 
-    final result2 = expressionConverterUtil.parseExpression(
+    final result2 = _expressionConverterUtil.parseExpression(
       expression.right,
       element,
       asExpression: asExpression,

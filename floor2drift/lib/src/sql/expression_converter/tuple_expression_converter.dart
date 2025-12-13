@@ -1,9 +1,12 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class TupleExpressionConverter extends ExpressionConverter<Tuple> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const TupleExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const TupleExpressionConverter({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -16,7 +19,7 @@ class TupleExpressionConverter extends ExpressionConverter<Tuple> {
     List<String> tupleValues = [];
 
     for (final childExpression in expression.expressions) {
-      final result = expressionConverterUtil.parseExpression(
+      final result = _expressionConverterUtil.parseExpression(
         childExpression,
         element,
         asExpression: asExpression,

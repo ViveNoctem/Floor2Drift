@@ -1,0 +1,9 @@
+name: floor2drift_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+workspace:
+  - floor2drift
+  - floor2drift_annotation

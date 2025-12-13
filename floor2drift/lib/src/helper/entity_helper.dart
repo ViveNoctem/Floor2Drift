@@ -1,22 +1,23 @@
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/annotation_converter/annotation_converter.dart';
+import 'package:floor2drift/src/entity/annotation_converter/annotations.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-import '../entity/annotation_converter/annotation_converter.dart';
-import '../entity/annotation_converter/annotations.dart';
-import '../generator/entity_generator.dart';
-
+/// {@template ClassHelper}
+/// Helper class to provide general methods for handling floor classes
+/// {@endtemplate}
 class ClassHelper {
+  /// {@macro ClassHelper}
   const ClassHelper();
 
+  /// suffix that should be added to drift base entity class names
   static String mixinSuffix = "Mixin";
 
   /// returns the dart code for the generated fields and a set of used TypeConverters
@@ -83,10 +84,12 @@ class ClassHelper {
     return ValueResponse.value((fieldString, fieldStates));
   }
 
-  ValueResponse<(String code, ClassState classState)> generateInheritanceFields(
+  /// parses a [annotatedClass] and returns its the dart code and [ClassState]
+  ValueResponse<(String code, ClassState classState)> parseEntitiyFields(
     ClassElement annotatedClass,
     DatabaseState dbState,
   ) {
+    // ignore: deprecated_member_use_from_same_package
     var typeConverters = dbState.typeConverterMap;
 
     final annotationResult = getAnnotations(annotatedClass.metadata);
@@ -165,6 +168,7 @@ class ClassHelper {
     return mixins;
   }
 
+  /// parses [annotations] into their corresponding [AnnotationType]
   ValueResponse<List<AnnotationType>> getAnnotations(List<ElementAnnotation> annotations) {
     List<AnnotationType> result = [];
     for (final annotation in annotations) {
@@ -284,9 +288,9 @@ class ClassHelper {
       return ValueResponse.error("$returnTypName is not supported", field);
     }
 
-    final fieldSuffix = generateFieldSuffix(field, fieldType, usedTypeConverter);
+    final fieldSuffix = _generateFieldSuffix(field, fieldType, usedTypeConverter);
 
-    final namedString = namedAnnotation != null ? namedAnnotation.getDriftNamed() : "";
+    final namedString = namedAnnotation != null ? namedAnnotation.getDriftNamed : "";
 
     final documentation = BaseHelper.getDocumentationForElement(field);
 
@@ -299,11 +303,11 @@ class ClassHelper {
     return ValueResponse.value((dartCode, fieldState));
   }
 
-  String generateFieldSuffix(FieldElement field, InterfaceType fieldType, TypeConverterState? typeConverter) {
+  String _generateFieldSuffix(FieldElement field, InterfaceType fieldType, TypeConverterState? typeConverter) {
     var result = "";
 
     if (typeConverter != null) {
-      result += ".map(const ${typeConverter.classElement.name}${EntityGenerator.staticClassNameSuffix}())";
+      result += ".map(const ${typeConverter.classElement.name}())";
     }
 
     if (fieldType.nullabilitySuffix == NullabilitySuffix.question) {
@@ -313,23 +317,8 @@ class ClassHelper {
     return result;
   }
 
-  String handlePrimaryKeyAnnotation(ElementAnnotation metaData) {
-    final autoGenerate = metaData.computeConstantValue()?.getField("autoGenerate");
-    final boolValue = autoGenerate?.toBoolValue();
-    assert(boolValue != null, "autoGenerate sollte nicht null sein");
-    if (boolValue == true) {
-      return ".autoIncrement()";
-    }
-    return "";
-  }
-
-  String handleDefaultType(String? name) {
-    print("type $name is not supported");
-    return "";
-  }
-
   /// Appends s to the entity name, drift strips the s for the entity class.
-  String getClassHeader(String className, Set<ClassElement> mixinSet, String classNameSuffix, bool useRowClass) {
+  String getClassHeader(String className, Set<ClassElement> mixinSet, bool useRowClass) {
     var mixinString = "";
     if (mixinSet.isNotEmpty) {
       mixinString = "with ";
@@ -337,48 +326,16 @@ class ClassHelper {
 
     mixinString += mixinSet.map((s) => "${s.name}$mixinSuffix").join(", ");
 
-    return "${useRowClass ? "@UseRowClass($className)\n" : ""}class ${getClassName(className, classNameSuffix)} extends Table $mixinString {\n";
+    return "${useRowClass ? "@UseRowClass($className)\n" : ""}class ${className}s extends Table $mixinString {\n";
   }
 
-  String getClassName(String className, String classNameSuffix) {
-    return "$className${classNameSuffix}s";
-  }
-
+  /// returns the header for base entitiy mixins
   String getMixinHeader(String mixinName) {
     return "mixin $mixinName on Table {\n";
   }
 
+  /// returns }\n
   String closeClass() {
     return "}\n";
-  }
-
-  bool isEnum(ParameterElement parameter) {
-    TypeChecker enumChecker = const TypeChecker.fromRuntime(Enum);
-    final typeElement = parameter.type.element;
-
-    if (typeElement == null) {
-      return false;
-    }
-
-    return enumChecker.isSuperOf(typeElement);
-  }
-}
-
-extension ElementX on Element {
-  /// returns the analyzer ASTNode for the current element
-  AstNode? getNode() {
-    final session = this.session;
-    if (session == null) {
-      return null;
-    }
-
-    final parsedLibrary = session.getParsedLibraryByElement(library!);
-
-    if (parsedLibrary is! ParsedLibraryResult) {
-      return null;
-    }
-
-    final declarationResult = parsedLibrary.getElementDeclaration(this);
-    return declarationResult?.node;
   }
 }

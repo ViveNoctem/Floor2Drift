@@ -2,9 +2,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
-import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
 import 'package:floor2drift/src/helper/annotation_helper.dart';
@@ -14,26 +14,33 @@ import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
-  static List<String> generatedMixins = List.empty(growable: true);
+/// {@template EntityGenerator}
+/// Converts a entity class to the equivalent drift code
+/// {@endtemplate}
+class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
+  final bool _useRowClass;
 
-  static String staticClassNameSuffix = "";
-  final String classNameSuffix;
-  final bool useRowClass;
-  final ETableNameOption tableName;
-  final ClassHelper classHelper;
-  final AnnotationHelper annotationHelper;
-  final TypeConverterGenerator? typeConverterGenerator;
+  final ETableNameOption _tableName;
 
+  final ClassHelper _classHelper;
+
+  final AnnotationHelper _annotationHelper;
+
+  final TypeConverterGenerator? _typeConverterGenerator;
+
+  /// {@macro EntityGenerator}
   EntityGenerator({
-    required this.typeConverterGenerator,
-    required this.classNameSuffix,
-    required this.useRowClass,
-    this.classHelper = const ClassHelper(),
-    this.annotationHelper = const AnnotationHelper(),
+    required TypeConverterGenerator? typeConverterGenerator,
+    required bool useRowClass,
+    ClassHelper classHelper = const ClassHelper(),
+    AnnotationHelper annotationHelper = const AnnotationHelper(),
     required super.inputOption,
-    required this.tableName,
-  });
+    required ETableNameOption tableName,
+  })  : _tableName = tableName,
+        _useRowClass = useRowClass,
+        _classHelper = classHelper,
+        _typeConverterGenerator = typeConverterGenerator,
+        _annotationHelper = annotationHelper;
 
   @override
   (GeneratedSource, ClassState) generateForAnnotatedElement(
@@ -41,7 +48,6 @@ class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
     OutputOptionBase outputOption,
     DatabaseState dbState,
   ) {
-    staticClassNameSuffix = classNameSuffix;
     var result = "";
 
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
@@ -53,7 +59,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
     // alway add drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final data = classHelper.generateInheritanceFields(classElement, dbState);
+    final data = _classHelper.parseEntitiyFields(classElement, dbState);
 
     switch (data) {
       case ValueError():
@@ -62,8 +68,6 @@ class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
     }
 
     final (fieldsCode, classState) = data.data;
-
-    final className = classHelper.getClassName(classElement.name, staticClassNameSuffix);
 
     // add mixin/base entity imports
     for (final mixin in classState.superClasses) {
@@ -81,7 +85,7 @@ class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
     for (final typeConverter in classState.usedTypeConverters) {
       final libraryReader = LibraryReader(typeConverter.classElement.library);
 
-      final willChange = typeConverterGenerator?.getImport(libraryReader);
+      final willChange = _typeConverterGenerator?.getImport(libraryReader);
       var importString = BaseHelper.getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
 
       if (importString == null) {
@@ -95,13 +99,14 @@ class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
       newImports.add(importString);
     }
 
+    final className = "${classElement.name}s";
+
     BaseHelper.addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
-    result +=
-        classHelper.getClassHeader(classElement.name, classState.superClasses, staticClassNameSuffix, useRowClass);
-    result += _getTableName(tableName, classElement);
+    result += _classHelper.getClassHeader(classElement.name, classState.superClasses, _useRowClass);
+    result += _getTableName(_tableName, classElement);
     result += fieldsCode;
-    result += classHelper.closeClass();
+    result += _classHelper.closeClass();
 
     final generatedSource = GeneratedSource(code: result, imports: newImports);
 
@@ -129,13 +134,13 @@ class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
   }
 
   String _getFloorTableName(ClassElement classElement) {
-    final entityAnnotation = annotationHelper.getEntityAnnotation(classElement);
+    final entityAnnotation = _annotationHelper.getEntityAnnotation(classElement);
 
     if (entityAnnotation == null) {
       return "";
     }
 
-    final overrideTableName = annotationHelper.getEntityAnnotationTableName(entityAnnotation);
+    final overrideTableName = _annotationHelper.getEntityAnnotationTableName(entityAnnotation);
 
     if (overrideTableName.isNotEmpty) {
       return overrideTableName;
@@ -145,13 +150,13 @@ class EntityGenerator extends AnnotationGenerator<Entity, ClassState> {
   }
 
   String _getDriftCustomTableName(ClassElement classElement) {
-    final entityAnnotation = annotationHelper.getEntityAnnotation(classElement);
+    final entityAnnotation = _annotationHelper.getEntityAnnotation(classElement);
 
     if (entityAnnotation == null) {
       return "";
     }
 
-    final overrideTableName = annotationHelper.getEntityAnnotationTableName(entityAnnotation);
+    final overrideTableName = _annotationHelper.getEntityAnnotationTableName(entityAnnotation);
 
     if (overrideTableName.isNotEmpty) {
       return overrideTableName;

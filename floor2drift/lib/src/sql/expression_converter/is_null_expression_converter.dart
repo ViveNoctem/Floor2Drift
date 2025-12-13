@@ -1,9 +1,12 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class IsNullExpressionConverter extends ExpressionConverter<IsNullExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const IsNullExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const IsNullExpressionConverter({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -16,7 +19,7 @@ class IsNullExpressionConverter extends ExpressionConverter<IsNullExpression> {
     // NULL IS NULL evaluates to TRUE
     // NULL IS NOT NULL evaluates to FALSE
     if (expression.operand is NullLiteral) {
-      return expressionConverterUtil.parseExpression(
+      return _expressionConverterUtil.parseExpression(
         BooleanLiteral(expression.negated == false),
         element,
         parameters: parameters,
@@ -25,7 +28,7 @@ class IsNullExpressionConverter extends ExpressionConverter<IsNullExpression> {
       );
     }
 
-    final result = expressionConverterUtil.parseExpression(
+    final result = _expressionConverterUtil.parseExpression(
       expression.operand,
       element,
       asExpression: asExpression,

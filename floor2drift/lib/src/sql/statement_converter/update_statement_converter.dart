@@ -1,12 +1,14 @@
 part of 'statement_converter.dart';
 
+/// {@macro StatementConverter}
 class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
-  final SqlHelper sqlHelper;
+  final SqlHelper _sqlHelper;
 
-  const UpdateStatementConverter({this.sqlHelper = const SqlHelper()});
+  /// {@macro StatementConverter}
+  const UpdateStatementConverter({SqlHelper sqlHelper = const SqlHelper()}) : _sqlHelper = sqlHelper;
 
   @override
-  ValueResponse<(String, String)> parse(
+  ValueResponse<String> _parse(
     UpdateStatement statement,
     MethodElement method,
     TableSelector tableSelector,
@@ -14,18 +16,17 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   ) {
     final tableFrom = statement.table;
 
-    final currentClassState =
-        dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == tableFrom.tableName.toLowerCase());
+    for (final state in dbState.entityClassStates) {
+      if (state.sqlTablename.toLowerCase() != tableFrom.tableName.toLowerCase()) {
+        continue;
+      }
 
-    tableSelector.currentClassState = currentClassState;
+      tableSelector.currentClassState = state;
+    }
 
-    final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
-
-    tableSelector = sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
+    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
 
     final tableGetter = "updates: {${tableSelector.selector}},";
-
-    final tableName = ReCase(lowerCaseTableName).pascalCase;
     final query = statement.span?.text;
 
     var variables = "[";
@@ -54,11 +55,11 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
     // close bracket before the update
     result += ");";
 
-    return ValueResponse.value((result, tableName));
+    return ValueResponse.value(result);
   }
 
   @override
-  ValueResponse<String> parseUsedTable(UpdateStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<String> _parseUsedTable(UpdateStatement statement, MethodElement method, TableSelector tableSelector) {
     // TODO what to do in baseDao?
     return ValueResponse.value(ReCase(statement.table.tableName).pascalCase);
   }

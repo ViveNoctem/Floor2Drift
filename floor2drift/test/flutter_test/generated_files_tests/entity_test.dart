@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 import '../additional_classes/test_helper.dart';
 import '../test_databases/database/floor_test_database.dart' as floor;
-import '../test_databases/database/floor_test_databaseDrift.dart' as drift;
+import '../test_databases/database/floor_test_database_drift.dart' as drift;
 import '../test_databases/entities/task.dart';
 import '../test_databases/support_classes/enums.dart';
 
@@ -98,11 +98,10 @@ void main() {
         integers: [1],
       );
 
-      final (taskDrift, voidValue) =
-          await (
-            driftDatabase.testTasks.insertReturning(driftInsertable),
-            floorDatabase.taskDao.annotationInsertTask(taskFloor),
-          ).wait;
+      final (taskDrift, voidValue) = await (
+        driftDatabase.testTasks.insertReturning(driftInsertable),
+        floorDatabase.taskDao.annotationInsertTask(taskFloor),
+      ).wait;
 
       expect(taskDrift.toTask, EqualTaskMatcher(taskFloor));
     });
@@ -140,27 +139,26 @@ void main() {
   test("INSERT TEST", () async {
     final dateTime = DateTime.now();
 
-    final (_, _) =
-        await (
-          driftDatabase.testTasks.insertOne(
-            drift.TestTasksCompanion.insert(
-              timestamp: dateTime,
-              status: TaskStatus.inProgress,
-              type: Value(TaskType.bug),
-              customDouble: 859.258,
-              integers: [1],
-            ),
-          ),
-          floorDatabase.taskDao.annotationInsertTask(
-            TestTask(
-              timestamp: dateTime,
-              status: TaskStatus.inProgress,
-              type: TaskType.bug,
-              customDouble: 859.258,
-              integers: [1],
-            ),
-          ),
-        ).wait;
+    final (_, _) = await (
+      driftDatabase.testTasks.insertOne(
+        drift.TestTasksCompanion.insert(
+          timestamp: dateTime,
+          status: TaskStatus.inProgress,
+          type: Value(TaskType.bug),
+          customDouble: 859.258,
+          integers: [1],
+        ),
+      ),
+      floorDatabase.taskDao.annotationInsertTask(
+        TestTask(
+          timestamp: dateTime,
+          status: TaskStatus.inProgress,
+          type: TaskType.bug,
+          customDouble: 859.258,
+          integers: [1],
+        ),
+      ),
+    ).wait;
 
     final (driftSelect, floorSelect) =
         await (driftDatabase.testTasks.select().get(), floorDatabase.taskDao.getAll()).wait;

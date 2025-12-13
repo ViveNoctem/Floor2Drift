@@ -1,6 +1,8 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class ReferenceExpressionConverter extends ExpressionConverter<Reference> {
+  ///  {@macro ExpressionConverter}
   const ReferenceExpressionConverter();
 
   @override

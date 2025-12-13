@@ -4,7 +4,7 @@ import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
-import '../flutter_test/mocks/MockInterfaceType.dart';
+import '../flutter_test/mocks/mock_interface_type.dart';
 
 void main() {
   late MockInterfaceType mockTypeArgument;

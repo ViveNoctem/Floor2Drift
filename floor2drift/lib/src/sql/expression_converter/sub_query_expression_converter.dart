@@ -1,6 +1,8 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class SubQueryExpressionConverter extends ExpressionConverter<SubQuery> {
+  ///  {@macro ExpressionConverter}
   const SubQueryExpressionConverter();
 
   @override

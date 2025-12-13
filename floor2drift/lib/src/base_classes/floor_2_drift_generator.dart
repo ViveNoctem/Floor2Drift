@@ -5,15 +5,16 @@ import 'package:analyzer/source/file_source.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/input_option.dart';
+import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/base_classes/processing_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';
-import 'package:floor2drift/src/generator/class_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
 import 'package:floor2drift/src/generator/database_generator.dart';
+import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/entity_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
@@ -21,13 +22,17 @@ import 'package:floor_annotation/floor_annotation.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'output_option.dart';
-
+/// Generator class to migrate a floor database to drift
+///
+/// See the README.md on how to use this class
 class Floor2DriftGenerator {
+  /// Options for which files to convert
   final InputOptionBase inputOption;
 
+  /// Options how the files should be converted
   final ProcessingOptionBase processingOption;
 
+  /// Options where the converted will be written to.
   final OutputOptionBase outputOption;
 
   /// Constructor for custom option support
@@ -47,7 +52,7 @@ class Floor2DriftGenerator {
     required String dbPath,
     String rootPath = "../",
     Glob? classNameFilter,
-    String outputFileSuffix = "Drift",
+    String outputFileSuffix = "_drift",
     bool dryRun = false,
     bool convertDao = true,
     bool convertEntity = true,
@@ -70,7 +75,7 @@ class Floor2DriftGenerator {
       // migrations: migrations,
     );
 
-    final outputOption = OutputOptions(root: rootEntity, dryRun: dryRun, fileSuffix: outputFileSuffix);
+    final outputOption = OutputOptions(dryRun: dryRun, fileSuffix: outputFileSuffix);
 
     final processingOption = _getProcessingOption(inputOption, outputOption, useRowClass, tableRenaming);
 
@@ -118,7 +123,9 @@ class Floor2DriftGenerator {
         inputOption.convertDbDaos ? DaoGenerator(inputOption: inputOption, useRowClass: useRowClass) : null;
 
     final typeConverterGenerator = inputOption.convertDbTypeConverters
-        ? TypeConverterGenerator(classNameSuffix: "", inputOption: inputOption)
+        ? TypeConverterGenerator(
+            inputOption: inputOption,
+          )
         : null;
 
     final baseEntityGenerator = inputOption.convertDbEntities
@@ -127,7 +134,6 @@ class Floor2DriftGenerator {
 
     final entityGenerator = inputOption.convertDbEntities
         ? EntityGenerator(
-            classNameSuffix: "",
             useRowClass: useRowClass,
             inputOption: inputOption,
             tableName: tableNameOption,
@@ -148,9 +154,10 @@ class Floor2DriftGenerator {
     );
   }
 
+  /// Starts the generation process
   void start() async {
     DatabaseState? dbState;
-    for (final (path, context) in inputOption.getFiles()) {
+    for (final (path, context) in inputOption.getDatabaseFile()) {
       dbState = await processingOption.processDatabaseGenerator(context, path, inputOption);
 
       if (dbState != null) {
@@ -169,7 +176,7 @@ class Floor2DriftGenerator {
     // entityGenerators must come before dao generators. DaoGenerator need the entityClasses in the dbState.
     // baseDaoGenerator must come before daoGenerator
 
-    final (text1, isNull) = await _processClassElements(
+    final (text1, isNull) = _processClassElements(
       [dbState.databaseClass.element!.toClassElement],
       dbState,
       processingOption.databaseGenerator,
@@ -183,7 +190,7 @@ class Floor2DriftGenerator {
 
     if (inputOption.convertDbEntities) {
       if (processingOption.entityGenerator != null) {
-        final (text, classStates) = await _processClassElements(
+        final (text, classStates) = _processClassElements(
           dbState.entities,
           dbState,
           processingOption.entityGenerator!,
@@ -195,7 +202,7 @@ class Floor2DriftGenerator {
       }
 
       if (processingOption.baseEntityGenerator != null) {
-        final (text, classStates) = await _processClassElements(
+        final (text, classStates) = _processClassElements(
           dbState.baseEntities,
           dbState,
           processingOption.baseEntityGenerator!,
@@ -230,7 +237,7 @@ class Floor2DriftGenerator {
 
     if (inputOption.convertDbDaos) {
       if (processingOption.baseDaoGenerator != null) {
-        final (text, isNull) = await _processClassElements(
+        final (text, isNull) = _processClassElements(
           dbState.baseDaos,
           dbState,
           processingOption.baseDaoGenerator!,
@@ -241,7 +248,7 @@ class Floor2DriftGenerator {
       }
 
       if (processingOption.daoGenerator != null) {
-        final (text, isNull) = await _processClassElements(
+        final (text, isNull) = _processClassElements(
           dbState.daos,
           dbState,
           processingOption.daoGenerator!,
@@ -257,7 +264,7 @@ class Floor2DriftGenerator {
           for (final state in dbState.entityClassStates) ...state.usedTypeConverters.map((s) => s.classElement)
         };
 
-        final (text, isNull) = await _processClassElements(
+        final (text, isNull) = _processClassElements(
           typeConverters,
           dbState,
           processingOption.typeConverterGenerator!,
@@ -276,12 +283,12 @@ class Floor2DriftGenerator {
     }
   }
 
-  Future<(Map<String, GeneratedSource>, List<S>)> _processClassElements<T, S>(
+  (Map<String, GeneratedSource>, List<S>) _processClassElements<T, S>(
     Iterable<ClassElement> classElements,
     DatabaseState dbState,
-    AnnotationGenerator<T, S> generator,
+    DriftClassGenerator<T, S> generator,
     Map<String, GeneratedSource> newFiles,
-  ) async {
+  ) {
     final generatorResult = <S>[];
 
     for (final classElement in classElements) {
@@ -292,7 +299,7 @@ class Floor2DriftGenerator {
         continue;
       }
 
-      final (generatedSource, genResult) = await processingOption.processClassElement(classElement, dbState, generator);
+      final (generatedSource, genResult) = processingOption.processClassElement(classElement, dbState, generator);
 
       if (generatedSource.isEmpty) {
         continue;

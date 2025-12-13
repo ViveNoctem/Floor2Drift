@@ -5,14 +5,16 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:path/path.dart' as path;
 
+/// Helper class to provide general methods
 class BaseHelper {
   BaseHelper._();
 
+  /// parses the [interfaceType] and returns the [TypeSpecification] for this type
   static TypeSpecification getTypeSpecification(DartType interfaceType) {
     if (interfaceType is! InterfaceType) {
       return const TypeSpecification(EType.unknown, EType.unknown, true);
@@ -53,6 +55,7 @@ class BaseHelper {
     );
   }
 
+  /// returns an import directive to import [toImportUri] in [importInFilePath]
   static String? getImport(Uri toImportUri, String importInFilePath) {
     final libraryUri = toImportUri;
 
@@ -76,6 +79,7 @@ class BaseHelper {
     return "import '$relativePath';";
   }
 
+  /// adds the path [classElement] will be written to to [driftClasses]
   static void addToDriftClassesMap(
     ClassElement classElement,
     String newClassName,
@@ -84,8 +88,6 @@ class BaseHelper {
   ) {
     final uri = classElement.librarySource.uri;
 
-    // TODO Test on windows
-    // TODO same as entity_generator.
     if (uri.isScheme("package")) {
       final newpath = outputOption.getFileName(uri.toString());
 
@@ -96,6 +98,7 @@ class BaseHelper {
     }
   }
 
+  /// returns the doc comment for the [element]
   static String getDocumentationForElement(Element element) {
     if (element.documentationComment == null) {
       return "";
@@ -104,6 +107,9 @@ class BaseHelper {
     return "${element.documentationComment}\n";
   }
 
+  /// iterates through [dbState] to search for the [className]
+  ///
+  /// return null if no state was found
   static ClassState? getClassState(DatabaseState dbState, String className) {
     for (final state in dbState.entityClassStates) {
       if (state.className.toLowerCase() != className.toLowerCase()) {
@@ -116,6 +122,9 @@ class BaseHelper {
     return null;
   }
 
+  /// returns an import statement to import [classState] in [targetFilePath]
+  ///
+  /// also see [getImport]
   static String? getClassImport(String targetFilePath, ClassState? classState) {
     final classUri = classState?.classType.element?.librarySource?.uri;
 

@@ -1,11 +1,14 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class InExpressionConverter extends ExpressionConverter<InExpression> {
-  final ExpressionConverterUtil expressionConverterUtil;
-  final SqlHelper sqlHelper;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
+  ///  {@macro ExpressionConverter}
   const InExpressionConverter(
-      {this.expressionConverterUtil = const ExpressionConverterUtil(), this.sqlHelper = const SqlHelper()});
+      {ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil(),
+      SqlHelper sqlHelper = const SqlHelper()})
+        : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -15,7 +18,7 @@ class InExpressionConverter extends ExpressionConverter<InExpression> {
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    final leftResult = expressionConverterUtil.parseExpression(
+    final leftResult = _expressionConverterUtil.parseExpression(
       expression.left,
       element,
       asExpression: true,
@@ -32,7 +35,7 @@ class InExpressionConverter extends ExpressionConverter<InExpression> {
 
     // Tuple, Subquery, Variable (ColonName, Numbered)
     // inside is always as Value not Expression because its easier with List of Values
-    final insideResult = expressionConverterUtil.parseExpression(
+    final insideResult = _expressionConverterUtil.parseExpression(
       expression.inside,
       element,
       asExpression: false,

@@ -1,6 +1,10 @@
 part of 'annotation_converter.dart';
 
+/// {@template TypeConvertersAnnotationConverter}
+/// Converts a [TypeConverters] annotation to the [TypeConvertersAnnotation] data class
+/// {@endtemplate}
 class TypeConvertersAnnotationConverter extends AnnotationConverter<TypeConverters, TypeConvertersAnnotation> {
+  /// {@macro TypeConvertersAnnotationConverter}
   const TypeConvertersAnnotationConverter();
 
   @override

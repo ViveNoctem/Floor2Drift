@@ -1,15 +1,13 @@
 name: floor2drift_annotation
-description: A starting point for Dart libraries or applications.
+description: This library contains the annotations used by the floor2Drift library
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/ViveNoctem/Floor2Drift
+issue_tracker: https://github.com/ViveNoctem/Floor2Drift/issues
+resolution: workspace
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-
-# Add regular dependencies here.
-dependencies:
-  # path: ^1.8.0
+  sdk: ^3.6.0
 
 dev_dependencies:
-  lints: ^5.0.0
+  lints: ^6.0.0
   test: ^1.24.0

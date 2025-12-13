@@ -1,12 +1,14 @@
 part of 'statement_converter.dart';
 
+/// {@macro StatementConverter}
 class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
-  final SqlHelper sqlHelper;
+  final SqlHelper _sqlHelper;
 
-  const DeleteStatementConverter({this.sqlHelper = const SqlHelper()});
+  /// {@macro StatementConverter}
+  const DeleteStatementConverter({SqlHelper sqlHelper = const SqlHelper()}) : _sqlHelper = sqlHelper;
 
   @override
-  ValueResponse<(String, String)> parse(
+  ValueResponse<String> _parse(
     DeleteStatement statement,
     MethodElement method,
     TableSelector tableSelector,
@@ -14,22 +16,23 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
   ) {
     final tableFrom = statement.from;
 
-    final currentClassState =
-        dbState.entityClassStates.firstWhere((s) => s.sqlTablename.toLowerCase() == tableFrom.tableName.toLowerCase());
-    tableSelector.currentClassState = currentClassState;
+    for (final state in dbState.entityClassStates) {
+      if (state.sqlTablename.toLowerCase() != tableFrom.tableName.toLowerCase()) {
+        continue;
+      }
 
-    final lowerCaseTableName = "${ReCase(tableFrom.tableName).camelCase}s";
+      tableSelector.currentClassState = state;
+      break;
+    }
 
-    tableSelector = sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
-
-    final tableName = "${lowerCaseTableName[0].toUpperCase()}${lowerCaseTableName.substring(1)}";
+    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
 
     var result = "return (delete(${tableSelector.selector})";
 
     final where = statement.where;
 
     if (where != null) {
-      final whereResult = sqlHelper.addWhereClause(
+      final whereResult = _sqlHelper.addWhereClause(
         where,
         method,
         method.parameters,
@@ -53,11 +56,11 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
     // the method to execute the delete statement is always .go()
     result += ".go();";
 
-    return ValueResponse.value((result, tableName));
+    return ValueResponse.value(result);
   }
 
   @override
-  ValueResponse<String> parseUsedTable(DeleteStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<String> _parseUsedTable(DeleteStatement statement, MethodElement method, TableSelector tableSelector) {
     // TODO what to do in baseDao?
     return ValueResponse.value(ReCase(statement.table.tableName).pascalCase);
   }

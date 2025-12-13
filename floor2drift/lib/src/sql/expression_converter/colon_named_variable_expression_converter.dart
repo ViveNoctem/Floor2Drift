@@ -1,8 +1,11 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNamedVariable> {
-  final SqlHelper sqlHelper;
-  const ColonNamedVariableExpressionConverter({this.sqlHelper = const SqlHelper()});
+  final SqlHelper _sqlHelper;
+
+  ///  {@macro ExpressionConverter}
+  const ColonNamedVariableExpressionConverter({SqlHelper sqlHelper = const SqlHelper()}) : _sqlHelper = sqlHelper;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -46,9 +49,9 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
         return ValueResponse.error("List not supported in ColonNamedVariable as Expression", element);
       }
 
-      final converted = sqlHelper.checkTypeConverter(selector, name);
+      final converted = _sqlHelper.checkTypeConverter(selector, name);
 
-      if (converted.isNotEmpty && sqlHelper.isNativeSqlType(parameter) == false) {
+      if (converted.isNotEmpty && _sqlHelper.isNativeSqlType(parameter) == false) {
         return ValueResponse.value(("Variable($converted)", EExpressionType.colonNamedVariable));
       }
 
@@ -68,12 +71,12 @@ class ColonNamedVariableExpressionConverter extends ExpressionConverter<ColonNam
     if (isList) {
       // need different selectorName to not be shadowed from different selecotor
       final listSelector = "n";
-      final converted = sqlHelper.checkTypeConverter(selector, listSelector);
+      final converted = _sqlHelper.checkTypeConverter(selector, listSelector);
 
       // TODO isNativeSqlType works for some use cases.
       // TODO For a correct solution the typeConverter to-/ from type is needed
       // TODO e.G. if a String to String converter is used the converter should always be used
-      if (converted.isNotEmpty && sqlHelper.isNativeSqlType(parameter) == false) {
+      if (converted.isNotEmpty && _sqlHelper.isNativeSqlType(parameter) == false) {
         // TODO is '!' needed?
         return ValueResponse.value((
           "...$name.map(($listSelector) => $converted!)",

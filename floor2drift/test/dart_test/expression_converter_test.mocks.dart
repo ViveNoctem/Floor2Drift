@@ -14,8 +14,7 @@ import 'package:analyzer/source/file_source.dart' as _i20;
 import 'package:analyzer/source/source.dart' as _i9;
 import 'package:analyzer/src/generated/engine.dart' as _i2;
 import 'package:analyzer/src/generated/utilities_dart.dart' as _i7;
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart'
-    as _i10;
+import 'package:floor2drift/src/entity/class_state.dart' as _i10;
 import 'package:floor2drift/src/enum/enums.dart' as _i18;
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart'
     as _i16;

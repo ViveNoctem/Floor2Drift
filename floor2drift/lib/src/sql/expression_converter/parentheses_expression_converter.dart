@@ -1,9 +1,13 @@
 part of 'expression_converter.dart';
 
+///  {@macro ExpressionConverter}
 class ParenthesesExpressionConverter extends ExpressionConverter<Parentheses> {
-  final ExpressionConverterUtil expressionConverterUtil;
+  final ExpressionConverterUtil _expressionConverterUtil;
 
-  const ParenthesesExpressionConverter({this.expressionConverterUtil = const ExpressionConverterUtil()});
+  ///  {@macro ExpressionConverter}
+  const ParenthesesExpressionConverter(
+      {ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
+      : _expressionConverterUtil = expressionConverterUtil;
 
   @override
   ValueResponse<(String, EExpressionType)> parse(
@@ -13,7 +17,7 @@ class ParenthesesExpressionConverter extends ExpressionConverter<Parentheses> {
     required List<ParameterElement> parameters,
     required TableSelector selector,
   }) {
-    final result = expressionConverterUtil.parseExpression(
+    final result = _expressionConverterUtil.parseExpression(
       expression.expression,
       element,
       asExpression: asExpression,

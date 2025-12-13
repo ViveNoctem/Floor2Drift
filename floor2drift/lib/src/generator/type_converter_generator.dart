@@ -2,21 +2,24 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
-import 'package:floor2drift/src/generator/class_generator.dart';
+import 'package:floor2drift/src/element_extension.dart';
+import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
-import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
-// generic is omitted because dao is private
-class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
-  final String classNameSuffix;
-
+/// {@template TypeConverterGenerator}
+/// Converts a base dao class to the equivalent drift code
+///
+/// generic is omitted because [dao] is a private class and [typeChecker] is overridden
+/// {@endtemplate}
+class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
   @override
   TypeChecker get typeChecker => TypeChecker.fromRuntime(TypeConverter);
 
-  TypeConverterGenerator({required this.classNameSuffix, required super.inputOption});
+  /// {@macro TypeConverterGenerator}
+  TypeConverterGenerator({required super.inputOption});
 
   // TODO potential Problem
   // TODO A class needs both a not converted Type Converter and a converted TypeConverter
@@ -55,7 +58,7 @@ class TypeConverterGenerator extends AnnotationGenerator<Null, Null> {
 
     result += BaseHelper.getDocumentationForElement(classElement);
 
-    result += "class ${classElement.name}$classNameSuffix extends TypeConverter<$fromType, $toType> { \n";
+    result += "class ${classElement.name} extends TypeConverter<$fromType, $toType> { \n";
 
     // TODO add const constructor from Floor TypeConverter if one exists
     result += "const ${classElement.name}();\n\n";

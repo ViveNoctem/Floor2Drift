@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:floor2drift/src/entity/annotation_converter/classState.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/sql_helper.dart';
 import 'package:floor2drift/src/sql/statement_converter/statement_converter.dart';
@@ -23,9 +23,16 @@ part 'sub_query_expression_converter.dart';
 part 'tuple_expression_converter.dart';
 part 'unary_expression_converter.dart';
 
+/// {@template ExpressionConverterUtil}
+/// Helper class to provide general methods for handling sql expressions
+/// {@endtemplate}
 class ExpressionConverterUtil {
+  /// {@macro ExpressionConverterUtil}
   const ExpressionConverterUtil();
 
+  /// parses the given [expression] into the drift code
+  ///
+  /// calls the different implementations of [ExpressionConverter]
   ValueResponse<(String, EExpressionType)> parseExpression(
     Expression expression,
     Element element, {
@@ -148,10 +155,12 @@ class ExpressionConverterUtil {
   }
 }
 
+/// {@template ExpressionConverter}
+/// Class for converting a specific SQL expression to its drift counterpart
+/// {@endtemplate}
 sealed class ExpressionConverter<T extends Expression> {
   const ExpressionConverter();
 
-  ///
   /// if [asExpression] is true [Reference] adds a selector in front and
   /// [ColonNamedVariable] wraps the variable in a [Variable] Object
   ValueResponse<(String, EExpressionType)> parse(
