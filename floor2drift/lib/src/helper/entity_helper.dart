@@ -292,7 +292,7 @@ class ClassHelper {
 
     final namedString = namedAnnotation != null ? namedAnnotation.getDriftNamed : "";
 
-    final documentation = BaseHelper.getDocumentationForElement(field);
+    final documentation = const BaseHelper().getDocumentationForElement(field);
 
     final dartCode =
         "$documentation$columntype get ${field.name} => $columnCode()$namedString$fieldSuffix$metaDataSuffix();\n";

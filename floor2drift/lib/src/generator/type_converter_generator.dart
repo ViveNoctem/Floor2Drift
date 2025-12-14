@@ -43,6 +43,7 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
+    GeneratedSource currentSource,
   ) {
     if (typeChecker.isSuperOf(classElement) == false) {
       throw InvalidGenerationSourceError(
@@ -56,7 +57,7 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
     final fromType = (classElement.supertype!).typeArguments[0].getDisplayString(withNullability: true);
     final toType = (classElement.supertype!).typeArguments[1].getDisplayString(withNullability: true);
 
-    result += BaseHelper.getDocumentationForElement(classElement);
+    result += const BaseHelper().getDocumentationForElement(classElement);
 
     result += "class ${classElement.name} extends TypeConverter<$fromType, $toType> { \n";
 
@@ -76,7 +77,7 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
         return (GeneratedSource.empty(), null);
       }
 
-      result += BaseHelper.getDocumentationForElement(method);
+      result += const BaseHelper().getDocumentationForElement(method);
 
       if (method.name == "decode") {
         result += "@override\n$fromType fromSql($toType ${method.parameters[0].name})\n${node.body.toSource()}\n";
@@ -87,7 +88,7 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
 
     result += "}\n";
     final imports = const {"import 'package:drift/drift.dart';"};
-    final generatedSource = GeneratedSource(code: result, imports: imports);
+    final generatedSource = currentSource + GeneratedSource(code: result, imports: imports);
     return (generatedSource, null);
   }
 }

@@ -41,6 +41,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
+    GeneratedSource currentSource,
   ) {
     var result = "";
 
@@ -54,11 +55,11 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
 
     final (fieldsCode, classState) = valueResult.data;
 
-    result += BaseHelper.getDocumentationForElement(classElement);
+    result += const BaseHelper().getDocumentationForElement(classElement);
 
     final mixinName = "${classElement.name}${ClassHelper.mixinSuffix}";
 
-    BaseHelper.addToDriftClassesMap(classElement, mixinName, outputOption, dbState.driftClasses);
+    const BaseHelper().addToDriftClassesMap(classElement, mixinName, outputOption, dbState.driftClasses);
 
     result += _classHelper.getMixinHeader(mixinName);
     result += fieldsCode;
@@ -71,7 +72,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
       final libraryReader = LibraryReader(typeConverter.classElement.library);
 
       final willChange = _typeConverterGenerator?.getImport(libraryReader);
-      var importString = BaseHelper.getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
+      var importString = const BaseHelper().getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
 
       if (importString == null) {
         continue;
@@ -84,7 +85,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
       imports.add(importString);
     }
 
-    final generatedSource = GeneratedSource(code: result, imports: imports);
+    final generatedSource = currentSource + GeneratedSource(code: result, imports: imports);
 
     return (generatedSource, classState);
   }

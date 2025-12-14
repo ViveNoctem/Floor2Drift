@@ -41,6 +41,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
+    GeneratedSource currentSource,
   ) {
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
@@ -80,10 +81,22 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       mixinName = "$superTypeName${ClassHelper.mixinSuffix}";
       mixinClause = "$mixinName<$tableName, $entityName>";
 
+      if (typeArgument != null) {
+        final typeArgumentUri = typeArgument.element?.librarySource?.uri;
+
+        if (typeArgumentUri != null) {
+          final entityImport = const BaseHelper().getImport(typeArgumentUri, targetFilePath);
+
+          if (entityImport != null) {
+            newImports.add(entityImport);
+          }
+        }
+      }
+
       final mixinClassUri = dbState.driftClasses[mixinName];
 
       if (mixinClassUri != null) {
-        final tableImport = BaseHelper.getImport(Uri.parse(mixinClassUri), targetFilePath);
+        final tableImport = const BaseHelper().getImport(Uri.parse(mixinClassUri), targetFilePath);
 
         if (tableImport != null) {
           newImports.add(tableImport);
@@ -91,7 +104,8 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       }
     }
 
-    final databaseimport = BaseHelper.getImport(dbState.databaseClass.element!.librarySource!.uri, targetFilePath);
+    final databaseimport =
+        const BaseHelper().getImport(dbState.databaseClass.element!.librarySource!.uri, targetFilePath);
 
     if (databaseimport != null) {
       newImports.add(outputOption.getFileName(databaseimport));
@@ -103,7 +117,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       final driftClassUri = dbState.driftClasses["${table}s"];
 
       if (driftClassUri != null) {
-        final tableImport = BaseHelper.getImport(Uri.parse(driftClassUri), targetFilePath);
+        final tableImport = const BaseHelper().getImport(Uri.parse(driftClassUri), targetFilePath);
 
         if (tableImport != null) {
           newImports.add(tableImport);
@@ -130,14 +144,16 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       mixinClause,
     );
 
-    final documentation = BaseHelper.getDocumentationForElement(classElement);
+    final documentation = const BaseHelper().getDocumentationForElement(classElement);
     var result = "$documentation$header${valueResponse.data}\n}\n";
 
     // output option needed to resolve the part directive because the file could be renamed
     final fileName = outputOption.getFileName(classElement.source.shortName).replaceAll(".dart", ".g.dart");
     final partDirective = "part '$fileName';";
 
-    final generatedSource = GeneratedSource(code: result, imports: newImports, parts: {partDirective});
+    currentSource = const DaoHelper().removeUnwantedImports(currentSource);
+
+    final generatedSource = currentSource + GeneratedSource(code: result, imports: newImports, parts: {partDirective});
 
     return (generatedSource, null);
   }
@@ -178,7 +194,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       return null;
     }
 
-    final floorEntityImport = BaseHelper.getImport(floorEntityUri, targetFilePath);
+    final floorEntityImport = const BaseHelper().getImport(floorEntityUri, targetFilePath);
 
     return floorEntityImport;
   }

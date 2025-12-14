@@ -47,12 +47,13 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
+    GeneratedSource currentSource,
   ) {
     var result = "";
 
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
-    final import = BaseHelper.getImport(classElement.library.librarySource.uri, targetFilePath);
+    final import = const BaseHelper().getImport(classElement.library.librarySource.uri, targetFilePath);
 
     final newImports = <String>{if (import != null) import};
 
@@ -71,7 +72,7 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
 
     // add mixin/base entity imports
     for (final mixin in classState.superClasses) {
-      var importString = BaseHelper.getImport(mixin.librarySource.uri, targetFilePath);
+      var importString = const BaseHelper().getImport(mixin.librarySource.uri, targetFilePath);
 
       if (importString == null) {
         continue;
@@ -86,7 +87,7 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
       final libraryReader = LibraryReader(typeConverter.classElement.library);
 
       final willChange = _typeConverterGenerator?.getImport(libraryReader);
-      var importString = BaseHelper.getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
+      var importString = const BaseHelper().getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
 
       if (importString == null) {
         continue;
@@ -101,14 +102,14 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
 
     final className = "${classElement.name}s";
 
-    BaseHelper.addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
+    const BaseHelper().addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
     result += _classHelper.getClassHeader(classElement.name, classState.superClasses, _useRowClass);
     result += _getTableName(_tableName, classElement);
     result += fieldsCode;
     result += _classHelper.closeClass();
 
-    final generatedSource = GeneratedSource(code: result, imports: newImports);
+    final generatedSource = currentSource + GeneratedSource(code: result, imports: newImports);
 
     return (generatedSource, classState);
   }

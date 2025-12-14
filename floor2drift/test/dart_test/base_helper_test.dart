@@ -33,27 +33,27 @@ void main() {
 
     test("isDartCoreList", () {
       mockDartType.isDartCoreList = true;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.list));
     });
 
     test("isDartAsyncFuture", () {
       mockDartType.isDartAsyncFuture = true;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.future));
     });
 
     test("isDartAsyncStream", () {
       mockDartType.isDartAsyncStream = true;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.stream));
     });
 
     test("isUnkownType", () {
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.unknown));
     });
@@ -61,7 +61,7 @@ void main() {
     test("nullability question", () {
       mockTypeArgument.nullabilitySuffix = NullabilitySuffix.none;
       mockDartType.nullabilitySuffix = NullabilitySuffix.question;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.unknown));
       expect(result.nullable, isTrue);
@@ -70,7 +70,7 @@ void main() {
     test("nullability none", () {
       mockTypeArgument.nullabilitySuffix = NullabilitySuffix.question;
       mockDartType.nullabilitySuffix = NullabilitySuffix.none;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.unknown));
       expect(result.nullable, isFalse);
@@ -93,7 +93,7 @@ void main() {
     test("isDartCoreList", () {
       mockDartType.isDartCoreList = true;
       mockTypeArgument.isDartCoreList = true;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.list));
       expect(result.firstTypeArgument, EType.list);
@@ -102,7 +102,7 @@ void main() {
     test("isDartAsyncFuture", () {
       mockDartType.isDartCoreList = true;
       mockTypeArgument.isDartAsyncFuture = true;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.list));
       expect(result.firstTypeArgument, EType.future);
@@ -111,7 +111,7 @@ void main() {
     test("isDartAsyncStream", () {
       mockDartType.isDartCoreList = true;
       mockTypeArgument.isDartAsyncStream = true;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.list));
       expect(result.firstTypeArgument, EType.stream);
@@ -119,7 +119,7 @@ void main() {
 
     test("isUnkownType", () {
       mockDartType.isDartCoreList = true;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.list));
       expect(result.firstTypeArgument, EType.unknown);
@@ -129,7 +129,7 @@ void main() {
       mockDartType.isDartCoreList = true;
       mockDartType.nullabilitySuffix = NullabilitySuffix.none;
       mockTypeArgument.nullabilitySuffix = NullabilitySuffix.question;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.list));
       expect(result.firstTypeArgument, EType.unknown);
@@ -140,7 +140,7 @@ void main() {
       mockDartType.isDartCoreList = true;
       mockDartType.nullabilitySuffix = NullabilitySuffix.question;
       mockTypeArgument.nullabilitySuffix = NullabilitySuffix.none;
-      final result = BaseHelper.getTypeSpecification(mockDartType);
+      final result = const BaseHelper().getTypeSpecification(mockDartType);
 
       expect(result.type, equals(EType.list));
       expect(result.firstTypeArgument, EType.unknown);

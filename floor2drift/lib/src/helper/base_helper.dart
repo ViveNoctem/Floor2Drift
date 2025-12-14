@@ -12,10 +12,11 @@ import 'package:path/path.dart' as path;
 
 /// Helper class to provide general methods
 class BaseHelper {
-  BaseHelper._();
+  /// Helper class to provide general methods
+  const BaseHelper();
 
   /// parses the [interfaceType] and returns the [TypeSpecification] for this type
-  static TypeSpecification getTypeSpecification(DartType interfaceType) {
+  TypeSpecification getTypeSpecification(DartType interfaceType) {
     if (interfaceType is! InterfaceType) {
       return const TypeSpecification(EType.unknown, EType.unknown, true);
     }
@@ -56,7 +57,7 @@ class BaseHelper {
   }
 
   /// returns an import directive to import [toImportUri] in [importInFilePath]
-  static String? getImport(Uri toImportUri, String importInFilePath) {
+  String? getImport(Uri toImportUri, String importInFilePath) {
     final libraryUri = toImportUri;
 
     if (libraryUri.hasScheme == false) {
@@ -80,7 +81,7 @@ class BaseHelper {
   }
 
   /// adds the path [classElement] will be written to to [driftClasses]
-  static void addToDriftClassesMap(
+  void addToDriftClassesMap(
     ClassElement classElement,
     String newClassName,
     OutputOptionBase outputOption,
@@ -99,7 +100,7 @@ class BaseHelper {
   }
 
   /// returns the doc comment for the [element]
-  static String getDocumentationForElement(Element element) {
+  String getDocumentationForElement(Element element) {
     if (element.documentationComment == null) {
       return "";
     }
@@ -110,7 +111,7 @@ class BaseHelper {
   /// iterates through [dbState] to search for the [className]
   ///
   /// return null if no state was found
-  static ClassState? getClassState(DatabaseState dbState, String className) {
+  ClassState? getClassState(DatabaseState dbState, String className) {
     for (final state in dbState.entityClassStates) {
       if (state.className.toLowerCase() != className.toLowerCase()) {
         continue;
@@ -125,15 +126,23 @@ class BaseHelper {
   /// returns an import statement to import [classState] in [targetFilePath]
   ///
   /// also see [getImport]
-  static String? getClassImport(String targetFilePath, ClassState? classState) {
+  String? getClassImport(String targetFilePath, ClassState? classState) {
     final classUri = classState?.classType.element?.librarySource?.uri;
 
     if (classUri == null) {
       return null;
     }
 
-    final classImport = BaseHelper.getImport(classUri, targetFilePath);
+    final classImport = const BaseHelper().getImport(classUri, targetFilePath);
 
     return classImport;
+  }
+
+  // TODO if more platform dependent code is needed change to use platform package
+  /// returns Platform.lineTerminator
+  ///
+  /// as an abstraction that can be mocked
+  String getPlatformLineTerminator() {
+    return Platform.lineTerminator;
   }
 }
