@@ -22,3 +22,7 @@
 
 ## 0.1.6
 - changed dart sdk dependency to '>=3.6.0 <3.9.0'
+
+## 0.1.7
+- rolled back dart sdk dependency to ^3.6.0
+- changed analyzer dependency back to '>=5.13.0 <7.0.0'
