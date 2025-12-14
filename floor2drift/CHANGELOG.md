@@ -19,3 +19,6 @@
 
 ## 0.1.5
 - changed analyzer dependency to ^6.11.0
+
+## 0.1.6
+- changed dart sdk dependency to '>=3.6.0 <3.9.0'
