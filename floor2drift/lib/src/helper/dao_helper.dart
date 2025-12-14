@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
 import 'package:floor2drift/src/enum/enums.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';
@@ -41,7 +42,7 @@ class DaoHelper {
       if (methodString.isEmpty) {
         continue;
       }
-      final documentation = BaseHelper.getDocumentationForElement(method);
+      final documentation = const BaseHelper().getDocumentationForElement(method);
       body += "$documentation$methodString\n\n";
     }
 
@@ -97,7 +98,7 @@ class DaoHelper {
 
     final type = parameter.type;
 
-    final parameterType = BaseHelper.getTypeSpecification(type);
+    final parameterType = const BaseHelper().getTypeSpecification(type);
     Element? entityType;
     switch (parameterType.type) {
       case EType.stream:
@@ -129,5 +130,34 @@ class DaoHelper {
     final tableName = ReCase(tableSelector.currentClassState!.className).camelCase;
 
     return ValueResponse.value(tableName);
+  }
+
+  /// delete or rewrites imports conflicting with the drift classes
+  ///
+  /// e.g. material.dart and drift.dart both import Table
+  GeneratedSource removeUnwantedImports(GeneratedSource source) {
+    final localImports = {...source.imports};
+
+    // doubled because imports with ' and "
+    if (localImports.remove("import 'package:flutter/material.dart';")) {
+      localImports.add("import 'package:flutter/material.dart' hide Table;");
+    }
+
+    if (localImports.remove('import "package:flutter/material.dart";')) {
+      localImports.add('import "package:flutter/material.dart" hide Table;');
+    }
+
+    if (localImports.remove("import 'package:flutter/cupertino.dart';")) {
+      localImports.add("import 'package:flutter/cupertino.dart' hide Table;");
+    }
+
+    if (localImports.remove('import "package:flutter/cupertino.dart";')) {
+      localImports.add('import "package:flutter/cupertino.dart" hide Table;');
+    }
+
+    localImports.remove("import 'package:floor_annotation/floor_annotation.dart';");
+    localImports.remove('import "package:floor_annotation/floor_annotation.dart"');
+
+    return source.copyWith(imports: localImports);
   }
 }

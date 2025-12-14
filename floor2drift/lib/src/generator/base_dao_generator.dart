@@ -40,6 +40,7 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState dbState,
+    GeneratedSource currentSource,
   ) {
     // analysing generic
     final typeDeclaration = classElement.typeParameters.firstOrNull?.declaration;
@@ -91,11 +92,11 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
 
     final className = "${classElement.name}${ClassHelper.mixinSuffix}";
 
-    BaseHelper.addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
+    const BaseHelper().addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
-    final tableImport = BaseHelper.getClassImport(targetFilePath, classState);
+    final tableImport = const BaseHelper().getClassImport(targetFilePath, classState);
     if (tableImport != null) {
       newImports.add(tableImport);
     }
@@ -108,16 +109,20 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
       baseEntityDeclaration,
     );
 
-    final databaseimport = BaseHelper.getImport(dbState.databaseClass.element!.librarySource!.uri, targetFilePath);
+    final databaseimport =
+        const BaseHelper().getImport(dbState.databaseClass.element!.librarySource!.uri, targetFilePath);
 
     if (databaseimport != null) {
       newImports.add(outputOption.getFileName(databaseimport));
     }
 
-    final documentation = BaseHelper.getDocumentationForElement(classElement);
+    final documentation = const BaseHelper().getDocumentationForElement(classElement);
 
     var result = "$documentation$header\n\n${valueResponse.data}\n}\n";
-    final generatedSource = GeneratedSource(code: result, imports: newImports);
+
+    currentSource = const DaoHelper().removeUnwantedImports(currentSource);
+
+    final generatedSource = currentSource + GeneratedSource(code: result, imports: newImports);
 
     return (generatedSource, null);
   }

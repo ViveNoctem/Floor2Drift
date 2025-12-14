@@ -39,5 +39,6 @@ abstract class DriftClassGenerator<T, S> {
     ClassElement element,
     OutputOptionBase outputOption,
     DatabaseState dbState,
+    GeneratedSource currentSource,
   );
 }

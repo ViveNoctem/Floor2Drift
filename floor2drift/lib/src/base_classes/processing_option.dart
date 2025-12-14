@@ -148,13 +148,6 @@ class ProcessingOptions extends ProcessingOptionBase {
         continue;
       }
 
-      // TODO way to remove imports should be added to the generator itself
-      // floor_annotations import doesn't work with Dao and BaseDao
-      if (importString.relativeUriString == 'package:floor_annotation/floor_annotation.dart' &&
-          (generator is DaoGenerator || generator is BaseDaoGenerator)) {
-        continue;
-      }
-
       final reader2 = LibraryReader(importString.library);
 
       var changed = false;
@@ -170,14 +163,17 @@ class ProcessingOptions extends ProcessingOptionBase {
       generatedSource = generatedSource.copyWith(imports: {...generatedSource.imports, newImportString});
     }
 
-    final (generatedSourceResult, result) = generator.generateForAnnotatedElement(classElement, outputOption, dbState);
-
-    generatedSource += generatedSourceResult;
+    final (generatedSourceResult, result) = generator.generateForAnnotatedElement(
+      classElement,
+      outputOption,
+      dbState,
+      generatedSource,
+    );
 
     generatorResult.add(result);
 
     if (generatedSource.isNotEmpty) {
-      return (generatedSource, generatorResult);
+      return (generatedSourceResult, generatorResult);
     } else {
       return (GeneratedSource.empty(), <S>[]);
     }

@@ -20,8 +20,8 @@ class UpdateMethodConverter extends DaoMethodConverter {
 
     final parameter = method.parameters.first;
 
-    final parameterType = BaseHelper.getTypeSpecification(parameter.type);
-    final returnType = BaseHelper.getTypeSpecification(method.returnType);
+    final parameterType = const BaseHelper().getTypeSpecification(parameter.type);
+    final returnType = const BaseHelper().getTypeSpecification(method.returnType);
     // only future supported for @insert
     switch (returnType.type) {
       case EType.future:

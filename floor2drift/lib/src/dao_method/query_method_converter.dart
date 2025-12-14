@@ -57,7 +57,7 @@ class QueryMethodConverter extends DaoMethodConverter {
   ) {
     var body = "";
 
-    final returnType = BaseHelper.getTypeSpecification(method.returnType);
+    final returnType = const BaseHelper().getTypeSpecification(method.returnType);
 
     var singleMethod = "";
     bool found = false;

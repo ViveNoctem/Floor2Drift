@@ -155,7 +155,7 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
 
-    final typeSpecification = BaseHelper.getTypeSpecification(method.returnType);
+    final typeSpecification = const BaseHelper().getTypeSpecification(method.returnType);
 
     final resultValue = _temp(
       statement,

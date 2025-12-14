@@ -40,6 +40,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     ClassElement classElement,
     OutputOptionBase outputOption,
     DatabaseState state,
+    GeneratedSource currentSource,
   ) {
     final className = classElement.name;
     final schemaVersion = state.schemaVersion;
@@ -59,7 +60,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
         final entityClassUri = state.floorClasses[entity.name];
 
         if (entityClassUri != null) {
-          final tableImport = BaseHelper.getImport(entityClassUri.librarySource.uri, targetFilePath);
+          final tableImport = const BaseHelper().getImport(entityClassUri.librarySource.uri, targetFilePath);
 
           if (tableImport != null) {
             newImports.add(tableImport);
@@ -98,14 +99,14 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     //   state.schemaVersion,
     // );
 
-    final documentation = BaseHelper.getDocumentationForElement(classElement);
+    final documentation = const BaseHelper().getDocumentationForElement(classElement);
     final code = "$documentation$result";
 
     var fileName = outputOption.getFileName(classElement.source.shortName);
     fileName = fileName.replaceAll(".dart", ".g.dart");
     final partDirective = "part '$fileName';";
 
-    final generatedSource = GeneratedSource(code: code, imports: newImports, parts: {partDirective});
+    final generatedSource = currentSource + GeneratedSource(code: code, imports: newImports, parts: {partDirective});
 
     return (generatedSource, null);
   }

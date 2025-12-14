@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/floor2drift.dart';
+import 'package:floor2drift/src/helper/base_helper.dart';
 
 /// {@template OutputOptionBase}
 /// All options for the [Floor2DriftGenerator] for where and how the files should be output to
@@ -49,8 +50,11 @@ abstract class OutputOptionBase {
 
 /// {@macro OutputOptionBase}
 class OutputOptions extends OutputOptionBase {
+  final BaseHelper _baseHelper;
+
   /// {@macro OutputOptionBase}
-  const OutputOptions({required super.fileSuffix, required super.dryRun});
+  const OutputOptions({required super.fileSuffix, required super.dryRun, BaseHelper baseHelper = const BaseHelper()})
+      : _baseHelper = baseHelper;
 
   @override
   bool writeFile(File newFile, String content) {
@@ -59,9 +63,19 @@ class OutputOptions extends OutputOptionBase {
       if (dryRun) {
         print("Writing ${newFile.path}");
       } else {
+        final platformContent = content.replaceAll("\n", _baseHelper.getPlatformLineTerminator());
+
+        if (newFile.existsSync()) {
+          final oldContent = newFile.readAsStringSync();
+
+          if (platformContent == oldContent) {
+            return true;
+          }
+        }
+
         newFile.createSync(recursive: true);
         sink = newFile.openWrite();
-        sink.write(content);
+        sink.write(platformContent);
       }
       return true;
     } on Exception {
