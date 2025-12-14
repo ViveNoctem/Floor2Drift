@@ -5,6 +5,7 @@ import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/entity/annotation_converter/annotation_converter.dart';
 import 'package:floor2drift/src/entity/annotation_converter/annotations.dart';
 import 'package:floor2drift/src/entity/class_state.dart';
+import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
@@ -337,5 +338,31 @@ class ClassHelper {
   /// returns }\n
   String closeClass() {
     return "}\n";
+  }
+
+  /// delete or rewrites imports conflicting with the drift classes
+  ///
+  /// e.g. material.dart and drift.dart both import Table
+  GeneratedSource removeUnwantedImports(GeneratedSource source) {
+    final localImports = {...source.imports};
+
+    // doubled because imports with ' and "
+    if (localImports.remove("import 'package:flutter/material.dart';")) {
+      localImports.add("import 'package:flutter/material.dart' hide Table;");
+    }
+
+    if (localImports.remove('import "package:flutter/material.dart";')) {
+      localImports.add('import "package:flutter/material.dart" hide Table;');
+    }
+
+    if (localImports.remove("import 'package:flutter/cupertino.dart';")) {
+      localImports.add("import 'package:flutter/cupertino.dart' hide Table;");
+    }
+
+    if (localImports.remove('import "package:flutter/cupertino.dart";')) {
+      localImports.add('import "package:flutter/cupertino.dart" hide Table;');
+    }
+
+    return source.copyWith(imports: localImports);
   }
 }

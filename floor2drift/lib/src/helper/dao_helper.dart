@@ -134,27 +134,11 @@ class DaoHelper {
 
   /// delete or rewrites imports conflicting with the drift classes
   ///
-  /// e.g. material.dart and drift.dart both import Table
+  /// e.g. floor_annotation delete conflict with drift delete in query
   GeneratedSource removeUnwantedImports(GeneratedSource source) {
     final localImports = {...source.imports};
 
     // doubled because imports with ' and "
-    if (localImports.remove("import 'package:flutter/material.dart';")) {
-      localImports.add("import 'package:flutter/material.dart' hide Table;");
-    }
-
-    if (localImports.remove('import "package:flutter/material.dart";')) {
-      localImports.add('import "package:flutter/material.dart" hide Table;');
-    }
-
-    if (localImports.remove("import 'package:flutter/cupertino.dart';")) {
-      localImports.add("import 'package:flutter/cupertino.dart' hide Table;");
-    }
-
-    if (localImports.remove('import "package:flutter/cupertino.dart";')) {
-      localImports.add('import "package:flutter/cupertino.dart" hide Table;');
-    }
-
     localImports.remove("import 'package:floor_annotation/floor_annotation.dart';");
     localImports.remove('import "package:floor_annotation/floor_annotation.dart"');
 

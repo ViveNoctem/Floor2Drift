@@ -85,6 +85,8 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
       imports.add(importString);
     }
 
+    currentSource = _classHelper.removeUnwantedImports(currentSource);
+
     final generatedSource = currentSource + GeneratedSource(code: result, imports: imports);
 
     return (generatedSource, classState);

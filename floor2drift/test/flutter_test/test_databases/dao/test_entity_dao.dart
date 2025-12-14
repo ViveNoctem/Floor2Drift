@@ -1,9 +1,4 @@
 import 'package:floor/floor.dart';
-// ignore: unused_import needed to test if table is being hidden
-import "package:flutter/cupertino.dart";
-// ignore: unused_import needed to test if table is being hidden
-import 'package:flutter/material.dart';
-
 import '../entities/task.dart';
 import '../support_classes/enums.dart';
 import 'floor_base_task_dao.dart';
