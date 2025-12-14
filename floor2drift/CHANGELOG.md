@@ -16,3 +16,6 @@
 ## 0.1.4
 - added flutter as dev dependency
 - change sqflite to dev dependency
+
+## 0.1.5
+- changed analyzer dependency to ^6.11.0
