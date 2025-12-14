@@ -12,3 +12,7 @@
 - added simple example for pub.dev
 - removed flutter dependency the script is dart only
 - changed analyzer dependency to ^6.6.0
+
+## 0.1.4
+- added flutter as dev dependency
+- change sqflite to dev dependency
