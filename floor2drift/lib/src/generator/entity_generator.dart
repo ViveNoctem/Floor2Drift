@@ -109,6 +109,8 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
     result += fieldsCode;
     result += _classHelper.closeClass();
 
+    currentSource = _classHelper.removeUnwantedImports(currentSource);
+
     final generatedSource = currentSource + GeneratedSource(code: result, imports: newImports);
 
     return (generatedSource, classState);
