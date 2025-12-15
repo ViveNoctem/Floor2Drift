@@ -1,7 +1,11 @@
 import 'package:floor/floor.dart';
+
 import '../entities/task.dart';
 import '../support_classes/enums.dart';
 import 'floor_base_task_dao.dart';
+// Do not delete needed to test if unused elements are being ignore from import rewriting
+// ignore: unused_import
+import 'unused_dao.dart';
 
 @dao
 abstract class TestEntityDao {

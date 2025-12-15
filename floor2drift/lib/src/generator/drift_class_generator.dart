@@ -22,13 +22,64 @@ abstract class DriftClassGenerator<T, S> {
   const DriftClassGenerator({required this.inputOption, this.throwOnUnresolved = true});
 
   /// returns if the generator would generate code for the given library
-  bool getImport(LibraryReader library) {
+  ///
+  /// [ignoreTypeConverterUsedCheck] should be set if this method is called inside a (base-)entity
+  bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
     for (final annotatedElement in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
       if (inputOption.canAnalyze(annotatedElement.element.name ?? "") == false) {
         continue;
       }
 
+      if (DriftClassGenerator.isInDatabaseState(library, dbState) == false) {
+        continue;
+      }
+
       return true;
+    }
+
+    return false;
+  }
+
+  /// looks through [dbState] and return if [library] is contained in the database being converted
+  static bool isInDatabaseState(LibraryReader library, DatabaseState dbState) {
+    final dbLibrary = dbState.databaseClass.element?.library;
+
+    if (dbLibrary != null && dbLibrary == library.element) {
+      return true;
+    }
+
+    for (final state in dbState.entityClassStates) {
+      final classLibrary = state.classType.element?.library;
+
+      for (final typeConverter in state.usedTypeConverters) {
+        if (typeConverter.classElement.library == library.element) {
+          return true;
+        }
+      }
+
+      if (state.superStates != null) {
+        for (final superClass in state.superStates!) {
+          if (superClass.classType.element?.library == library.element) {
+            return true;
+          }
+        }
+      }
+      if (classLibrary == null) {
+        continue;
+      }
+
+      if (classLibrary == library.element) {
+        return true;
+      }
+    }
+
+    // TODO should be removed if possible.
+    // TODO in (base-)entity generator dbState is not filled
+    // TODO dao classes are not in the dbState
+    for (final floorClass in dbState.floorClasses.values) {
+      if (floorClass.library == library.element) {
+        return true;
+      }
     }
 
     return false;

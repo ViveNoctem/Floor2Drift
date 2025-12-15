@@ -23,7 +23,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
   DatabaseGenerator({required super.inputOption, required bool useRowClass}) : _useRowClass = useRowClass;
 
   @override
-  bool getImport(LibraryReader library) {
+  bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
     for (final annotatedElement in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
       if (inputOption.canAnalyze(annotatedElement.element.name ?? "") == false) {
         continue;

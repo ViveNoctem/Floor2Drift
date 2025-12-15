@@ -11,8 +11,7 @@
 ### Bugs
 - 2 classes aren't allowed to have the same name
 - import rewriting doesn't work properly when only converting part of all files
-    - to many imports are rewritten
-    - needs to check if the class is actually used in the db/actually being converted
+  - should be fixed everywhere except (base-)entity classes. To fix it there the generator should create all classStates before converting the imports of (base-)entities
 - useRowClass = false will probably generate wrong code. Especially for BaseEntities
 
 ### Structural

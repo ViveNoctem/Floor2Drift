@@ -23,12 +23,18 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
 
   // TODO potential Problem
   // TODO A class needs both a not converted Type Converter and a converted TypeConverter
-  // TOOD both imports are needed but only the converted import is added.
+  // TODO both imports are needed but only the converted import is added.
   // TODO probably a small edgde case? all TypeConverters should be converted anyways
   @override
-  bool getImport(LibraryReader library) {
+  bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
     for (final classElement in library.classes) {
       if (typeChecker.isSuperOf(classElement) == false) {
+        continue;
+      }
+
+      // TODO skip check if type converter is actually converted in (base-) entity generator
+      // TODO type converters are added in the entitiy generators. Therefore we can't know if they are being used or not.
+      if (ignoreTypeConverterUsedCheck == false && DriftClassGenerator.isInDatabaseState(library, dbState) == false) {
         continue;
       }
 

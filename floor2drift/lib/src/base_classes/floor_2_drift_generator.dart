@@ -172,18 +172,9 @@ class Floor2DriftGenerator {
     var newFiles = <String, GeneratedSource>{};
 
     // order of the generators is specific.
-    // databaseGenerator always first
-    // entityGenerators must come before dao generators. DaoGenerator need the entityClasses in the dbState.
+    // entityGenerators must come first to fill the entityClasses and floorClasses in the dbState.
+    // order for databaseGenerator shouldn't matter.
     // baseDaoGenerator must come before daoGenerator
-
-    final (text1, isNull) = _processClassElements(
-      [dbState.databaseClass.element!.toClassElement],
-      dbState,
-      processingOption.databaseGenerator,
-      newFiles,
-    );
-
-    newFiles = text1;
 
     final entityClassStates = <ClassState>{};
     final baseEntityClassStates = <ClassState>{};
@@ -234,6 +225,15 @@ class Floor2DriftGenerator {
 
       dbState.entityClassStates.addAll(baseEntityClassStates);
     }
+
+    final (text1, isNull) = _processClassElements(
+      [dbState.databaseClass.element!.toClassElement],
+      dbState,
+      processingOption.databaseGenerator,
+      newFiles,
+    );
+
+    newFiles = text1;
 
     if (inputOption.convertDbDaos) {
       if (processingOption.baseDaoGenerator != null) {
