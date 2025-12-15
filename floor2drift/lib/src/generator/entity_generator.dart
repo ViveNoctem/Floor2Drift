@@ -86,7 +86,7 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
     for (final typeConverter in classState.usedTypeConverters) {
       final libraryReader = LibraryReader(typeConverter.classElement.library);
 
-      final willChange = _typeConverterGenerator?.getImport(libraryReader);
+      final willChange = _typeConverterGenerator?.getImport(libraryReader, dbState, true);
       var importString = const BaseHelper().getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
 
       if (importString == null) {

@@ -152,8 +152,9 @@ class ProcessingOptions extends ProcessingOptionBase {
 
       var changed = false;
 
-      for (final generator in generators) {
-        if (generator.getImport(reader2)) {
+      for (final importGenerator in generators) {
+        if (importGenerator.getImport(
+            reader2, dbState, generator is EntityGenerator || generator is BaseEntityGenerator)) {
           changed = true;
           break;
         }

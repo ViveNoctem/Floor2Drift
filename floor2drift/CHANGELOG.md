@@ -3,6 +3,7 @@
 - files written use the current platforms line terminator instead of always '\n'
 - fixed problem where git indicated files changed even if the content was the same.
 - hide material/cupertino table import in (base-)entity classes to fix  name collision of `Table` class
+- fixed imports when only converting part of a database (except in (base-)entity classes)
 
 ## 0.1.7
 - rolled back dart sdk dependency to ^3.6.0

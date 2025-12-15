@@ -28,8 +28,12 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
         _typeConverterGenerator = typeConverterGenerator;
 
   @override
-  bool getImport(LibraryReader library) {
+  bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
     for (final _ in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
+      if (DriftClassGenerator.isInDatabaseState(library, dbState) == false) {
+        continue;
+      }
+
       return true;
     }
 
@@ -71,7 +75,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
     for (final typeConverter in classState.usedTypeConverters) {
       final libraryReader = LibraryReader(typeConverter.classElement.library);
 
-      final willChange = _typeConverterGenerator?.getImport(libraryReader);
+      final willChange = _typeConverterGenerator?.getImport(libraryReader, dbState, true);
       var importString = const BaseHelper().getImport(typeConverter.classElement.librarySource.uri, targetFilePath);
 
       if (importString == null) {

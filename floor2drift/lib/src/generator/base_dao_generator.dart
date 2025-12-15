@@ -27,8 +27,12 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
       : _daoHelper = daoHelper;
 
   @override
-  bool getImport(LibraryReader library) {
+  bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
     for (final _ in library.annotatedWith(typeChecker, throwOnUnresolved: throwOnUnresolved)) {
+      if (DriftClassGenerator.isInDatabaseState(library, dbState) == false) {
+        continue;
+      }
+
       return true;
     }
 
