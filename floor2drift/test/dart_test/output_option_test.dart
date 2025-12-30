@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:floor2drift/floor2drift.dart';
+import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -9,11 +9,7 @@ import 'package:test/scaffolding.dart';
 
 import 'output_option_test.mocks.dart';
 
-@GenerateNiceMocks([
-  MockSpec<File>(),
-  MockSpec<BaseHelper>(),
-  MockSpec<IOSink>(),
-])
+@GenerateNiceMocks([MockSpec<File>(), MockSpec<BaseHelper>(), MockSpec<IOSink>()])
 void main() {
   late MockFile mockFile;
   late MockBaseHelper mockBaseHelper;
@@ -81,22 +77,14 @@ void main() {
       when(mockFile.existsSync()).thenReturn(true);
       when(mockFile.readAsStringSync()).thenReturn(existingContent);
 
-      final outputOptions = OutputOptions(
-        fileSuffix: "",
-        dryRun: false,
-        isModularCodeGeneration: false,
-      );
+      final outputOptions = OutputOptions(fileSuffix: "", dryRun: false, isModularCodeGeneration: false);
 
       outputOptions.writeFile(mockFile, inputString);
       verifyZeroInteractions(mockIOSink);
     });
 
     test("dryRun", () {
-      final outputOptions = OutputOptions(
-        fileSuffix: "",
-        dryRun: true,
-        isModularCodeGeneration: false,
-      );
+      final outputOptions = OutputOptions(fileSuffix: "", dryRun: true, isModularCodeGeneration: false);
 
       final inputString = "this is\ntestmessage\n\n";
 

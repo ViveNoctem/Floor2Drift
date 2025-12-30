@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
+import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
@@ -19,7 +22,7 @@ class SqlHelper {
 
   /// {@macro SqlHelper}
   const SqlHelper({ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil()})
-      : _expressionConverterUtil = expressionConverterUtil;
+    : _expressionConverterUtil = expressionConverterUtil;
 
   /// static sqlEngine to parse SQL code to AST
   static final sqlEngine = SqlEngine();
@@ -274,28 +277,296 @@ class SqlHelper {
   /// initializes different field in the given [tableSelector]
   ///
   /// set the selector, currentClassState, and entityName
-  TableSelector configureTableSelector(TableSelector tableSelector, DatabaseState dbState, String fromTableName) {
+  TableSelector configureTableSelector(
+    TableSelector tableSelector,
+    DatabaseState dbState,
+    List<String> fromTableNames,
+  ) {
     switch (tableSelector) {
       case TableSelectorBaseDao():
         tableSelector.selector = tableSelector.table;
       // currentClassState is set when creating the TableSelectorBaseDao
       case TableSelectorDao():
+        final newClassStates = <ClassState>[];
+        outerLoop:
         for (final state in dbState.entityClassStates) {
-          if (state.sqlTablename.toLowerCase() != fromTableName.toLowerCase()) {
-            continue;
+          for (final tableName in fromTableNames) {
+            if (state.sqlTablename.toLowerCase() != tableName.toLowerCase()) {
+              continue;
+            }
+            newClassStates.add(state);
+
+            if (newClassStates.length == fromTableNames.length) {
+              break outerLoop;
+            }
           }
-          tableSelector.currentClassState = state;
-          break;
         }
 
-        if (tableSelector.currentClassState == null) {
-          return tableSelector;
-        }
+        // setting the selector here
+        tableSelector.selector = newClassStates.firstOrNull?.driftTableGetter ?? "";
+        tableSelector.currentClassStates = newClassStates;
 
-        final selectorName = tableSelector.currentClassState!.className;
-        tableSelector.selector = "${ReCase(selectorName).camelCase}s";
+      // TODO selector has to be set directly in the expression conversion
+      // TODO has the expression access to the tablename if tablename.columnname is used?
+      // TODO if no tableName is set search the classState for the correct table
+      // TODO abort if the table cannot be found
+      // if (tableSelector.currentClassState == null) {
+      //   return tableSelector;
+      // }
+
+      // final selectorName = tableSelector.currentClassState!.className;
+      // tableSelector.selector = "${ReCase(selectorName).camelCase}s";
     }
 
     return tableSelector;
+  }
+
+  ValueResponse<(String, String)> addSelectClause(
+    SelectStatement statement,
+    Element element,
+    List<ParameterElement> parameters,
+    TableSelector tableSelector,
+    List<ResultColumn> columns,
+    bool useSelectOnly,
+    bool isView,
+  ) {
+    String result;
+    var selectOnlyFunctionResult = "";
+    if (useSelectOnly) {
+      for (final column in columns) {
+        if (column is! ExpressionResultColumn) {
+          return ValueResponse.error("Expected ExpressionResultColumn $column", element);
+        }
+
+        final functionResult = _expressionConverterUtil.parseExpression(
+          column.expression,
+          element,
+          parameters: parameters,
+          selector: tableSelector,
+        );
+
+        switch (functionResult) {
+          case ValueData<(String, EExpressionType)>():
+            break;
+          case ValueError<(String, EExpressionType)>():
+            return functionResult.wrap();
+        }
+
+        if (selectOnlyFunctionResult.isNotEmpty) {
+          selectOnlyFunctionResult += ", ${functionResult.data.$1}";
+        } else {
+          selectOnlyFunctionResult = functionResult.data.$1;
+        }
+      }
+
+      // query in view always uses select and addColumns isn't needed
+
+      if (isView) {
+        result = "select([$selectOnlyFunctionResult])";
+      } else {
+        result =
+            "(selectOnly(${tableSelector is TableSelectorBaseDao ? BaseDaoGenerator.tableSelector : tableSelector.selector}${statement.distinct ? ", distinct: true" : ""})"
+            "..addColumns([$selectOnlyFunctionResult])";
+      }
+    } else {
+      result = "(select(${tableSelector.selector}${statement.distinct ? ", distinct: true" : ""})";
+    }
+
+    return ValueResponse.value((result, selectOnlyFunctionResult));
+  }
+
+  ValueResponse<String> addFromClause(
+    Queryable? statementFrom,
+    Element element,
+    TableSelector tableSelector,
+    List<ParameterElement> parameters,
+    bool isView,
+  ) {
+    if (statementFrom == null) {
+      return ValueError("From clause is expected to be not null", element);
+    }
+
+    return switch (statementFrom) {
+      TableReference() => ValueResponse.value(("")),
+      JoinClause() => _getCodeForJoinClause(statementFrom, element, tableSelector, parameters, isView: isView),
+      Queryable() => ValueResponse.error(
+        "Only table select and jooin statements are supported $statementFrom",
+        element,
+      ),
+    };
+  }
+
+  ValueResponse<List<String>> getTablesForFromClause(Queryable? statementFrom, Element element) {
+    if (statementFrom == null) {
+      return ValueError("From clause is expected to be not null", element);
+    }
+
+    return switch (statementFrom) {
+      TableReference() => ValueResponse.value(([statementFrom.tableName])),
+      JoinClause() => _getTableNameInJoinClause(statementFrom, element),
+      Queryable() => ValueResponse.error(
+        "Only table select and jooin statements are supported $statementFrom",
+        element,
+      ),
+    };
+  }
+
+  ValueResponse<List<String>> _getTableNameInJoinClause(JoinClause joinClause, Element element) {
+    final tableNames = <String>[];
+
+    final primary = joinClause.primary;
+
+    if (primary is! TableReference) {
+      return ValueResponse.error("Only TableReference is supported in join $primary", element);
+    }
+
+    tableNames.add(primary.tableName);
+
+    for (final join in joinClause.joins) {
+      final joinQuery = join.query;
+
+      if (joinQuery is! TableReference) {
+        return ValueResponse.error("Only TableReference is supported in join $join", element);
+      }
+
+      final joinedTableName = joinQuery.tableName;
+
+      tableNames.add(joinedTableName);
+    }
+    return ValueResponse.value(tableNames);
+  }
+
+  ValueResponse<String> _getCodeForJoinClause(
+    JoinClause joinClause,
+    Element element,
+    TableSelector tableSelector,
+    List<ParameterElement> parameters, {
+    bool isView = false,
+  }) {
+    final primary = joinClause.primary;
+
+    if (primary is! TableReference) {
+      return ValueResponse.error("Only TableReference is supported in join $primary", element);
+    }
+
+    var joinCode = "";
+
+    if (isView) {
+      final primaryClassState = tableSelector.getClassStateForTable(primary.tableName);
+
+      if (primaryClassState == null) {
+        return ValueResponse.error("Couldn't determine class for primary table in join ${primary.tableName}", element);
+      }
+
+      joinCode += ".from(${primaryClassState.driftTableGetter})";
+    }
+
+    joinCode += ".join([";
+
+    for (final join in joinClause.joins) {
+      final joinQuery = join.query;
+
+      if (joinQuery is! TableReference) {
+        return ValueResponse.error("Only TableReference is supported in join $join", element);
+      }
+
+      final joinedTableName = joinQuery.tableName;
+
+      final methodNameResult = _getJoinOperatorName(join.operator, element);
+
+      switch (methodNameResult) {
+        case ValueError<String>():
+          return methodNameResult.wrap();
+        case ValueData<String>():
+      }
+
+      final methodName = methodNameResult.data;
+
+      final onClauseResult = _getJoinOnClause(join.constraint, element, parameters, tableSelector);
+
+      switch (onClauseResult) {
+        case ValueError<String>():
+          return onClauseResult.wrap();
+        case ValueData<String>():
+      }
+
+      final onClause = onClauseResult.data;
+
+      final joinedClassState = tableSelector.getClassStateForTable(joinedTableName);
+
+      // for (final state in tableSelector.currentClassStates) {
+      //   if (state.sqlTablename != joinedTableName) {
+      //     continue;
+      //   }
+      //
+      //   realTableName = state.driftTableGetter;
+      // }
+
+      if (joinedClassState == null) {
+        return ValueResponse.error("Couldn't determine entity name for table $joinedTableName", element);
+      }
+
+      // TODO joinedTableName is wrong. I need the class name. Therefore the correct classState for the table needs to be found.
+      joinCode += "$methodName(${joinedClassState.driftTableGetter}$onClause)";
+    }
+
+    joinCode += "])";
+
+    return ValueResponse.value((joinCode));
+  }
+
+  ValueResponse<String> _getJoinOnClause(
+    JoinConstraint? constraint,
+    Element element,
+    List<ParameterElement> parameters,
+    TableSelector tableSelector,
+  ) {
+    if (constraint == null) {
+      return ValueResponse.value("");
+    }
+
+    if (constraint is! OnConstraint) {
+      return ValueResponse.error("Only OnConstraint are supported in join", element);
+    }
+
+    tableSelector.useSelector = true;
+
+    final expressionResult = _expressionConverterUtil.parseExpression(
+      constraint.expression,
+      element,
+      parameters: parameters,
+      selector: tableSelector,
+      asExpression: true,
+    );
+
+    tableSelector.useSelector = false;
+
+    switch (expressionResult) {
+      case ValueError<(String, EExpressionType)>():
+        return expressionResult.wrap();
+      case ValueData<(String, EExpressionType)>():
+    }
+
+    return ValueResponse.value(", ${expressionResult.data.$1}");
+  }
+
+  ValueResponse<String> _getJoinOperatorName(JoinOperator operator, Element element) {
+    if (operator.outer) {
+      if (operator.operator != JoinOperatorKind.left) {
+        return ValueResponse.error("Only left outer join is currently supported $operator", element);
+      }
+    }
+
+    if (operator.natural) {
+      return ValueResponse.error("Natural join is not supported", element);
+    }
+
+    return switch (operator.operator) {
+      JoinOperatorKind.none || JoinOperatorKind.comma || JoinOperatorKind.inner => ValueResponse.value("innerJoin"),
+      JoinOperatorKind.cross => ValueResponse.value("crossJoin"),
+      JoinOperatorKind.left => ValueResponse.error("Left inner join is not supported", element),
+      JoinOperatorKind.right => ValueResponse.error("Right inner join is not supported", element),
+      JoinOperatorKind.full => ValueResponse.error("Full inner join is not supported", element),
+    };
   }
 }

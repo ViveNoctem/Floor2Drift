@@ -35,7 +35,8 @@ class TransactionMethodConverter extends DaoMethodConverter {
     final lastBracketIndex = oldBody.lastIndexOf("}");
     oldBody = oldBody.substring(0, lastBracketIndex);
 
-    final body = """return transaction(() async {
+    final body =
+        """return transaction(() async {
     $oldBody
     });
     }
@@ -44,12 +45,12 @@ class TransactionMethodConverter extends DaoMethodConverter {
   }
 
   @override
-  ValueResponse<String> parseUsedTable(
+  ValueResponse<List<String>> parseUsedTable(
     MethodElement method,
     DartObject annotation,
     TableSelector tableSelector,
     DatabaseState dbState,
   ) {
-    return ValueResponse.value("");
+    return ValueResponse.value(const []);
   }
 }

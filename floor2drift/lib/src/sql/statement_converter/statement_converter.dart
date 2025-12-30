@@ -21,17 +21,23 @@ sealed class StatementConverter<S extends AstNode> {
 
   ValueResponse<String> _parse(
     S statement,
-    MethodElement method,
+    Element method,
+    List<ParameterElement> parameters,
     TableSelector tableSelector,
     DatabaseState dbState,
+    TypeSpecification returnValue,
+    bool isView,
   );
 
   /// parses the give [statement] to the equivalent drift code
   static ValueResponse<String> parseStatement(
     AstNode statement,
-    MethodElement method,
+    Element method,
+    List<ParameterElement> parameters,
     TableSelector tableSelector,
     DatabaseState dbState,
+    TypeSpecification returnValue,
+    bool isView,
   ) {
     final converter = _getStatementConverterForNode(statement, method);
 
@@ -41,13 +47,13 @@ sealed class StatementConverter<S extends AstNode> {
       case ValueData<StatementConverter<AstNode>>():
     }
 
-    return converter.data._parse(statement, method, tableSelector, dbState);
+    return converter.data._parse(statement, method, parameters, tableSelector, dbState, returnValue, isView);
   }
 
-  ValueResponse<String> _parseUsedTable(S statement, MethodElement method, TableSelector tableSelector);
+  ValueResponse<List<String>> _parseUsedTable(S statement, MethodElement method, TableSelector tableSelector);
 
   /// returns all tables used in [statement]
-  static ValueResponse<String> parseStatementUsedTable(
+  static ValueResponse<List<String>> parseStatementUsedTable(
     AstNode statement,
     MethodElement method,
     TableSelector tableSelector,

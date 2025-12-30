@@ -10,21 +10,24 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   @override
   ValueResponse<String> _parse(
     UpdateStatement statement,
-    MethodElement method,
+    Element method,
+    List<ParameterElement> parameters,
     TableSelector tableSelector,
     DatabaseState dbState,
+    TypeSpecification? returnValue,
+    bool isView,
   ) {
     final tableFrom = statement.table;
 
-    for (final state in dbState.entityClassStates) {
-      if (state.sqlTablename.toLowerCase() != tableFrom.tableName.toLowerCase()) {
-        continue;
-      }
+    // for (final state in dbState.entityClassStates) {
+    //   if (state.sqlTablename.toLowerCase() != tableFrom.tableName.toLowerCase()) {
+    //     continue;
+    //   }
+    //
+    //   tableSelector.currentClassState = state;
+    // }
 
-      tableSelector.currentClassState = state;
-    }
-
-    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
+    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, [tableFrom.tableName]);
 
     final tableGetter = "updates: {${tableSelector.selector}},";
     final query = statement.span?.text;
@@ -36,7 +39,7 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
     for (final match in matches) {
       final parameterName = match.input.substring(match.start + 1, match.end);
 
-      for (final parameter in method.parameters) {
+      for (final parameter in parameters) {
         if (parameter.name != parameterName) {
           continue;
         }
@@ -59,8 +62,12 @@ class UpdateStatementConverter extends StatementConverter<UpdateStatement> {
   }
 
   @override
-  ValueResponse<String> _parseUsedTable(UpdateStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<List<String>> _parseUsedTable(
+    UpdateStatement statement,
+    MethodElement method,
+    TableSelector tableSelector,
+  ) {
     // TODO what to do in baseDao?
-    return ValueResponse.value(ReCase(statement.table.tableName).pascalCase);
+    return ValueResponse.value([ReCase(statement.table.tableName).pascalCase]);
   }
 }

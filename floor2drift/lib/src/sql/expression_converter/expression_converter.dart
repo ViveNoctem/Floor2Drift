@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
@@ -5,6 +7,7 @@ import 'package:floor2drift/src/helper/sql_helper.dart';
 import 'package:floor2drift/src/sql/statement_converter/statement_converter.dart';
 import 'package:floor2drift/src/sql/token_converter/token_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 part 'between_expression_converter.dart';

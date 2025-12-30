@@ -160,8 +160,10 @@ void main() {
       ),
     ).wait;
 
-    final (driftSelect, floorSelect) =
-        await (driftDatabase.testTasks.select().get(), floorDatabase.taskDao.getAll()).wait;
+    final (driftSelect, floorSelect) = await (
+      driftDatabase.testTasks.select().get(),
+      floorDatabase.taskDao.getAll(),
+    ).wait;
 
     expect(driftSelect.length, equals(floorSelect.length));
 

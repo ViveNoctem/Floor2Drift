@@ -12,6 +12,7 @@ part 'entity_annotation_converter.dart';
 part 'ignore_annotation_converter.dart';
 part 'primary_key_annotation_converter.dart';
 part 'type_converters_annotation_converter.dart';
+part 'database_view_annotation_converter.dart';
 
 /// Base class for all Converter classes, that parses differen kinds of annotations used by floor
 sealed class AnnotationConverter<S, T extends AnnotationType> {
@@ -34,6 +35,7 @@ sealed class AnnotationConverter<S, T extends AnnotationType> {
     const ignoreConverter = IgnoreAnnotationConverter();
     const columnInfoConverter = ColumnInfoAnnotationConverter();
     const entityConverter = EntityAnnotationConverter();
+    const databaseViewConverter = DatabaseViewAnnotationConverter();
 
     final annotationElement = annotation.element;
 
@@ -71,6 +73,10 @@ sealed class AnnotationConverter<S, T extends AnnotationType> {
 
     if (entityConverter.typeChecker.isExactlyType(classElement)) {
       return entityConverter.parse(annotation);
+    }
+
+    if (databaseViewConverter.typeChecker.isExactlyType(classElement)) {
+      return databaseViewConverter.parse(annotation);
     }
 
     return ValueResponse.value(const UnknownAnnotation());

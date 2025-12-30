@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:floor2drift/floor2drift.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 
 /// {@template OutputOptionBase}

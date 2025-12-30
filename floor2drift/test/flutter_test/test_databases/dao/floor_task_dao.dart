@@ -6,6 +6,7 @@ import '../../additional_classes/annotation.dart';
 import '../entities/task.dart';
 import '../support_classes/enums.dart';
 import '../support_classes/interfaces.dart';
+import '../views/task_user_view.dart';
 import 'floor_base_task_dao.dart';
 
 /// Documentation class TestTaskDao
@@ -392,4 +393,7 @@ abstract class TestTaskDao extends BaseDao<TestTask> implements InterfaceThree, 
 
   @Query("SELECT message FROM TaskTest ORDER BY message COLLATE nocase DESC;")
   Future<List<String>> collateMessage();
+
+  @Query("SELECT * FROM TaskUserView")
+  Future<List<TaskUserView>> joinTest();
 }

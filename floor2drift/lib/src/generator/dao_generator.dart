@@ -32,9 +32,9 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     DaoHelper daoHelper = const DaoHelper(),
     required super.inputOption,
     required bool useRowClass,
-  })  : _classNameSuffix = classNameSuffix,
-        _useRowClass = useRowClass,
-        _daoHelper = daoHelper;
+  }) : _classNameSuffix = classNameSuffix,
+       _useRowClass = useRowClass,
+       _daoHelper = daoHelper;
 
   @override
   (GeneratedSource, Null) generateForAnnotatedElement(
@@ -49,7 +49,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     // always needs drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final tableSelector = TableSelectorDao(currentClassState: null);
+    final tableSelector = TableSelectorDao(currentClassStates: const []);
 
     final usedTablesResponse = _daoHelper.getUsedTables(classElement, dbState, tableSelector);
     switch (usedTablesResponse) {
@@ -58,7 +58,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       case ValueData<Set<String>>():
     }
 
-    final valueResponse = _daoHelper.generateClassBody(classElement, _classNameSuffix, tableSelector, dbState);
+    final valueResponse = _daoHelper.generateClassBody(classElement, _classNameSuffix, tableSelector, dbState, false);
 
     switch (valueResponse) {
       case ValueData<String>():
@@ -111,33 +111,46 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       }
     }
 
-    final databaseimport =
-        const BaseHelper().getImport(dbState.databaseClass.element!.librarySource!.uri, targetFilePath);
+    final databaseimport = const BaseHelper().getImport(
+      dbState.databaseClass.element!.librarySource!.uri,
+      targetFilePath,
+    );
 
     if (databaseimport != null) {
       newImports.add(outputOption.getFileName(databaseimport));
     }
 
     final tableClassNames = <String>{};
+    final viewClassName = <String>{};
 
     for (final table in usedTablesResponse.data) {
-      final driftClassUri = dbState.driftClasses["${table}s"];
-
-      if (driftClassUri != null) {
-        final tableImport = const BaseHelper().getImport(Uri.parse(driftClassUri), targetFilePath);
-
-        if (tableImport != null) {
-          newImports.add(tableImport);
-        }
-      }
+      // final driftClassUri = dbState.driftClasses["${table}s"];
+      //
+      // if (driftClassUri != null) {
+      //   final tableImport = const BaseHelper().getImport(Uri.parse(driftClassUri), targetFilePath);
+      //
+      //   if (tableImport != null) {
+      //     newImports.add(tableImport);
+      //   }
+      // }
 
       final classState = _getClassState(dbState, table);
 
       if (classState != null) {
-        tableClassNames.add(classState.className);
+        if (classState.isView) {
+          viewClassName.add(classState.className);
+        } else {
+          tableClassNames.add(classState.className);
+        }
       }
 
-      final entityImport = _getEntityImport(targetFilePath, classState);
+      final tableImport = _getEntityImport(targetFilePath, classState, outputOption, true);
+
+      if (tableImport != null) {
+        newImports.add(tableImport);
+      }
+
+      final entityImport = _getEntityImport(targetFilePath, classState, outputOption, false);
 
       if (entityImport != null) {
         newImports.add(entityImport);
@@ -148,6 +161,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
 
     final header = _generateClassHeader(
       tableClassNames,
+      viewClassName,
       "${classElement.name}$_classNameSuffix",
       dbState.databaseClass.element!.name!,
       mixinClause,
@@ -181,12 +195,14 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
 
   String _generateClassHeader(
     Set<String> tables,
+    Set<String> views,
     String className,
     String databaseName,
     String mixinClause,
     bool isModularGeneration,
     String implementsClause,
   ) {
+    final viewList = views.map((s) => "${s}s");
     final tableList = tables.map((s) => "${s}s");
 
     if (tableList.isEmpty) {
@@ -194,8 +210,9 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     }
 
     final tableString = tableList.isEmpty ? "" : tableList.reduce((value, element) => "$value, $element");
+    final viewString = viewList.isEmpty ? "" : ", views: [${viewList.reduce((value, element) => "$value, $element")}]";
     final private = isModularGeneration ? "" : "_";
-    return '''@DriftAccessor(tables: [$tableString])
+    return '''@DriftAccessor(tables: [$tableString]$viewString)
   class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}$private\$${className}Mixin $implementsClause{
   $className(super.db);''';
   }
@@ -212,7 +229,12 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     return null;
   }
 
-  String? _getEntityImport(String targetFilePath, ClassState? classState) {
+  String? _getEntityImport(
+    String targetFilePath,
+    ClassState? classState,
+    OutputOptionBase outputOptions,
+    bool rewrite,
+  ) {
     if (_useRowClass == false) {
       return null;
     }
@@ -223,7 +245,11 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       return null;
     }
 
-    final floorEntityImport = const BaseHelper().getImport(floorEntityUri, targetFilePath);
+    var floorEntityImport = const BaseHelper().getImport(floorEntityUri, targetFilePath);
+
+    if (rewrite && floorEntityImport != null) {
+      floorEntityImport = outputOptions.rewriteExistingImport(floorEntityImport);
+    }
 
     return floorEntityImport;
   }

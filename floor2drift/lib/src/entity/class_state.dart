@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor_annotation/floor_annotation.dart';
+import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
 /// {@template ClassState}
@@ -33,6 +34,11 @@ class ClassState {
   /// is filled after the [BaseDaoGenerator] is done running
   final Set<ClassState>? superStates;
 
+  String get driftTableGetter => "${ReCase(className).camelCase}s";
+
+  /// True if the class is a sql view. False if the class is a sql table
+  final bool isView;
+
   /// {@macro ClassState}
   ClassState({
     required this.classType,
@@ -40,6 +46,7 @@ class ClassState {
     required this.className,
     required this.superClasses,
     required Set<FieldState> fieldStates,
+    required this.isView,
     this.superStates,
   }) : _fieldStates = fieldStates;
 
@@ -119,6 +126,7 @@ class ClassState {
     String? renamed,
     Set<ClassElement>? superClasses,
     Set<ClassState>? superStates,
+    bool? isView,
   }) {
     return ClassState(
       classType: classType ?? this.classType,
@@ -127,6 +135,7 @@ class ClassState {
       superClasses: superClasses ?? this.superClasses,
       fieldStates: fieldStates ?? _fieldStates,
       superStates: superStates ?? this.superStates,
+      isView: isView ?? this.isView,
     );
   }
 }

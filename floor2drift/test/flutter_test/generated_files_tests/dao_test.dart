@@ -5,6 +5,8 @@ import 'package:test/test.dart';
 import '../additional_classes/test_helper.dart';
 import '../test_databases/dao/floor_task_dao.dart' as floor_dao;
 import '../test_databases/dao/floor_task_dao_drift.dart' as drift_dao;
+import '../test_databases/dao/task_user_view_dao.dart' as floor_view;
+import '../test_databases/dao/task_user_view_dao_drift.dart' as drift_view;
 import '../test_databases/database/floor_test_database.dart' as floor;
 import '../test_databases/database/floor_test_database_drift.dart' as drift;
 import '../test_databases/entities/task.dart';
@@ -19,6 +21,8 @@ void main() {
   late drift.FloorTestDatabase driftDatabase;
   late floor_dao.TestTaskDao floorTaskDao;
   late drift_dao.TestTaskDao driftTaskDao;
+  late floor_view.TaskUserViewDao floorTaskUserViewDao;
+  late drift_view.TaskUserViewDao driftTaskUserViewDao;
   List<TestTask> floorTestEntities = [
     TestTask(
       id: 1,
@@ -309,6 +313,14 @@ void main() {
     ),
   ];
 
+  List<TestUser> testUserEntities = [
+    TestUser(name: "user1", password: "user1", id: 1, createdAt: DateTime(2020)),
+    TestUser(name: "user2", password: "user2", id: 2, createdAt: DateTime(2020)),
+    TestUser(name: "user3", password: "user3", id: 3, createdAt: DateTime(2020)),
+    TestUser(name: "user4", password: "user4", id: 4, createdAt: DateTime(2020)),
+    TestUser(name: "user5", password: "user5", id: 5, createdAt: DateTime(2020)),
+  ];
+
   setUp(() async {
     floorDatabase = await floor.$FloorFloorTestDatabase.inMemoryDatabaseBuilder().build();
     floorTaskDao = floorDatabase.taskDao;
@@ -316,6 +328,9 @@ void main() {
     driftDatabase = drift.FloorTestDatabase(DatabaseConnection(NativeDatabase.memory()));
     driftTaskDao = driftDatabase.testTaskDao;
     await driftDatabase.testTasks.insertAll(driftTestEntities);
+
+    floorTaskUserViewDao = floorDatabase.taskUserViewDao;
+    driftTaskUserViewDao = driftDatabase.taskUserViewDao;
   });
 
   tearDown(() async {
@@ -341,8 +356,10 @@ void main() {
     });
 
     test("WHERE SMALLER BIGGGER", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.whereSmallerBigger(8), driftTaskDao.whereSmallerBigger(8)).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.whereSmallerBigger(8),
+        driftTaskDao.whereSmallerBigger(8),
+      ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -622,8 +639,10 @@ void main() {
     });
 
     test("LIKE %", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.likeMessage("%message"), driftTaskDao.likeMessage("%message")).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.likeMessage("%message"),
+        driftTaskDao.likeMessage("%message"),
+      ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
@@ -632,8 +651,10 @@ void main() {
     });
 
     test("LIKE _", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.likeMessage("test_message"), driftTaskDao.likeMessage("test_message")).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.likeMessage("test_message"),
+        driftTaskDao.likeMessage("test_message"),
+      ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
@@ -650,16 +671,20 @@ void main() {
   group("type test", () {
     group("Uint8List", () {
       test("single Uint8List", () async {
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnSingleUint8List(4), driftTaskDao.returnSingleUint8List(4)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnSingleUint8List(4),
+          driftTaskDao.returnSingleUint8List(4),
+        ).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
       test("multiple Uint8List", () async {
         // TODO why is isRead and attachment not allowed to be null
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnMultipleUint8List(4), driftTaskDao.returnMultipleUint8List(4)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnMultipleUint8List(4),
+          driftTaskDao.returnMultipleUint8List(4),
+        ).wait;
 
         expect(floorTask.length, equals(driftTask.length));
         for (int i = 0; i < floorTask.length; i++) {
@@ -690,15 +715,19 @@ void main() {
 
     group("double", () {
       test("single double", () async {
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnSingleDouble(8), driftTaskDao.returnSingleDouble(8)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnSingleDouble(8),
+          driftTaskDao.returnSingleDouble(8),
+        ).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
       test("multiple double", () async {
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnMultipleDouble(2), driftTaskDao.returnMultipleDouble(2)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnMultipleDouble(2),
+          driftTaskDao.returnMultipleDouble(2),
+        ).wait;
 
         expect(floorTask.length, equals(driftTask.length));
         for (int i = 0; i < floorTask.length; i++) {
@@ -724,8 +753,10 @@ void main() {
       });
 
       test("multiple int", () async {
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnMultipleInt(2), driftTaskDao.returnMultipleInt(2)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnMultipleInt(2),
+          driftTaskDao.returnMultipleInt(2),
+        ).wait;
 
         expect(floorTask.length, equals(driftTask.length));
         for (int i = 0; i < floorTask.length; i++) {
@@ -752,8 +783,10 @@ void main() {
       });
 
       test("multiple bool", () async {
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnMultipleBool(3), driftTaskDao.returnMultipleBool(3)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnMultipleBool(3),
+          driftTaskDao.returnMultipleBool(3),
+        ).wait;
 
         expect(floorTask.length, equals(driftTask.length));
         for (int i = 0; i < floorTask.length; i++) {
@@ -773,15 +806,19 @@ void main() {
 
     group("String", () {
       test("single String", () async {
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnSingleString(9), driftTaskDao.returnSingleString(9)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnSingleString(9),
+          driftTaskDao.returnSingleString(9),
+        ).wait;
 
         expect(floorTask, equals(driftTask));
       });
 
       test("multiple String", () async {
-        final (floorTask, driftTask) =
-            await (floorTaskDao.returnMultipleString(1), driftTaskDao.returnMultipleString(1)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.returnMultipleString(1),
+          driftTaskDao.returnMultipleString(1),
+        ).wait;
 
         expect(floorTask.length, equals(driftTask.length));
         for (int i = 0; i < floorTask.length; i++) {
@@ -935,8 +972,10 @@ void main() {
         });
 
         test("WHERE", () async {
-          final (floorTask, driftTask) =
-              await (floorTaskDao.countWhereBaseEntity(4), driftTaskDao.countWhereBaseEntity(4)).wait;
+          final (floorTask, driftTask) = await (
+            floorTaskDao.countWhereBaseEntity(4),
+            driftTaskDao.countWhereBaseEntity(4),
+          ).wait;
 
           expect(floorTask, equals(driftTask));
         });
@@ -950,8 +989,10 @@ void main() {
         });
 
         test("WHERE ", () async {
-          final (floorTask, driftTask) =
-              await (floorTaskDao.avgWhereBaseEntity(8), driftTaskDao.avgWhereBaseEntity(8)).wait;
+          final (floorTask, driftTask) = await (
+            floorTaskDao.avgWhereBaseEntity(8),
+            driftTaskDao.avgWhereBaseEntity(8),
+          ).wait;
 
           expect(floorTask, equals(driftTask));
         });
@@ -965,8 +1006,10 @@ void main() {
         });
 
         test("WHERE ", () async {
-          final (floorTask, driftTask) =
-              await (floorTaskDao.minWhereBaseEntity(8), driftTaskDao.minWhereBaseEntity(8)).wait;
+          final (floorTask, driftTask) = await (
+            floorTaskDao.minWhereBaseEntity(8),
+            driftTaskDao.minWhereBaseEntity(8),
+          ).wait;
 
           expect(floorTask, equals(driftTask));
         });
@@ -980,8 +1023,10 @@ void main() {
         });
 
         test("WHERE", () async {
-          final (floorTask, driftTask) =
-              await (floorTaskDao.maxWhereBaseEntity(3), driftTaskDao.maxWhereBaseEntity(3)).wait;
+          final (floorTask, driftTask) = await (
+            floorTaskDao.maxWhereBaseEntity(3),
+            driftTaskDao.maxWhereBaseEntity(3),
+          ).wait;
 
           expect(floorTask, equals(driftTask));
         });
@@ -995,8 +1040,10 @@ void main() {
         });
 
         test("WHERE", () async {
-          final (floorTask, driftTask) =
-              await (floorTaskDao.sumWhereBaseEntity(8), driftTaskDao.sumWhereBaseEntity(8)).wait;
+          final (floorTask, driftTask) = await (
+            floorTaskDao.sumWhereBaseEntity(8),
+            driftTaskDao.sumWhereBaseEntity(8),
+          ).wait;
 
           expect(floorTask, equals(driftTask));
         });
@@ -1016,15 +1063,19 @@ void main() {
         });
 
         test("WHERE", () async {
-          final (floorTask, driftTask) =
-              await (floorTaskDao.totalWhereBaseEntity(8), driftTaskDao.totalWhereBaseEntity(8)).wait;
+          final (floorTask, driftTask) = await (
+            floorTaskDao.totalWhereBaseEntity(8),
+            driftTaskDao.totalWhereBaseEntity(8),
+          ).wait;
 
           expect(floorTask, equals(driftTask));
         });
 
         test("0.0", () async {
-          final (floorTask, driftTask) =
-              await (floorTaskDao.totalWhereBaseEntity(0), driftTaskDao.totalWhereBaseEntity(0)).wait;
+          final (floorTask, driftTask) = await (
+            floorTaskDao.totalWhereBaseEntity(0),
+            driftTaskDao.totalWhereBaseEntity(0),
+          ).wait;
           expect(floorTask, equals(0.0));
 
           expect(floorTask, equals(driftTask));
@@ -1035,8 +1086,10 @@ void main() {
 
   group("Update", () {
     test("updateMessage", () async {
-      final (floorResult, driftResult) =
-          await (floorTaskDao.updateMessage(8, "New Message"), driftTaskDao.updateMessage(8, "New Message")).wait;
+      final (floorResult, driftResult) = await (
+        floorTaskDao.updateMessage(8, "New Message"),
+        driftTaskDao.updateMessage(8, "New Message"),
+      ).wait;
 
       expect(floorResult, equals(driftResult));
 
@@ -1075,8 +1128,10 @@ void main() {
     });
 
     test("not string", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.betweenNotMessage("3", "6"), driftTaskDao.betweenNotMessage("3", "6")).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.betweenNotMessage("3", "6"),
+        driftTaskDao.betweenNotMessage("3", "6"),
+      ).wait;
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
         expect(floorTask[i], EqualTaskMatcher(driftTask[i]));
@@ -1103,8 +1158,10 @@ void main() {
 
         expect(floorTask, EqualTaskMatcher(driftTask));
 
-        final (floorDeleteResult, driftDeleteResult) =
-            await (floorTaskDao.annotationDeleteTask(floorTask!), driftTaskDao.annotationDeleteTask(driftTask!)).wait;
+        final (floorDeleteResult, driftDeleteResult) = await (
+          floorTaskDao.annotationDeleteTask(floorTask!),
+          driftTaskDao.annotationDeleteTask(driftTask!),
+        ).wait;
 
         expect(floorDeleteResult, equals(driftDeleteResult));
       });
@@ -1131,8 +1188,10 @@ void main() {
         expect(driftDeleteResult, equals(floorDeleteResult));
 
         // Because the return value doesn't work check if the deleted values are missing in the db
-        final (floorTaskDeleted, driftTaskDeleted) =
-            await (floorTaskDao.findAllTasks(), driftTaskDao.findAllTasks()).wait;
+        final (floorTaskDeleted, driftTaskDeleted) = await (
+          floorTaskDao.findAllTasks(),
+          driftTaskDao.findAllTasks(),
+        ).wait;
 
         expect(floorTaskDeleted.length, equals(lengthBefore - 5));
 
@@ -1153,12 +1212,16 @@ void main() {
           integers: [1, 2],
         );
 
-        final (floorInsertResult, driftInsertResult) =
-            await (floorTaskDao.annotationInsertTask(insertTask), driftTaskDao.annotationInsertTask(insertTask)).wait;
+        final (floorInsertResult, driftInsertResult) = await (
+          floorTaskDao.annotationInsertTask(insertTask),
+          driftTaskDao.annotationInsertTask(insertTask),
+        ).wait;
         expect(floorInsertResult, equals(driftInsertResult));
 
-        final (floorTask, driftTask) =
-            await (floorTaskDao.findTaskById(floorInsertResult), driftTaskDao.findTaskById(driftInsertResult)).wait;
+        final (floorTask, driftTask) = await (
+          floorTaskDao.findTaskById(floorInsertResult),
+          driftTaskDao.findTaskById(driftInsertResult),
+        ).wait;
 
         expect(floorTask, EqualTaskMatcher(driftTask));
       });
@@ -1169,8 +1232,10 @@ void main() {
           TestTask(timestamp: DateTime.now(), status: TaskStatus.open, customDouble: 1.5555, integers: [5]),
         ];
 
-        final (floorInsertResult, driftInsertResult) =
-            await (floorTaskDao.annotationInsertTasks(insertTask), driftTaskDao.annotationInsertTasks(insertTask)).wait;
+        final (floorInsertResult, driftInsertResult) = await (
+          floorTaskDao.annotationInsertTasks(insertTask),
+          driftTaskDao.annotationInsertTasks(insertTask),
+        ).wait;
 
         expect(floorInsertResult.length, equals(2));
 
@@ -1226,8 +1291,10 @@ void main() {
         floorTask = floorTask!.copyWithMessage("NewMessage");
         driftTask = driftTask!.copyWithMessage("NewMessage");
 
-        final (floorUpdateResult, driftUpdateResult) =
-            await (floorTaskDao.annotationUpdateTask(floorTask!), driftTaskDao.annotationUpdateTask(driftTask!)).wait;
+        final (floorUpdateResult, driftUpdateResult) = await (
+          floorTaskDao.annotationUpdateTask(floorTask!),
+          driftTaskDao.annotationUpdateTask(driftTask!),
+        ).wait;
         expect(floorUpdateResult, equals(1));
 
         // Current implementation always returns -1
@@ -1250,8 +1317,10 @@ void main() {
         floorTask = floorTask.map<TestTask>((s) => s.copyWithMessage("NewMessage")).toList();
         driftTask = driftTask.map<TestTask>((s) => s.copyWithMessage("NewMessage")).toList();
 
-        final (floorUpdateResult, driftUpdateResult) =
-            await (floorTaskDao.annotationUpdateTasks(floorTask), driftTaskDao.annotationUpdateTasks(driftTask)).wait;
+        final (floorUpdateResult, driftUpdateResult) = await (
+          floorTaskDao.annotationUpdateTasks(floorTask),
+          driftTaskDao.annotationUpdateTasks(driftTask),
+        ).wait;
         expect(floorUpdateResult, equals(13));
 
         // Current implementation always returns -1
@@ -1272,17 +1341,21 @@ void main() {
 
   group("renaming", () {
     test("baseClass", () async {
-      final (floorString, driftString) =
-          await (floorTaskDao.renamedStringTestBaseDao(1, "6"), driftTaskDao.renamedStringTestBaseDao(1, "6")).wait;
+      final (floorString, driftString) = await (
+        floorTaskDao.renamedStringTestBaseDao(1, "6"),
+        driftTaskDao.renamedStringTestBaseDao(1, "6"),
+      ).wait;
 
       expect(floorString, equals(driftString));
     });
 
     test("check rename in db", () async {
-      final row = await driftDatabase.customSelect(
-        "SELECT DifFeReNt_STRING FROM TASKTEST WHERE id = :id or DifFeReNt_STRING = :renamedString",
-        variables: [Variable(1), Variable("6")],
-      ).getSingleOrNull();
+      final row = await driftDatabase
+          .customSelect(
+            "SELECT DifFeReNt_STRING FROM TASKTEST WHERE id = :id or DifFeReNt_STRING = :renamedString",
+            variables: [Variable(1), Variable("6")],
+          )
+          .getSingleOrNull();
 
       expect(row, isNotNull);
 
@@ -1294,8 +1367,10 @@ void main() {
     });
 
     test("entity", () async {
-      final (floorString, driftString) =
-          await (floorTaskDao.renamedStringTest(1, "6"), driftTaskDao.renamedStringTest(1, "6")).wait;
+      final (floorString, driftString) = await (
+        floorTaskDao.renamedStringTest(1, "6"),
+        driftTaskDao.renamedStringTest(1, "6"),
+      ).wait;
 
       expect(floorString, equals(driftString));
     });
@@ -1333,8 +1408,10 @@ void main() {
     });
 
     test("nulls last", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.orderByTypeDescNullsLast(), driftTaskDao.orderByTypeDescNullsLast()).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.orderByTypeDescNullsLast(),
+        driftTaskDao.orderByTypeDescNullsLast(),
+      ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       expect(floorTask.last.type, equals(null));
@@ -1345,8 +1422,10 @@ void main() {
     });
 
     test("nulls last", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.orderByTypeDescNullsFirst(), driftTaskDao.orderByTypeDescNullsFirst()).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.orderByTypeDescNullsFirst(),
+        driftTaskDao.orderByTypeDescNullsFirst(),
+      ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       expect(floorTask.first.type, equals(null));
@@ -1369,8 +1448,10 @@ void main() {
 
   group("subquery", () {
     test("whereInSubquery", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.whereInSubquery([1, 2, 5]), driftTaskDao.whereInSubquery([1, 2, 5])).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.whereInSubquery([1, 2, 5]),
+        driftTaskDao.whereInSubquery([1, 2, 5]),
+      ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
 
@@ -1402,8 +1483,10 @@ void main() {
     });
 
     test("NEGATION", () async {
-      final (floorIds, driftIds) =
-          await (floorTaskDao.bitwiseNegationId(4, -3), driftTaskDao.bitwiseNegationId(4, -3)).wait;
+      final (floorIds, driftIds) = await (
+        floorTaskDao.bitwiseNegationId(4, -3),
+        driftTaskDao.bitwiseNegationId(4, -3),
+      ).wait;
 
       expect(floorIds.length, equals(driftIds.length));
 
@@ -1442,12 +1525,32 @@ void main() {
 
   group("transaction", () {
     test("transactionGetEveryOther", () async {
-      final (floorTask, driftTask) =
-          await (floorTaskDao.transactionGetEveryOther(), driftTaskDao.transactionGetEveryOther()).wait;
+      final (floorTask, driftTask) = await (
+        floorTaskDao.transactionGetEveryOther(),
+        driftTaskDao.transactionGetEveryOther(),
+      ).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {
         expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
+
+  group("View", () {
+    setUp(() async {
+      for (final user in testUserEntities) {
+        await floorTaskDao.annotationInsertUser(user);
+        await driftTaskDao.annotationInsertUser(user);
+      }
+    });
+
+    test("description", () async {
+      final (floorTask, driftTask) = await (floorTaskUserViewDao.getAll(), driftTaskUserViewDao.getAll()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], equals(driftTask[i]));
       }
     });
   });

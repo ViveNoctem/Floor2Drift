@@ -2711,6 +2711,13 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
       ) as Set<_i4.ClassElement>);
 
   @override
+  bool get isView => (super.noSuchMethod(
+        Invocation.getter(#isView),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   Set<_i10.TypeConverterState> get usedTypeConverters => (super.noSuchMethod(
         Invocation.getter(#usedTypeConverters),
         returnValue: <_i10.TypeConverterState>{},
@@ -2720,6 +2727,26 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
   @override
   Set<_i10.FieldState> get allFieldStates => (super.noSuchMethod(
         Invocation.getter(#allFieldStates),
+        returnValue: <_i10.FieldState>{},
+        returnValueForMissingStub: <_i10.FieldState>{},
+      ) as Set<_i10.FieldState>);
+
+  @override
+  String get driftTableGetter => (super.noSuchMethod(
+        Invocation.getter(#driftTableGetter),
+        returnValue: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#driftTableGetter),
+        ),
+        returnValueForMissingStub: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#driftTableGetter),
+        ),
+      ) as String);
+
+  @override
+  Set<_i10.FieldState> get fieldStates => (super.noSuchMethod(
+        Invocation.getter(#fieldStates),
         returnValue: <_i10.FieldState>{},
         returnValueForMissingStub: <_i10.FieldState>{},
       ) as Set<_i10.FieldState>);
@@ -2745,6 +2772,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
     String? renamed,
     Set<_i4.ClassElement>? superClasses,
     Set<_i10.ClassState>? superStates,
+    bool? isView,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -2757,6 +2785,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
             #renamed: renamed,
             #superClasses: superClasses,
             #superStates: superStates,
+            #isView: isView,
           },
         ),
         returnValue: _FakeClassState_16(
@@ -2771,6 +2800,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
               #renamed: renamed,
               #superClasses: superClasses,
               #superStates: superStates,
+              #isView: isView,
             },
           ),
         ),
@@ -2786,6 +2816,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
               #renamed: renamed,
               #superClasses: superClasses,
               #superStates: superStates,
+              #isView: isView,
             },
           ),
         ),

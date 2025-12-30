@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/element_extension.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
@@ -32,11 +33,7 @@ abstract class DaoMethodConverter {
 
   /// Parses a [MethodElement] and
   /// calls the right [DaoMethodConverter]
-  static ValueResponse<String> parseMethod(
-    MethodElement method,
-    TableSelector tableSelector,
-    DatabaseState dbState,
-  ) {
+  static ValueResponse<String> parseMethod(MethodElement method, TableSelector tableSelector, DatabaseState dbState) {
     const queryChecker = TypeChecker.fromRuntime(Query);
     var annotation = queryChecker.firstAnnotationOfExact(method);
     if (annotation != null) {
@@ -87,7 +84,7 @@ abstract class DaoMethodConverter {
   ///
   /// The return value is the name of the corresponding floor entity class.
   /// Not the actual sql table name
-  static ValueResponse<String> parseMethodUsedTable(
+  static ValueResponse<List<String>> parseMethodUsedTable(
     MethodElement method,
     TableSelector tableSelector,
     DatabaseState dbState,
@@ -120,11 +117,11 @@ abstract class DaoMethodConverter {
       return const UpdateMethodConverter().parseUsedTable(method, annotation, tableSelector, dbState);
     }
 
-    return ValueResponse.value("");
+    return ValueResponse.value(const []);
   }
 
   /// This methods is required to set the currentClassState of the tableSelector
-  ValueResponse<String> parseUsedTable(
+  ValueResponse<List<String>> parseUsedTable(
     MethodElement method,
     DartObject annotation,
     TableSelector tableSelector,
