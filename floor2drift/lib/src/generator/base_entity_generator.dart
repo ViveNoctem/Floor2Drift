@@ -22,14 +22,14 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
   final bool _useRowClass;
 
   /// {@macro BaseEntityGenerator}
-  BaseEntityGenerator({
+  const BaseEntityGenerator({
     required TypeConverterGenerator? typeConverterGenerator,
     EntityHelper entityHelper = const EntityHelper(),
     required super.inputOption,
     required bool useRowClass,
-  })  : _entityHelper = entityHelper,
-        _typeConverterGenerator = typeConverterGenerator,
-        _useRowClass = useRowClass;
+  }) : _entityHelper = entityHelper,
+       _typeConverterGenerator = typeConverterGenerator,
+       _useRowClass = useRowClass;
 
   @override
   bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
@@ -53,7 +53,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
   ) {
     var result = "";
 
-    final valueResult = _entityHelper.parseEntityFields(classElement, dbState);
+    final valueResult = _entityHelper.parseEntityFields(classElement, dbState, false);
 
     switch (valueResult) {
       case ValueError<(String, ClassState)>():

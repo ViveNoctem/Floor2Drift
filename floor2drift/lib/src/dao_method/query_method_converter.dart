@@ -8,7 +8,7 @@ class QueryMethodConverter extends DaoMethodConverter {
   const QueryMethodConverter();
 
   @override
-  ValueResponse<String> parseUsedTable(
+  ValueResponse<List<String>> parseUsedTable(
     MethodElement method,
     DartObject annotation,
     TableSelector tableSelector,
@@ -23,29 +23,38 @@ class QueryMethodConverter extends DaoMethodConverter {
     }
 
     final rootNode = parsedResult.data.rootNode;
-    final result = StatementConverter.parseStatementUsedTable(rootNode, method, tableSelector);
+    final usedTableResult = StatementConverter.parseStatementUsedTable(rootNode, method, tableSelector);
 
-    switch (result) {
-      case ValueError<String>():
-        return result.wrap();
-      case ValueData<String>():
+    switch (usedTableResult) {
+      case ValueError<List<String>>():
+        return usedTableResult.wrap();
+      case ValueData<List<String>>():
     }
 
-    if (tableSelector is TableSelectorDao) {
+    if (tableSelector is! TableSelectorDao) {
+      return ValueResponse.error("expected to be called on real entity, but was called on base entity", method);
+    }
+
+    final result = <String>[];
+    for (final table in usedTableResult.data) {
+      ClassState? foundState;
       for (final state in dbState.entityClassStates) {
-        if (state.sqlTablename.toLowerCase() != result.data.toLowerCase()) {
+        if (state.sqlTablename.toLowerCase() != table.toLowerCase()) {
           continue;
         }
-        tableSelector.currentClassState = state;
+
+        foundState = state;
         break;
       }
 
-      if (tableSelector.currentClassState == null) {
+      if (foundState == null) {
         return ValueResponse.error("Couldn't determine classState for used Table", method);
       }
+
+      result.add(foundState.className);
     }
 
-    return ValueResponse.value(tableSelector.currentClassState!.className);
+    return ValueResponse.value(result);
   }
 
   @override
@@ -119,7 +128,16 @@ class QueryMethodConverter extends DaoMethodConverter {
     }
 
     final rootNode = parseResult.data.rootNode;
-    return StatementConverter.parseStatement(rootNode, method, tableSelector, dbState);
+    final returnValue = const BaseHelper().getTypeSpecification(method.returnType);
+    return StatementConverter.parseStatement(
+      rootNode,
+      method,
+      method.parameters,
+      tableSelector,
+      dbState,
+      returnValue,
+      false,
+    );
   }
 
   String _generateMethodHeader(TypeSpecification returnType, MethodElement method, String classNameSuffix) {

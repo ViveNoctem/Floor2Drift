@@ -29,18 +29,18 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
   final TypeConverterGenerator? _typeConverterGenerator;
 
   /// {@macro EntityGenerator}
-  EntityGenerator({
+  const EntityGenerator({
     required TypeConverterGenerator? typeConverterGenerator,
     required bool useRowClass,
     EntityHelper entityHelper = const EntityHelper(),
     AnnotationHelper annotationHelper = const AnnotationHelper(),
     required super.inputOption,
     required ETableNameOption tableName,
-  })  : _tableName = tableName,
-        _useRowClass = useRowClass,
-        _entityHelper = entityHelper,
-        _typeConverterGenerator = typeConverterGenerator,
-        _annotationHelper = annotationHelper;
+  }) : _tableName = tableName,
+       _useRowClass = useRowClass,
+       _entityHelper = entityHelper,
+       _typeConverterGenerator = typeConverterGenerator,
+       _annotationHelper = annotationHelper;
 
   @override
   (GeneratedSource, ClassState) generateForAnnotatedElement(
@@ -58,7 +58,7 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
     // alway add drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final data = _entityHelper.parseEntityFields(classElement, dbState);
+    final data = _entityHelper.parseEntityFields(classElement, dbState, false);
 
     switch (data) {
       case ValueError():

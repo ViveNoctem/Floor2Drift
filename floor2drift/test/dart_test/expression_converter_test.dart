@@ -43,7 +43,7 @@ void main() {
     mockClassState = MockClassState();
     mockFieldState = MockFieldState();
 
-    selector = TableSelectorDao(selector: "s", currentClassState: mockClassState, currentFieldState: mockFieldState);
+    selector = TableSelectorDao(selector: "s", currentClassStates: [mockClassState], currentFieldState: mockFieldState);
 
     mockParameter = MockParameterElement();
     mockParameterElement = MockElement();
@@ -260,10 +260,7 @@ void main() {
       when(mockFieldState.sqlColumnName).thenReturn("test");
       when(mockFieldState.renamed).thenReturn(null);
 
-      when(mockClassState.allFieldStates).thenReturn({
-        mockFieldState2,
-        mockFieldState,
-      });
+      when(mockClassState.allFieldStates).thenReturn({mockFieldState2, mockFieldState});
     });
 
     test("default", () {
@@ -500,10 +497,7 @@ void main() {
       when(mockFieldState.sqlColumnName).thenReturn("test");
       when(mockFieldState.renamed).thenReturn(null);
 
-      when(mockClassState.allFieldStates).thenReturn({
-        mockFieldState2,
-        mockFieldState,
-      });
+      when(mockClassState.allFieldStates).thenReturn({mockFieldState2, mockFieldState});
     });
 
     test("reference", () {
@@ -620,10 +614,7 @@ void main() {
       when(mockFieldState.sqlColumnName).thenReturn("test");
       when(mockFieldState.renamed).thenReturn(null);
 
-      when(mockClassState.allFieldStates).thenReturn({
-        mockFieldState2,
-        mockFieldState,
-      });
+      when(mockClassState.allFieldStates).thenReturn({mockFieldState2, mockFieldState});
     });
 
     test("reference", () {
@@ -943,10 +934,7 @@ void main() {
       when(mockFieldState.sqlColumnName).thenReturn("id");
       when(mockFieldState.renamed).thenReturn(null);
 
-      when(mockClassState.allFieldStates).thenReturn({
-        mockFieldState2,
-        mockFieldState,
-      });
+      when(mockClassState.allFieldStates).thenReturn({mockFieldState2, mockFieldState});
     });
 
     test("reference in numeric", () {
@@ -1138,10 +1126,7 @@ void main() {
       when(mockFieldState.sqlColumnName).thenReturn("id");
       when(mockFieldState.renamed).thenReturn(null);
 
-      when(mockClassState.allFieldStates).thenReturn({
-        mockFieldState2,
-        mockFieldState,
-      });
+      when(mockClassState.allFieldStates).thenReturn({mockFieldState2, mockFieldState});
     });
 
     test("reference like String", () {
@@ -1339,10 +1324,7 @@ void main() {
       when(mockFieldState.sqlColumnName).thenReturn("id");
       when(mockFieldState.renamed).thenReturn(null);
 
-      when(mockClassState.allFieldStates).thenReturn({
-        mockFieldState2,
-        mockFieldState,
-      });
+      when(mockClassState.allFieldStates).thenReturn({mockFieldState2, mockFieldState});
     });
 
     test("count id", () {
@@ -1558,7 +1540,12 @@ void main() {
     });
 
     test("groupConcat with separator", () {
-      final parameters = ExprFunctionParameters(parameters: [Reference(columnName: "id"), StringLiteral(",")]);
+      final parameters = ExprFunctionParameters(
+        parameters: [
+          Reference(columnName: "id"),
+          StringLiteral(","),
+        ],
+      );
       final name = "group_concat";
       final expression = FunctionExpression(name: name, parameters: parameters);
 
@@ -1601,7 +1588,10 @@ void main() {
 
     test("groupConcat distinct with separator", () {
       final parameters = ExprFunctionParameters(
-        parameters: [Reference(columnName: "id"), StringLiteral(",")],
+        parameters: [
+          Reference(columnName: "id"),
+          StringLiteral(","),
+        ],
         distinct: true,
       );
       final name = "group_concat";
@@ -1646,7 +1636,10 @@ void main() {
 
     test("error parsing separator expression", () {
       final parameters = ExprFunctionParameters(
-        parameters: [Reference(columnName: "id"), MockLiteral(",")],
+        parameters: [
+          Reference(columnName: "id"),
+          MockLiteral(","),
+        ],
         distinct: true,
       );
       final name = "group_concat";
@@ -1670,7 +1663,10 @@ void main() {
 
     test("error parsing function name", () {
       final parameters = ExprFunctionParameters(
-        parameters: [Reference(columnName: "id"), MockLiteral(",")],
+        parameters: [
+          Reference(columnName: "id"),
+          MockLiteral(","),
+        ],
         distinct: true,
       );
       final name = "temp";
@@ -1775,11 +1771,7 @@ void main() {
       when(mockFieldState.sqlColumnName).thenReturn("id");
       when(mockFieldState.renamed).thenReturn(null);
 
-      when(mockClassState.allFieldStates).thenReturn({
-        mockFieldState2,
-        mockFieldState3,
-        mockFieldState,
-      });
+      when(mockClassState.allFieldStates).thenReturn({mockFieldState2, mockFieldState3, mockFieldState});
     });
 
     test("reference equal reference", () {

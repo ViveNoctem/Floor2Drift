@@ -9,61 +9,72 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
   const SelectStatementConverter({
     SqlHelper sqlHelper = const SqlHelper(),
     ExpressionConverterUtil expressionConverterUtil = const ExpressionConverterUtil(),
-  })  : _expressionConverterUtil = expressionConverterUtil,
-        _sqlHelper = sqlHelper;
+  }) : _expressionConverterUtil = expressionConverterUtil,
+       _sqlHelper = sqlHelper;
 
-  ValueResponse<String> _temp(
+  ValueResponse<String> _parseQueryInternal(
     SelectStatement statement,
     Element element,
     List<ParameterElement> parameters,
     TableSelector tableSelector, {
     required bool isSubQuery,
     required TypeSpecification? returnValue,
+    required bool isView,
   }) {
+    // TODO join in normal queries should not be possible in floor.
+    // TODO but i probably want to support it
+
+    // TODO views have a different syntax
+    // TODO selectOnly does not exist
+    // TODO use resolvedColumns in Views star seems not to be possible column.resolvedColumns
+    // TODO select([$resolvedColumns]).from($firstTable).join([joins]);
+
+    // TODO need to anlyze all columns not just first
+
     final column = statement.columns.firstOrNull;
 
     // use selectOnly instead of select, if an aggregate function is used
     // TODO Wont work with aggregate functions with filter clause because column.expression is AggregateFunctionInvocation
-    final bool useSelectOnly = column != null && column is! StarResultColumn;
+    final bool useSelectOnly = statement.columns.length > 1 || column != null && column is! StarResultColumn;
 
-    String result;
-    var selectOnlyFunctionResult = "";
     var originalSelector = tableSelector.functionSelector;
-    if (useSelectOnly) {
-      switch (tableSelector) {
-        case TableSelectorBaseDao():
-          // to access entity column fields in baseDao table.asDslTable is needed
-          tableSelector.functionSelector = "${tableSelector.selector}.asDslTable";
-        case TableSelectorDao():
-          tableSelector.functionSelector = tableSelector.selector;
-      }
 
-      if (column is ExpressionResultColumn) {
-        final functionResult = _expressionConverterUtil.parseExpression(
-          column.expression,
-          element,
-          parameters: parameters,
-          selector: tableSelector,
-        );
+    final fromResult = _sqlHelper.addFromClause(statement.from, element, tableSelector, parameters, isView);
 
-        switch (functionResult) {
-          case ValueData<(String, EExpressionType)>():
-            break;
-          case ValueError<(String, EExpressionType)>():
-            return functionResult.wrap();
-        }
-        selectOnlyFunctionResult = functionResult.data.$1;
-        result =
-            // "final \$1 = ${functionResult.data.$1};\n"
-            "(selectOnly(${tableSelector.selector}${statement.distinct ? ", distinct: true" : ""})"
-            // "..addColumns([\$1])";
-            "..addColumns([$selectOnlyFunctionResult])";
-      } else {
-        return ValueResponse.error("asdasdasdsa", element);
-      }
-    } else {
-      result = "(select(${tableSelector.selector}${statement.distinct ? ", distinct: true" : ""})";
+    switch (fromResult) {
+      case ValueError<String>():
+        tableSelector.functionSelector = originalSelector;
+        return fromResult.wrap();
+      case ValueData<String>():
     }
+
+    final fromCode = fromResult.data;
+
+    if (useSelectOnly) {
+      tableSelector.useSelector = true;
+      if (tableSelector is TableSelectorBaseDao) {
+        tableSelector.selector = "${tableSelector.selector}.asDslTable";
+      }
+    }
+
+    final selectResult = _sqlHelper.addSelectClause(
+      statement,
+      element,
+      parameters,
+      tableSelector,
+      statement.columns,
+      useSelectOnly,
+      isView,
+    );
+    switch (selectResult) {
+      case ValueError<(String, String)>():
+        tableSelector.useSelector = false;
+        tableSelector.functionSelector = originalSelector;
+        return selectResult.wrap();
+      case ValueData<(String, String)>():
+    }
+
+    var (result, selectOnlyFunctionResult) = selectResult.data;
 
     final where = statement.where;
     if (where != null) {
@@ -73,6 +84,8 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
         case ValueData<String>():
           break;
         case ValueError<String>():
+          tableSelector.useSelector = false;
+          tableSelector.functionSelector = originalSelector;
           return whereResult.wrap();
       }
 
@@ -85,26 +98,36 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
       switch (orderByResult) {
         case ValueError<String>():
+          tableSelector.useSelector = false;
+          tableSelector.functionSelector = originalSelector;
           return orderByResult.wrap();
         case ValueData<String>():
       }
       result += orderByResult.data;
     }
 
+    tableSelector.useSelector = false;
+
     // TODO GROUP BY
 
     // close bracket before the select
-    result += ")";
+    if (isView == false) {
+      result += ")";
+    }
+
+    result += fromCode;
 
     // reset the functionSelector to the correct one
     tableSelector.functionSelector = originalSelector;
-    if (isSubQuery == false) {
+    if (isSubQuery == false && isView == false) {
       // if useSelectOnly == true addColumns is always used for the SELECT clause
       // TODO change _getSelectMap to support useSelectOnly
       if (useSelectOnly) {
         var read = ".read($selectOnlyFunctionResult)";
 
         // TODO should not be checking the column and expression type to find out if the column was converted
+
+        // TODO read can only be used if only one column is used with selectOnly. In View this is not needed. Therefore column can be used
         if (column is ExpressionResultColumn) {
           final expression = column.expression;
 
@@ -143,33 +166,49 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
     List<ParameterElement> parameters,
     TableSelector tableSelector,
   ) {
-    return _temp(statement, element, parameters, tableSelector, isSubQuery: true, returnValue: null);
+    return _parseQueryInternal(
+      statement,
+      element,
+      parameters,
+      tableSelector,
+      isSubQuery: true,
+      returnValue: null,
+      isView: false,
+    );
   }
 
   @override
   ValueResponse<String> _parse(
     SelectStatement statement,
-    MethodElement method,
+    Element method,
+    List<ParameterElement> parameters,
     TableSelector tableSelector,
     DatabaseState dbState,
+    TypeSpecification returnValue,
+    bool isView,
   ) {
     final tableFrom = statement.from;
 
-    if (tableFrom is! TableReference) {
-      return ValueResponse.error("Only table select statements are supported // $statement", method);
+    final tablesResult = _sqlHelper.getTablesForFromClause(tableFrom, method);
+
+    switch (tablesResult) {
+      case ValueError<List<String>>():
+        return tablesResult.wrap();
+      case ValueData<List<String>>():
     }
 
-    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
+    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tablesResult.data);
 
-    final typeSpecification = const BaseHelper().getTypeSpecification(method.returnType);
+    final typeSpecification = returnValue;
 
-    final resultValue = _temp(
+    final resultValue = _parseQueryInternal(
       statement,
       method,
-      method.parameters,
+      parameters,
       tableSelector,
       isSubQuery: false,
       returnValue: typeSpecification,
+      isView: isView,
     );
 
     switch (resultValue) {
@@ -178,7 +217,9 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
       case ValueData<String>():
     }
 
-    var result = "return ${resultValue.data}";
+    final returnCode = isView ? "" : "return ";
+
+    var result = "$returnCode${resultValue.data}";
 
     result += _sqlHelper.getGetter(typeSpecification);
     result += ";";
@@ -220,17 +261,25 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
   }
 
   @override
-  ValueResponse<String> _parseUsedTable(SelectStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<List<String>> _parseUsedTable(
+    SelectStatement statement,
+    MethodElement method,
+    TableSelector tableSelector,
+  ) {
     final table = statement.table;
 
     if (table == null) {
       return ValueResponse.error("Couldn't determine table for select statement $statement", method);
     }
 
-    if (table is! TableReference) {
-      return ValueResponse.error("Only table references supported for select statements $statement", method);
+    final tableNameResult = _sqlHelper.getTablesForFromClause(statement.from, method);
+
+    switch (tableNameResult) {
+      case ValueError<List<String>>():
+        return tableNameResult.wrap();
+      case ValueData<List<String>>():
     }
 
-    return ValueResponse.value(ReCase(table.tableName).pascalCase);
+    return ValueResponse.value(tableNameResult.data.map((s) => ReCase(s).pascalCase).toList());
   }
 }

@@ -24,7 +24,7 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
 
   /// {@macro BaseDaoGenerator}
   const BaseDaoGenerator({DaoHelper daoHelper = const DaoHelper(), required super.inputOption})
-      : _daoHelper = daoHelper;
+    : _daoHelper = daoHelper;
 
   @override
   bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
@@ -67,11 +67,9 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
       classElement,
       // do not use classNameSuffix. The Type Name should always be a generic type
       "",
-      TableSelectorBaseDao(
-        tableSelector,
-        currentClassState: classState,
-      ),
+      TableSelectorBaseDao(tableSelector, currentClassStates: [if (classState != null) classState]),
       dbState,
+      true,
     );
 
     final newImports = <String>{};
@@ -116,8 +114,10 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
       interfaceString,
     );
 
-    final databaseimport =
-        const BaseHelper().getImport(dbState.databaseClass.element!.librarySource!.uri, targetFilePath);
+    final databaseimport = const BaseHelper().getImport(
+      dbState.databaseClass.element!.librarySource!.uri,
+      targetFilePath,
+    );
 
     if (databaseimport != null) {
       newImports.add(outputOption.getFileName(databaseimport));

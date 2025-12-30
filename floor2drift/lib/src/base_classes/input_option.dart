@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
-import 'package:floor2drift/floor2drift.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as path;
@@ -30,6 +29,9 @@ abstract class InputOptionBase {
   /// Should [entity] classes be converted
   final bool convertDbEntities;
 
+  /// Should [DatabaseView] classes be converted
+  final bool convertViews;
+
   /// [Glob] used to filter the names of classes, that should be converted
   final Glob glob;
 
@@ -41,6 +43,7 @@ abstract class InputOptionBase {
     required this.convertDbTypeConverters,
     required this.convertDbDaos,
     required this.convertDbEntities,
+    required this.convertViews,
     required this.dbFile,
     required this.glob,
     // this.migrations = const [],
@@ -66,6 +69,7 @@ class InputOptions extends InputOptionBase {
     required super.convertDbTypeConverters,
     required super.convertDbDaos,
     required super.convertDbEntities,
+    required super.convertViews,
     required super.dbFile,
     // super.migrations,
   });

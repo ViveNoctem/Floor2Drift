@@ -10,7 +10,7 @@ void main(List<String> arguments) async {
     dbPath: dbLocation,
     rootPath: rootDir,
     classNameFilter: Glob("{*task*,*base*,*converter*,*entity*,*database*,*user*}", caseSensitive: false),
-    useDriftModularCodeGeneration: true,
+    useDriftModularCodeGeneration: false, // drift view modular generation seems to be broken in 2.16.
   );
 
   generator.start();

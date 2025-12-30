@@ -26,6 +26,8 @@ class DatabaseState {
   /// All superclasses of [entities] annotated with [convertBaseEntity]
   final Set<ClassElement> baseEntities;
 
+  final Set<ClassElement> views;
+
   /// All [dao] classes that are defined in the fields of the [Database]
   ///
   /// Daos filtered out by classNameFilter are not added.
@@ -73,6 +75,7 @@ class DatabaseState {
     required this.daos,
     required this.baseDaos,
     required this.schemaVersion,
+    required this.views,
     // required this.migrations,
   }) {
     typeConverterMap = {for (var entry in typeConverters) entry.fromType: entry};
@@ -95,6 +98,10 @@ class DatabaseState {
 
     for (final typeConverter in typeConverters) {
       floorClasses[typeConverter.classElement.name] = typeConverter.classElement;
+    }
+
+    for (final view in views) {
+      floorClasses[view.name] = view;
     }
   }
 }

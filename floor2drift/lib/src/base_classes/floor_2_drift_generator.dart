@@ -18,6 +18,7 @@ import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/entity_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
+import 'package:floor2drift/src/generator/view_generator.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
@@ -48,6 +49,7 @@ class Floor2DriftGenerator {
   /// [convertDao] should [dao] annotated classes in filed of the [dbPath] class be converted
   /// [convertEntity] should [Database.entities] be converted
   /// [convertTypeConverter] should found [TypeConverter] classes be converted
+  /// [convertView] should found [DatabaseView] classes be converted
   /// [useDriftModularCodeGeneration] when set the generated code is changed to work with drift modular code generation
   factory Floor2DriftGenerator({
     required String dbPath,
@@ -58,6 +60,7 @@ class Floor2DriftGenerator {
     bool convertDao = true,
     bool convertEntity = true,
     bool convertTypeConverter = true,
+    bool convertView = true,
     bool useRowClass = true,
     ETableNameOption tableRenaming = ETableNameOption.floorScheme,
     bool useDriftModularCodeGeneration = false,
@@ -73,6 +76,7 @@ class Floor2DriftGenerator {
       convertDbDaos: convertDao,
       convertDbEntities: convertEntity,
       convertDbTypeConverters: convertTypeConverter,
+      convertViews: convertView,
       dbFile: dbFile,
       // migrations: migrations,
     );
@@ -125,13 +129,12 @@ class Floor2DriftGenerator {
   ) {
     final baseDaoGenerator = inputOption.convertDbDaos ? BaseDaoGenerator(inputOption: inputOption) : null;
 
-    final daoGenerator =
-        inputOption.convertDbDaos ? DaoGenerator(inputOption: inputOption, useRowClass: useRowClass) : null;
+    final daoGenerator = inputOption.convertDbDaos
+        ? DaoGenerator(inputOption: inputOption, useRowClass: useRowClass)
+        : null;
 
     final typeConverterGenerator = inputOption.convertDbTypeConverters
-        ? TypeConverterGenerator(
-            inputOption: inputOption,
-          )
+        ? TypeConverterGenerator(inputOption: inputOption)
         : null;
 
     final baseEntityGenerator = inputOption.convertDbEntities
@@ -153,6 +156,10 @@ class Floor2DriftGenerator {
 
     final databaseGenerator = DatabaseGenerator(inputOption: inputOption, useRowClass: useRowClass);
 
+    final viewGenerator = inputOption.convertViews
+        ? ViewGenerator(inputOption: inputOption, useRowClass: useRowClass)
+        : null;
+
     return ProcessingOptions(
       typeConverterGenerator: typeConverterGenerator,
       entityGenerator: entityGenerator,
@@ -160,6 +167,7 @@ class Floor2DriftGenerator {
       baseEntityGenerator: baseEntityGenerator,
       baseDaoGenerator: baseDaoGenerator,
       databaseGenerator: databaseGenerator,
+      viewGenerator: viewGenerator,
       outputOption: outputOption,
     );
   }
@@ -211,6 +219,21 @@ class Floor2DriftGenerator {
 
         dbState.entityClassStates.addAll(classStates);
       }
+
+      if (inputOption.convertViews) {
+        if (processingOption.viewGenerator != null) {
+          final (text, classStates) = _processClassElements(
+            dbState.views,
+            dbState,
+            processingOption.viewGenerator!,
+            newFiles,
+          );
+
+          newFiles = text;
+
+          dbState.entityClassStates.addAll(classStates);
+        }
+      }
     }
 
     final (text1, isNull) = _processClassElements(
@@ -235,12 +258,7 @@ class Floor2DriftGenerator {
       }
 
       if (processingOption.daoGenerator != null) {
-        final (text, isNull) = _processClassElements(
-          dbState.daos,
-          dbState,
-          processingOption.daoGenerator!,
-          newFiles,
-        );
+        final (text, isNull) = _processClassElements(dbState.daos, dbState, processingOption.daoGenerator!, newFiles);
         newFiles = text;
       }
     }
@@ -248,7 +266,7 @@ class Floor2DriftGenerator {
     if (inputOption.convertDbTypeConverters) {
       if (processingOption.typeConverterGenerator != null) {
         final typeConverters = {
-          for (final state in dbState.entityClassStates) ...state.usedTypeConverters.map((s) => s.classElement)
+          for (final state in dbState.entityClassStates) ...state.usedTypeConverters.map((s) => s.classElement),
         };
 
         final (text, isNull) = _processClassElements(

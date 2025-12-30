@@ -3,7 +3,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/dao_method/dao_method_converter.dart';
+import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
+import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/value_response.dart';
@@ -26,10 +28,20 @@ class DaoHelper {
     String classNameSuffix,
     TableSelector tableSelector,
     DatabaseState dbState,
+    bool isBase,
   ) {
     var body = "";
 
     for (final method in classElement.methods) {
+      if (isBase) {
+        tableSelector = TableSelectorBaseDao(
+          BaseDaoGenerator.tableSelector,
+          currentClassStates: tableSelector.currentClassStates,
+        );
+      } else {
+        tableSelector = TableSelectorDao(currentClassStates: []);
+      }
+
       final result = DaoMethodConverter.parseMethod(method, tableSelector, dbState);
 
       switch (result) {
@@ -73,10 +85,10 @@ class DaoHelper {
       final parseResult = DaoMethodConverter.parseMethodUsedTable(method, tableSelector, dbState);
 
       switch (parseResult) {
-        case ValueError<String>():
+        case ValueError<List<String>>():
           parseResult.printError();
           continue;
-        case ValueData<String>():
+        case ValueData<List<String>>():
       }
 
       // skip if no table could be determined
@@ -84,7 +96,7 @@ class DaoHelper {
         continue;
       }
 
-      result.add(parseResult.data);
+      result.addAll(parseResult.data);
     }
 
     return ValueResponse.value(result);
@@ -93,7 +105,7 @@ class DaoHelper {
   /// returns the entity name used in [method]
   ///
   /// specifically for use in [delete] [insert] [update] methods, because the return type need to be analyzed instead of an actual sql query
-  ValueResponse<String> parseUsedTableAnnotation(
+  ValueResponse<List<String>> parseUsedTableAnnotation(
     MethodElement method,
     DartObject annotation,
     TableSelector tableSelector,
@@ -122,23 +134,27 @@ class DaoHelper {
         entityType = type.element;
     }
 
-    if (tableSelector is TableSelectorDao) {
-      for (final state in dbState.entityClassStates) {
-        if (state.classType.element != entityType) {
-          continue;
-        }
-        tableSelector.currentClassState = state;
-        break;
-      }
-
-      if (tableSelector.currentClassState == null) {
-        return ValueResponse.error("Couldn't determine classState for $annotation", method);
-      }
+    if (tableSelector is! TableSelectorDao) {
+      return ValueResponse.error("expected to be called on real entity, but was called on base entity", method);
     }
 
-    final tableName = ReCase(tableSelector.currentClassState!.className).camelCase;
+    ClassState? foundState;
 
-    return ValueResponse.value(tableName);
+    for (final state in dbState.entityClassStates) {
+      if (state.classType.element != entityType) {
+        continue;
+      }
+      foundState = state;
+      break;
+    }
+
+    if (foundState == null) {
+      return ValueResponse.error("Couldn't determine classState for $annotation", method);
+    }
+
+    final tableName = ReCase(foundState.className).camelCase;
+
+    return ValueResponse.value([tableName]);
   }
 
   /// delete or rewrites imports conflicting with the drift classes

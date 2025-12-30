@@ -2,8 +2,9 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:floor2drift/floor2drift.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
+import 'package:floor2drift/src/base_classes/input_option.dart';
+import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';
 import 'package:floor2drift/src/generator/dao_generator.dart';
@@ -12,6 +13,7 @@ import 'package:floor2drift/src/generator/drift_class_generator.dart';
 import 'package:floor2drift/src/generator/entity_generator.dart';
 import 'package:floor2drift/src/generator/generated_source.dart';
 import 'package:floor2drift/src/generator/type_converter_generator.dart';
+import 'package:floor2drift/src/generator/view_generator.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -53,6 +55,8 @@ abstract class ProcessingOptionBase {
   /// is null if type converters are not generated
   final TypeConverterGenerator? typeConverterGenerator;
 
+  final ViewGenerator? viewGenerator;
+
   /// {@macro ProcessingOptionBase}
   ProcessingOptionBase({
     required this.databaseGenerator,
@@ -62,6 +66,7 @@ abstract class ProcessingOptionBase {
     required this.baseEntityGenerator,
     required this.entityGenerator,
     required this.typeConverterGenerator,
+    required this.viewGenerator,
   }) {
     // TODO replace with null-aware elements if possible
     generators = [
@@ -71,6 +76,7 @@ abstract class ProcessingOptionBase {
       if (entityGenerator != null) entityGenerator!,
       if (typeConverterGenerator != null) typeConverterGenerator!,
       databaseGenerator,
+      if (viewGenerator != null) viewGenerator!,
     ];
   }
 
@@ -98,6 +104,7 @@ class ProcessingOptions extends ProcessingOptionBase {
     required super.baseEntityGenerator,
     required super.entityGenerator,
     required super.typeConverterGenerator,
+    required super.viewGenerator,
   });
 
   @override
@@ -154,7 +161,10 @@ class ProcessingOptions extends ProcessingOptionBase {
 
       for (final importGenerator in generators) {
         if (importGenerator.getImport(
-            reader2, dbState, generator is EntityGenerator || generator is BaseEntityGenerator)) {
+          reader2,
+          dbState,
+          generator is EntityGenerator || generator is BaseEntityGenerator,
+        )) {
           changed = true;
           break;
         }

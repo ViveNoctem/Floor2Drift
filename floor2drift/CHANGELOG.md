@@ -15,6 +15,7 @@
 - doc comment from the entity wasn't copied to the table class
 - @transaction methods in dao classes will be converted to drift transactions
 - interfaces from floor dao are added to the drift dao
+- floor views are now being converted to drift views. 
 
 ## 0.1.7
 - rolled back dart sdk dependency to ^3.6.0

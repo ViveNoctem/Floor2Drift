@@ -81,3 +81,10 @@ class EntityAnnotation extends AnnotationType {
   /// {@macro EntityAnnotation}
   const EntityAnnotation(this.tableName);
 }
+
+class DatabaseViewAnnotation extends AnnotationType {
+  final String? viewName;
+  final String query;
+
+  const DatabaseViewAnnotation(this.query, this.viewName);
+}

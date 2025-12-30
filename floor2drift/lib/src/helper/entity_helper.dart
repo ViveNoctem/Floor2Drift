@@ -89,6 +89,7 @@ class EntityHelper {
   ValueResponse<(String code, ClassState classState)> parseEntityFields(
     ClassElement annotatedClass,
     DatabaseState dbState,
+    bool isView,
   ) {
     // ignore: deprecated_member_use_from_same_package
     var typeConverters = dbState.typeConverterMap;
@@ -111,6 +112,7 @@ class EntityHelper {
         case PrimaryKeyAnnotation():
         case UnknownAnnotation():
         case ColumnInfoAnnotation():
+        case DatabaseViewAnnotation():
           continue;
         case TypeConvertersAnnotation():
           typeConverters = <DartType, TypeConverterState>{...typeConverters, ...annotation.value};
@@ -136,6 +138,7 @@ class EntityHelper {
       className: annotatedClass.name,
       superClasses: mixins,
       fieldStates: fieldStates,
+      isView: isView,
     );
 
     return ValueResponse.value((dartCode, classState));
@@ -217,6 +220,7 @@ class EntityHelper {
           namedAnnotation = annotation;
         case UnknownAnnotation():
         case EntityAnnotation():
+        case DatabaseViewAnnotation():
           break;
       }
     }
@@ -299,7 +303,11 @@ class EntityHelper {
         "$documentation$columntype get ${field.name} => $columnCode()$namedString$fieldSuffix$metaDataSuffix();\n";
 
     final fieldState = FieldState(
-        fieldElement: field, fieldName: field.name, renamed: namedAnnotation?.name, converted: usedTypeConverter);
+      fieldElement: field,
+      fieldName: field.name,
+      renamed: namedAnnotation?.name,
+      converted: usedTypeConverter,
+    );
 
     return ValueResponse.value((dartCode, fieldState));
   }
@@ -386,7 +394,8 @@ class EntityHelper {
       content += "\"${fieldState.sqlColumnName}\" : Variable($fieldValue),\n";
     }
 
-    final result = """static Map<String, Expression<Object>> toColumns(bool nullToAbsent, $className $itemName,) {
+    final result =
+        """static Map<String, Expression<Object>> toColumns(bool nullToAbsent, $className $itemName,) {
       return {
         $content
       };

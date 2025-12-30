@@ -10,22 +10,25 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
   @override
   ValueResponse<String> _parse(
     DeleteStatement statement,
-    MethodElement method,
+    Element method,
+    List<ParameterElement> parameters,
     TableSelector tableSelector,
     DatabaseState dbState,
+    TypeSpecification? returnValue,
+    bool isView,
   ) {
     final tableFrom = statement.from;
 
-    for (final state in dbState.entityClassStates) {
-      if (state.sqlTablename.toLowerCase() != tableFrom.tableName.toLowerCase()) {
-        continue;
-      }
+    // for (final state in dbState.entityClassStates) {
+    //   if (state.sqlTablename.toLowerCase() != tableFrom.tableName.toLowerCase()) {
+    //     continue;
+    //   }
+    //
+    //   tableSelector.currentClassState = state;
+    //   break;
+    // }
 
-      tableSelector.currentClassState = state;
-      break;
-    }
-
-    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, tableFrom.tableName);
+    tableSelector = _sqlHelper.configureTableSelector(tableSelector, dbState, [tableFrom.tableName]);
 
     var result = "return (delete(${tableSelector.selector})";
 
@@ -35,7 +38,7 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
       final whereResult = _sqlHelper.addWhereClause(
         where,
         method,
-        method.parameters,
+        parameters,
         false,
         tableSelector, //SqlHelper.selectorName,
       );
@@ -60,8 +63,12 @@ class DeleteStatementConverter extends StatementConverter<DeleteStatement> {
   }
 
   @override
-  ValueResponse<String> _parseUsedTable(DeleteStatement statement, MethodElement method, TableSelector tableSelector) {
+  ValueResponse<List<String>> _parseUsedTable(
+    DeleteStatement statement,
+    MethodElement method,
+    TableSelector tableSelector,
+  ) {
     // TODO what to do in baseDao?
-    return ValueResponse.value(ReCase(statement.table.tableName).pascalCase);
+    return ValueResponse.value([ReCase(statement.table.tableName).pascalCase]);
   }
 }

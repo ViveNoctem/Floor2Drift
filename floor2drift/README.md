@@ -87,6 +87,13 @@ targets:
 
 ## To be noted
 
+### Drift Version
+The used drift version is very old to be compatible with the newest floor version.
+After converting to drift you should migrate to the newest drift version.
+
+In the currently used drift generator version the drift modular code generation for views is bugged.
+The generated `attachedDatabase` getter needs to be manually edited from `GeneratedDatabase` to your actual Database implementation
+
 ### Annotations
 Most of the result of methods annotated with `@Insert` `@Update` `@delete` will be different than the floor equivalent at the moment.
 
@@ -117,6 +124,14 @@ Running the build_runner
 cd floor2drift/example/converted_project && dart run build_runner build
 ```
 ## Tests
+The tests do not work if drift modular code generation is used.
+In the used version there seems to be a bug. 
+The attachedDatabase is a GeneratedDatabase class and not the implemented FloorTestDatabase.
+Change the definition of `attachedDatabase` in `floor2drift/test/flutter_test/test_databases/views/task_user_view_drift.drift.dart` to 
+```dart
+final $FloorTestDatabase attachedDatabase;
+```
+
 Generate the test drift files
 ```shell
 cd floor2drift/test/tool && dart test_generator.dart

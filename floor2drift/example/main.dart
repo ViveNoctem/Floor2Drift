@@ -1,5 +1,5 @@
 // For more information on using floor2drift, please see https://github.com/ViveNoctem/Floor2Drift#getting-started
-import 'package:floor2drift/floor2drift.dart';
+import 'package:floor2drift/src/base_classes/floor_2_drift_generator.dart';
 import 'package:glob/glob.dart';
 
 void main(List<String> arguments) async {

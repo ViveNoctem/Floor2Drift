@@ -73,15 +73,35 @@ sealed class TableSelector {
   /// FieldState of the current field being converted
   FieldState? currentFieldState;
 
-  /// ClassState of the current doa class being converted
-  ClassState? currentClassState;
+  /// ClassState of the current dao class being converted
+  // ClassState? currentClassState;
+
+  /// ClassStates of the current dao query being converted
+  /// can be multiple if the query is a joini
+  List<ClassState> currentClassStates;
+
+  /// TODO good idea?
+  /// TODO should be set to true to force tableName.columName in an expression
+  bool useSelector = false;
 
   TableSelector({
     this.selector = "",
     this.currentFieldState,
     this.functionSelector = "s",
-    required this.currentClassState,
+    required this.currentClassStates,
   });
+
+  ClassState? getClassStateForTable(String tableName) {
+    for (final classState in currentClassStates) {
+      if (classState.sqlTablename.toLowerCase() != tableName.toLowerCase()) {
+        continue;
+      }
+
+      return classState;
+    }
+
+    return null;
+  }
 }
 
 /// {@template TableSelectorBaseDao}
@@ -92,12 +112,7 @@ class TableSelectorBaseDao extends TableSelector {
   final String table;
 
   /// {@macro TableSelectorBaseDao}
-  TableSelectorBaseDao(
-    this.table, {
-    super.selector,
-    super.currentFieldState,
-    required super.currentClassState,
-  });
+  TableSelectorBaseDao(this.table, {super.selector, super.currentFieldState, required super.currentClassStates});
 }
 
 /// {@template TableSelectorDao}
@@ -105,9 +120,5 @@ class TableSelectorBaseDao extends TableSelector {
 /// {@endtemplate}
 class TableSelectorDao extends TableSelector {
   /// {@macro TableSelectorDao}
-  TableSelectorDao({
-    super.selector,
-    super.currentFieldState,
-    required super.currentClassState,
-  });
+  TableSelectorDao({super.selector, super.currentFieldState, required super.currentClassStates});
 }

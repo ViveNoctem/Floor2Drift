@@ -45,6 +45,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     final className = classElement.name;
     final schemaVersion = state.schemaVersion;
     var tables = "";
+    var views = "";
 
     final newImports = <String>{};
 
@@ -54,25 +55,21 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
     for (final entity in state.entities) {
-      // If useRowClass is used the Entity needs to be imported for the drift .g.dart file
-      if (_useRowClass) {
-        // ignore: deprecated_member_use_from_same_package
-        final entityClassUri = state.floorClasses[entity.name];
-
-        if (entityClassUri != null) {
-          final tableImport = const BaseHelper().getImport(entityClassUri.librarySource.uri, targetFilePath);
-
-          if (tableImport != null) {
-            newImports.add(tableImport);
-          }
-        }
-      }
-
+      newImports.addAll(_addImport(state, entity.name, targetFilePath));
       tables += "${entity.name}s,";
     }
 
     if (tables.isNotEmpty) {
       tables = "tables:[$tables],";
+    }
+
+    for (final view in state.views) {
+      newImports.addAll(_addImport(state, view.name, targetFilePath));
+      views += "${view.name}s,";
+    }
+
+    if (views.isNotEmpty) {
+      views = "views:[$views],";
     }
 
     var daos = "";
@@ -87,7 +84,8 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
 
     final private = outputOption.isModularCodeGeneration ? "" : "_";
 
-    final result = '''@DriftDatabase($tables $daos)
+    final result =
+        '''@DriftDatabase($tables $views $daos)
     class $className extends $private\$$className {
     $className(super.e);
 
@@ -120,6 +118,28 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     final generatedSource = currentSource + GeneratedSource(code: code, imports: newImports, parts: parts);
 
     return (generatedSource, null);
+  }
+
+  /// If useRowClass is used the Entity/View needs to be imported for the drift .g.dart file
+  Set<String> _addImport(DatabaseState state, String className, String targetFilePath) {
+    if (_useRowClass == false) {
+      return const {};
+    }
+
+    var result = <String>{};
+
+    // ignore: deprecated_member_use_from_same_package
+    final entityClassUri = state.floorClasses[className];
+
+    if (entityClassUri != null) {
+      final tableImport = const BaseHelper().getImport(entityClassUri.librarySource.uri, targetFilePath);
+
+      if (tableImport != null) {
+        result.add(tableImport);
+      }
+    }
+
+    return result;
   }
 
   // String _convertMigrations(List<Migration> migrations, int schemaVersion) {
@@ -314,6 +334,42 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     return version.intValue;
   }
 
+  Set<ClassElement> _generateViewSet(
+    ClassElement classElement,
+    ConstantReader annotation,
+    InputOptionBase inputOption,
+  ) {
+    if (inputOption.convertDbEntities == false) {
+      return const {};
+    }
+
+    final entityReader = annotation.read("views");
+
+    final list = entityReader.objectValue.toListValue();
+
+    if (list == null) {
+      return const {};
+    }
+
+    final views = <ClassElement>{};
+
+    for (final view in list) {
+      final viewClass = view.toTypeValue()?.element?.toClassElement;
+
+      if (viewClass == null) {
+        continue;
+      }
+
+      if (inputOption.canAnalyze(viewClass.name) == false) {
+        continue;
+      }
+
+      views.add(viewClass);
+    }
+
+    return views;
+  }
+
   /// analyses the database from [library] and return a [DatabaseState] for the class
   ///
   /// returns null if no database is found. Throws an [InvalidGenerationSource] exception if multiple databases are found
@@ -333,6 +389,8 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
 
       final (entities, baseEnities) = _generateEntitySet(classElement, annotatedElement.annotation, inputOption);
 
+      final views = _generateViewSet(classElement, annotatedElement.annotation, inputOption);
+
       final schemaVersion = _generateSchemaVersion(annotatedElement.annotation);
 
       result = DatabaseState(
@@ -343,6 +401,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
         entities: entities,
         baseEntities: baseEnities,
         schemaVersion: schemaVersion,
+        views: views,
         // migrations: inputOption.migrations,
       );
     }

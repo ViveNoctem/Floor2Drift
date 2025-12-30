@@ -53,7 +53,8 @@ class UpdateMethodConverter extends DaoMethodConverter {
 
     final methodBody = methodBodyResult.data;
 
-    final result = """$methodHeader
+    final result =
+        """$methodHeader
     $methodBody
     }""";
 
@@ -109,7 +110,7 @@ class UpdateMethodConverter extends DaoMethodConverter {
   }
 
   @override
-  ValueResponse<String> parseUsedTable(
+  ValueResponse<List<String>> parseUsedTable(
     MethodElement method,
     DartObject annotation,
     TableSelector tableSelector,
