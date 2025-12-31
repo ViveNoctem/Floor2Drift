@@ -10,6 +10,7 @@ void main(List<String> arguments) async {
     dbPath: dbLocation,
     rootPath: rootDir,
     classNameFilter: Glob("{*task*,*base*,*converter*,*entity*,*database*,*user*}", caseSensitive: false),
+    useDriftModularCodeGeneration: true,
   );
 
   generator.start();

@@ -1,10 +1,6 @@
 ## General
 ### features
 - convert DatabaseViews
-- support drift [modular code generation](https://drift.simonbinder.eu/generation_options/modular/)
-    - changes need in generated Files
-        - replace `_$` with just `$` to extend drift classes
-        - replace part statement mit import .drift.dart instead par .g.dart
 - call dart fix on all generated files to remove unnecessary imports etc.
 - add GitHub ci for tests
 

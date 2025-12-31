@@ -48,6 +48,7 @@ class Floor2DriftGenerator {
   /// [convertDao] should [dao] annotated classes in filed of the [dbPath] class be converted
   /// [convertEntity] should [Database.entities] be converted
   /// [convertTypeConverter] should found [TypeConverter] classes be converted
+  /// [useDriftModularCodeGeneration] when set the generated code is changed to work with drift modular code generation
   factory Floor2DriftGenerator({
     required String dbPath,
     String rootPath = "../",
@@ -59,6 +60,7 @@ class Floor2DriftGenerator {
     bool convertTypeConverter = true,
     bool useRowClass = true,
     ETableNameOption tableRenaming = ETableNameOption.floorScheme,
+    bool useDriftModularCodeGeneration = false,
   }) {
     final rootEntity = _getRootEntity(rootPath);
 
@@ -75,7 +77,11 @@ class Floor2DriftGenerator {
       // migrations: migrations,
     );
 
-    final outputOption = OutputOptions(dryRun: dryRun, fileSuffix: outputFileSuffix);
+    final outputOption = OutputOptions(
+      dryRun: dryRun,
+      fileSuffix: outputFileSuffix,
+      isModularCodeGeneration: useDriftModularCodeGeneration,
+    );
 
     final processingOption = _getProcessingOption(inputOption, outputOption, useRowClass, tableRenaming);
 

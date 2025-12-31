@@ -85,8 +85,10 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
       daos = "daos:[$daos],";
     }
 
+    final private = outputOption.isModularCodeGeneration ? "" : "_";
+
     final result = '''@DriftDatabase($tables $daos)
-    class $className extends _\$$className {
+    class $className extends $private\$$className {
     $className(super.e);
 
     @override
@@ -102,11 +104,20 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     final documentation = const BaseHelper().getDocumentationForElement(classElement);
     final code = "$documentation$result";
 
+    final parts = <String>{};
     var fileName = outputOption.getFileName(classElement.source.shortName);
-    fileName = fileName.replaceAll(".dart", ".g.dart");
-    final partDirective = "part '$fileName';";
 
-    final generatedSource = currentSource + GeneratedSource(code: code, imports: newImports, parts: {partDirective});
+    if (outputOption.isModularCodeGeneration) {
+      fileName = fileName.replaceAll(".dart", ".drift.dart");
+      final importDirective = "import '$fileName';";
+      newImports.add(importDirective);
+    } else {
+      fileName = fileName.replaceAll(".dart", ".g.dart");
+      final partDirective = "part '$fileName';";
+      parts.add(partDirective);
+    }
+
+    final generatedSource = currentSource + GeneratedSource(code: code, imports: newImports, parts: parts);
 
     return (generatedSource, null);
   }
