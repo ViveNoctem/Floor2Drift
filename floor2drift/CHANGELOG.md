@@ -4,8 +4,9 @@
 - fixed problem where git indicated files changed even if the content was the same.
 - hide material/cupertino table import in (base-)entity classes to fix  name collision of `Table` class
 - fixed imports when only converting part of a database (except in (base-)entity classes)
-- copy all from dao/type converter generator ignored methods one to one to the result
+- copy all from dao/type converter generator ignored methods to the result
 - first found type converter was being ignored
+- added support for drift modular code generation
 
 ## 0.1.7
 - rolled back dart sdk dependency to ^3.6.0

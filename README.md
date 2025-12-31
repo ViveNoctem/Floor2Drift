@@ -177,6 +177,7 @@ factory Floor2DriftGenerator({
   bool convertTypeConverter = true,
   bool useRowClass = true,
   ETableNameOption tableRenaming = ETableNameOption.floorScheme,
+  bool useDriftModularCodeGeneration = false,
 })
 ```
 
@@ -231,6 +232,9 @@ Then drift can open the old floor db and migrate it to drift directly.
     - the table name is snake_case version of the class name
 - `driftSchemeWithOverride`
     - the same as driftScheme, but the table name can be overridden by the `@Table(name: "NewName")` annotation.
+#### useDriftModularCodeGeneration
+when set the generated code is changed to work with drift [modular code generation](https://drift.simonbinder.eu/generation_options/modular/)
+This is recommended for larger projects.
 
 ### Custom Configuration
 You can also create a more custom configuration by using the `Floor2DriftGenerator.custom` constructor.

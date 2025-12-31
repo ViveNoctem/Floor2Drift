@@ -38,6 +38,7 @@ void main() {
           fileSuffix: "",
           dryRun: false,
           baseHelper: mockBaseHelper,
+          isModularCodeGeneration: false,
         );
 
         final inputString = "this is\ntestmessage\n\n";
@@ -58,6 +59,7 @@ void main() {
           fileSuffix: "",
           dryRun: false,
           baseHelper: mockBaseHelper,
+          isModularCodeGeneration: false,
         );
 
         final inputString = "this is\ntestmessage\n\n";
@@ -82,6 +84,7 @@ void main() {
       final outputOptions = OutputOptions(
         fileSuffix: "",
         dryRun: false,
+        isModularCodeGeneration: false,
       );
 
       outputOptions.writeFile(mockFile, inputString);
@@ -92,6 +95,7 @@ void main() {
       final outputOptions = OutputOptions(
         fileSuffix: "",
         dryRun: true,
+        isModularCodeGeneration: false,
       );
 
       final inputString = "this is\ntestmessage\n\n";

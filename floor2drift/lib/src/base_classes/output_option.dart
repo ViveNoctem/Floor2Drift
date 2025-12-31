@@ -18,8 +18,11 @@ abstract class OutputOptionBase {
   /// If the suffix is empty the existing floor files will be overwritten
   final String fileSuffix;
 
+  /// Whether the output code should use the drift modular code generation
+  final bool isModularCodeGeneration;
+
   /// {@macro OutputOptionBase}
-  const OutputOptionBase({required this.dryRun, required this.fileSuffix});
+  const OutputOptionBase({required this.dryRun, required this.fileSuffix, required this.isModularCodeGeneration});
 
   /// converts the given [filePath] to the corresponding output path
   String getNewPath(String filePath);
@@ -53,8 +56,12 @@ class OutputOptions extends OutputOptionBase {
   final BaseHelper _baseHelper;
 
   /// {@macro OutputOptionBase}
-  const OutputOptions({required super.fileSuffix, required super.dryRun, BaseHelper baseHelper = const BaseHelper()})
-      : _baseHelper = baseHelper;
+  const OutputOptions({
+    required super.fileSuffix,
+    required super.dryRun,
+    required super.isModularCodeGeneration,
+    BaseHelper baseHelper = const BaseHelper(),
+  }) : _baseHelper = baseHelper;
 
   @override
   bool writeFile(File newFile, String content) {

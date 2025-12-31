@@ -89,6 +89,13 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
 
           if (entityImport != null) {
             newImports.add(entityImport);
+
+            // with modular code generation the generated table class is not in the database.g.dart but in a .drift.dart file next to the entity
+            if (outputOption.isModularCodeGeneration) {
+              var modularImport = outputOption.rewriteExistingImport(entityImport);
+              modularImport = modularImport.replaceAll(".dart", ".drift.dart");
+              newImports.add(modularImport);
+            }
           }
         }
       }
@@ -142,23 +149,35 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       "${classElement.name}$_classNameSuffix",
       dbState.databaseClass.element!.name!,
       mixinClause,
+      outputOption.isModularCodeGeneration,
     );
 
     final documentation = const BaseHelper().getDocumentationForElement(classElement);
     var result = "$documentation$header${valueResponse.data}\n}\n";
 
     // output option needed to resolve the part directive because the file could be renamed
-    final fileName = outputOption.getFileName(classElement.source.shortName).replaceAll(".dart", ".g.dart");
-    final partDirective = "part '$fileName';";
+    var fileName = outputOption.getFileName(classElement.source.shortName);
+    final parts = <String>{};
+
+    if (outputOption.isModularCodeGeneration) {
+      fileName = fileName.replaceAll(".dart", ".drift.dart");
+      final importDirective = "import '$fileName';";
+      newImports.add(importDirective);
+    } else {
+      fileName = fileName.replaceAll(".dart", ".g.dart");
+      final partDirective = "part '$fileName';";
+      parts.add(partDirective);
+    }
 
     currentSource = const DaoHelper().removeUnwantedImports(currentSource);
 
-    final generatedSource = currentSource + GeneratedSource(code: result, imports: newImports, parts: {partDirective});
+    final generatedSource = currentSource + GeneratedSource(code: result, imports: newImports, parts: parts);
 
     return (generatedSource, null);
   }
 
-  String _generateClassHeader(Set<String> tables, String className, String databaseName, String mixinClause) {
+  String _generateClassHeader(
+      Set<String> tables, String className, String databaseName, String mixinClause, bool isModularGeneration) {
     final tableList = tables.map((s) => "${s}s");
 
     if (tableList.isEmpty) {
@@ -166,8 +185,9 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     }
 
     final tableString = tableList.isEmpty ? "" : tableList.reduce((value, element) => "$value, $element");
+    final private = isModularGeneration ? "" : "_";
     return '''@DriftAccessor(tables: [$tableString])
-  class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}_\$${className}Mixin {
+  class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}$private\$${className}Mixin {
   $className(super.db);''';
   }
 

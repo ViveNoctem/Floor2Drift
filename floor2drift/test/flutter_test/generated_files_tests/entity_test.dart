@@ -6,6 +6,7 @@ import '../additional_classes/test_helper.dart';
 import '../test_databases/database/floor_test_database.dart' as floor;
 import '../test_databases/database/floor_test_database_drift.dart' as drift;
 import '../test_databases/entities/task.dart';
+import '../test_databases/entities/task_drift.drift.dart';
 import '../test_databases/support_classes/enums.dart';
 
 // TODO test that all type converters are used. And with corrent priority db -> class -> field
@@ -90,8 +91,7 @@ void main() {
         customDouble: 3.999,
         integers: [1], // TODO IntListConverter doesnt work with empty list
       );
-
-      final driftInsertable = drift.TestTasksCompanion.insert(
+      final driftInsertable = TestTasksCompanion.insert(
         timestamp: dateTime,
         status: TaskStatus.done,
         customDouble: 3.999,
@@ -141,7 +141,7 @@ void main() {
 
     final (_, _) = await (
       driftDatabase.testTasks.insertOne(
-        drift.TestTasksCompanion.insert(
+        TestTasksCompanion.insert(
           timestamp: dateTime,
           status: TaskStatus.inProgress,
           type: Value(TaskType.bug),
