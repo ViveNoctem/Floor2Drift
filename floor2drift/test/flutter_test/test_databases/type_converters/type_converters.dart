@@ -4,9 +4,14 @@ import 'package:floor/floor.dart';
 import '../support_classes/enums.dart';
 
 class DateTimeConverter extends TypeConverter<DateTime, String> {
+  /// converts the given [databaseValue] to its  [DateTime] representation
+  DateTime getDateTime(String databaseValue) {
+    return DateTime.parse(databaseValue);
+  }
+
   @override
   DateTime decode(String databaseValue) {
-    return DateTime.parse(databaseValue);
+    return getDateTime(databaseValue);
   }
 
   @override
