@@ -1123,6 +1123,28 @@ class MockBaseHelper extends _i1.Mock implements _i8.BaseHelper {
           ),
         ),
       ) as String);
+
+  @override
+  String getMethodCode(_i10.MethodElement? method) => (super.noSuchMethod(
+        Invocation.method(
+          #getMethodCode,
+          [method],
+        ),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getMethodCode,
+            [method],
+          ),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getMethodCode,
+            [method],
+          ),
+        ),
+      ) as String);
 }
 
 /// A class which mocks [IOSink].

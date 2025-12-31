@@ -5,14 +5,17 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
+import 'package:floor2drift/src/element_extension.dart';
 import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:path/path.dart' as path;
 
+/// {@template BaseHelper}
 /// Helper class to provide general methods
+/// {@endtemplate}
 class BaseHelper {
-  /// Helper class to provide general methods
+  /// {@macro BaseHelper}
   const BaseHelper();
 
   /// parses the [interfaceType] and returns the [TypeSpecification] for this type
@@ -144,5 +147,23 @@ class BaseHelper {
   /// as an abstraction that can be mocked
   String getPlatformLineTerminator() {
     return Platform.lineTerminator;
+  }
+
+  /// Returns the dart source code of the given methods
+  ///
+  /// This include comments in the method, doc comment and annotations
+  /// Basically copies the method from the source file
+  String getMethodCode(MethodElement method) {
+    final node = method.getNode();
+
+    if (node == null) {
+      print("Couldn't determinen node für $method, skip copying method to output class");
+      return "";
+    }
+
+    final sourceContent = method.source.contents.data;
+    final methodContent = sourceContent.substring(node.offset, node.end);
+
+    return methodContent;
   }
 }

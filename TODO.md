@@ -16,8 +16,8 @@
 
 ### Structural
 - maybe merge or cleanUp dbState and tableSelector
-- what to do with "real" implemented functions in entities, daos, etc.
-    - copy them to the generated file?
+- how to convert floor transactions
+  - in dao it could be converted to drift entities. All other transaction maybe with transaction_generator using the annotation?
 
 ## Dao
 ### Features

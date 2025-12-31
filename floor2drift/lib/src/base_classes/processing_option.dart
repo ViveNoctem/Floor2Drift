@@ -173,7 +173,7 @@ class ProcessingOptions extends ProcessingOptionBase {
 
     generatorResult.add(result);
 
-    if (generatedSource.isNotEmpty) {
+    if (generatedSourceResult.isNotEmpty) {
       return (generatedSourceResult, generatorResult);
     } else {
       return (GeneratedSource.empty(), <S>[]);

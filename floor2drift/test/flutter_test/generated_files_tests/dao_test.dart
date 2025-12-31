@@ -1312,6 +1312,17 @@ void main() {
       }
     });
   });
+
+  group("implemented method", () {
+    test("implementedGetAll", () async {
+      final (floorTask, driftTask) = await (floorTaskDao.implementedGetAll(), driftTaskDao.implementedGetAll()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
   //
   // group("DISTINCT", () {
   //   test("", () {});

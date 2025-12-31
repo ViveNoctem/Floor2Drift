@@ -1,11 +1,20 @@
 import 'package:floor2drift_annotation/floor2drift_annotation.dart';
 import 'package:floor_annotation/floor_annotation.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../entities/base_class.dart';
 
 @convertBaseDao
 // TODO create new Dao, to have separate Dao Tests and BaseDao Tests
 abstract class BaseDao<T extends BaseClass<T>> {
+  /// doc comment implemented method in dao
+  @visibleForTesting
+  Future<List<T>> implementedGetAll() async {
+    // test comment describing the content
+    final result = await getAll();
+    return result;
+  }
+
   @Query('SELECT * FROM TaskTest')
   Future<List<T>> getAll();
 

@@ -14,8 +14,11 @@ import 'package:recase/recase.dart';
 /// Helper class to provide general methods for handling in dao classes
 /// {@endtemplate}
 class DaoHelper {
+  /// {@macro BaseHelper}
+  final BaseHelper baseHelper;
+
   /// {@macro DaoHelper}
-  const DaoHelper();
+  const DaoHelper({this.baseHelper = const BaseHelper()});
 
   /// return the dart code for the class body [classElement] in a dao
   ValueResponse<String> generateClassBody(
@@ -36,12 +39,18 @@ class DaoHelper {
           result.printError();
           continue;
       }
-
       final methodString = result.data;
-
       if (methodString.isEmpty) {
+        final methodCode = baseHelper.getMethodCode(method);
+
+        if (methodCode.isEmpty) {
+          continue;
+        }
+
+        body += "$methodCode\n\n";
         continue;
       }
+
       final documentation = const BaseHelper().getDocumentationForElement(method);
       body += "$documentation$methodString\n\n";
     }

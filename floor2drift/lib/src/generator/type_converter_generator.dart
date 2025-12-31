@@ -18,8 +18,11 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
   @override
   TypeChecker get typeChecker => TypeChecker.fromRuntime(TypeConverter);
 
+  /// {@macro BaseHelper}
+  final BaseHelper baseHelper;
+
   /// {@macro TypeConverterGenerator}
-  TypeConverterGenerator({required super.inputOption});
+  const TypeConverterGenerator({required super.inputOption, this.baseHelper = const BaseHelper()});
 
   // TODO potential Problem
   // TODO A class needs both a not converted Type Converter and a converted TypeConverter
@@ -63,7 +66,7 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
     final fromType = (classElement.supertype!).typeArguments[0].getDisplayString(withNullability: true);
     final toType = (classElement.supertype!).typeArguments[1].getDisplayString(withNullability: true);
 
-    result += const BaseHelper().getDocumentationForElement(classElement);
+    result += baseHelper.getDocumentationForElement(classElement);
 
     result += "class ${classElement.name} extends TypeConverter<$fromType, $toType> { \n";
 
@@ -71,9 +74,14 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
     result += "const ${classElement.name}();\n\n";
 
     for (final method in classElement.methods) {
-      // TODO just ignore every other methode at the moment
-      // TODO other methods should just be added to the result class
       if (method.name != "decode" && method.name != "encode") {
+        final methodCode = baseHelper.getMethodCode(method);
+
+        if (methodCode.isEmpty) {
+          continue;
+        }
+
+        result += "$methodCode\n\n";
         continue;
       }
 
@@ -83,7 +91,7 @@ class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
         return (GeneratedSource.empty(), null);
       }
 
-      result += const BaseHelper().getDocumentationForElement(method);
+      result += baseHelper.getDocumentationForElement(method);
 
       if (method.name == "decode") {
         result += "@override\n$fromType fromSql($toType ${method.parameters[0].name})\n${node.body.toSource()}\n";
