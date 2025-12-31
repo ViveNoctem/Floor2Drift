@@ -121,3 +121,4 @@ app.*.symbols
 # Custom ignore
 .idea
 **/*.g.dart
+**/*.drift.dart

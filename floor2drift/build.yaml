@@ -1,3 +1,4 @@
+# normal code generation setup
 #targets:
 #  $default:
 #    sources:
@@ -12,6 +13,7 @@
 #        options:
 #          store_date_time_values_as_text: true
 #          case_from_dart_to_sql: camelCase
+
 # modular code generation setup
 targets:
   $default:
