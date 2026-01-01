@@ -86,6 +86,11 @@ class ClassState {
     return result;
   }
 
+  /// all [FieldState]s used in this class
+  ///
+  /// see [allFieldStates] to include superClass fields
+  Set<FieldState> get fieldStates => _fieldStates;
+
   @override
   bool operator ==(Object other) {
     if (other is! ClassState) {

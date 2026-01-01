@@ -24,14 +24,20 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     // use selectOnly instead of select, if an aggregate function is used
     // TODO Wont work with aggregate functions with filter clause because column.expression is AggregateFunctionInvocation
-    // TODO disabled for baseDao. Doesn't work at the moment
-    final bool useSelectOnly = column != null && column is! StarResultColumn && tableSelector is TableSelectorDao;
+    final bool useSelectOnly = column != null && column is! StarResultColumn;
 
     String result;
     var selectOnlyFunctionResult = "";
     var originalSelector = tableSelector.functionSelector;
     if (useSelectOnly) {
-      tableSelector.functionSelector = tableSelector.selector;
+      switch (tableSelector) {
+        case TableSelectorBaseDao():
+          // to access entity column fields in baseDao table.asDslTable is needed
+          tableSelector.functionSelector = "${tableSelector.selector}.asDslTable";
+        case TableSelectorDao():
+          tableSelector.functionSelector = tableSelector.selector;
+      }
+
       if (column is ExpressionResultColumn) {
         final functionResult = _expressionConverterUtil.parseExpression(
           column.expression,

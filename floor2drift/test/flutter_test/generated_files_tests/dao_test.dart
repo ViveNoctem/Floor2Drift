@@ -825,100 +825,210 @@ void main() {
   });
 
   group("aggregate functions", () {
-    group("COUNT", () {
-      test("*", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.count(), driftTaskDao.count()).wait;
+    // if aggregate function tests are added. Also add to BaseEntity Group
+    group("entity", () {
+      group("COUNT", () {
+        test("*", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.count(), driftTaskDao.count()).wait;
 
-        expect(floorTask, equals(driftTask));
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.countWhere(4), driftTaskDao.countWhere(4)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
       });
 
-      test("WHERE", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.countWhere(4), driftTaskDao.countWhere(4)).wait;
+      group("AVG", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.avg(), driftTaskDao.avg()).wait;
 
-        expect(floorTask, equals(driftTask));
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE ", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.avgWhere(8), driftTaskDao.avgWhere(8)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+      });
+
+      group("MIN", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.min(), driftTaskDao.min()).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE ", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.minWhere(8), driftTaskDao.minWhere(8)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+      });
+
+      group("MAX", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.max(), driftTaskDao.max()).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.maxWhere(3), driftTaskDao.maxWhere(3)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+      });
+
+      group("SUM", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.sum(), driftTaskDao.sum()).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.sumWhere(8), driftTaskDao.sumWhere(8)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        // sum doesn't seem to be able to return null in floor
+        test("NULL", () async {
+          final sum = await driftTaskDao.sumWhere(0);
+          expect(sum, equals(null));
+        });
+      });
+
+      group("TOTAL", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.total(), driftTaskDao.total()).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.totalWhere(8), driftTaskDao.totalWhere(8)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("0.0", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.totalWhere(0), driftTaskDao.totalWhere(0)).wait;
+          expect(floorTask, equals(0.0));
+
+          expect(floorTask, equals(driftTask));
+        });
       });
     });
 
-    group("AVG", () {
-      test("ALL", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.avg(), driftTaskDao.avg()).wait;
+    // copied test cases from entitiy aggregate function tests
+    group("baseEntitiy", () {
+      group("COUNT", () {
+        test("*", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.countBaseEntity(), driftTaskDao.countBaseEntity()).wait;
 
-        expect(floorTask, equals(driftTask));
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE", () async {
+          final (floorTask, driftTask) =
+              await (floorTaskDao.countWhereBaseEntity(4), driftTaskDao.countWhereBaseEntity(4)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
       });
 
-      test("WHERE ", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.avgWhere(8), driftTaskDao.avgWhere(8)).wait;
+      group("AVG", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.avgBaseEntity(), driftTaskDao.avgBaseEntity()).wait;
 
-        expect(floorTask, equals(driftTask));
-      });
-    });
+          expect(floorTask, equals(driftTask));
+        });
 
-    group("MIN", () {
-      test("ALL", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.min(), driftTaskDao.min()).wait;
+        test("WHERE ", () async {
+          final (floorTask, driftTask) =
+              await (floorTaskDao.avgWhereBaseEntity(8), driftTaskDao.avgWhereBaseEntity(8)).wait;
 
-        expect(floorTask, equals(driftTask));
-      });
-
-      test("WHERE ", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.minWhere(8), driftTaskDao.minWhere(8)).wait;
-
-        expect(floorTask, equals(driftTask));
-      });
-    });
-
-    group("MAX", () {
-      test("ALL", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.max(), driftTaskDao.max()).wait;
-
-        expect(floorTask, equals(driftTask));
+          expect(floorTask, equals(driftTask));
+        });
       });
 
-      test("WHERE", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.maxWhere(3), driftTaskDao.maxWhere(3)).wait;
+      group("MIN", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.minBaseEntity(), driftTaskDao.minBaseEntity()).wait;
 
-        expect(floorTask, equals(driftTask));
-      });
-    });
+          expect(floorTask, equals(driftTask));
+        });
 
-    group("SUM", () {
-      test("ALL", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.sum(), driftTaskDao.sum()).wait;
+        test("WHERE ", () async {
+          final (floorTask, driftTask) =
+              await (floorTaskDao.minWhereBaseEntity(8), driftTaskDao.minWhereBaseEntity(8)).wait;
 
-        expect(floorTask, equals(driftTask));
-      });
-
-      test("WHERE", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.sumWhere(8), driftTaskDao.sumWhere(8)).wait;
-
-        expect(floorTask, equals(driftTask));
+          expect(floorTask, equals(driftTask));
+        });
       });
 
-      // sum doesn't seem to be able to return null in floor
-      test("NULL", () async {
-        final sum = await driftTaskDao.sumWhere(0);
-        expect(sum, equals(null));
-      });
-    });
+      group("MAX", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.maxBaseEntity(), driftTaskDao.maxBaseEntity()).wait;
 
-    group("TOTAL", () {
-      test("ALL", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.total(), driftTaskDao.total()).wait;
+          expect(floorTask, equals(driftTask));
+        });
 
-        expect(floorTask, equals(driftTask));
-      });
+        test("WHERE", () async {
+          final (floorTask, driftTask) =
+              await (floorTaskDao.maxWhereBaseEntity(3), driftTaskDao.maxWhereBaseEntity(3)).wait;
 
-      test("WHERE", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.totalWhere(8), driftTaskDao.totalWhere(8)).wait;
-
-        expect(floorTask, equals(driftTask));
+          expect(floorTask, equals(driftTask));
+        });
       });
 
-      test("0.0", () async {
-        final (floorTask, driftTask) = await (floorTaskDao.totalWhere(0), driftTaskDao.totalWhere(0)).wait;
-        expect(floorTask, equals(0.0));
+      group("SUM", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.sumBaseEntity(), driftTaskDao.sumBaseEntity()).wait;
 
-        expect(floorTask, equals(driftTask));
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE", () async {
+          final (floorTask, driftTask) =
+              await (floorTaskDao.sumWhereBaseEntity(8), driftTaskDao.sumWhereBaseEntity(8)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        // sum doesn't seem to be able to return null in floor
+        test("NULL", () async {
+          final sum = await driftTaskDao.sumWhereBaseEntity(0);
+          expect(sum, equals(null));
+        });
+      });
+
+      group("TOTAL", () {
+        test("ALL", () async {
+          final (floorTask, driftTask) = await (floorTaskDao.totalBaseEntity(), driftTaskDao.totalBaseEntity()).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("WHERE", () async {
+          final (floorTask, driftTask) =
+              await (floorTaskDao.totalWhereBaseEntity(8), driftTaskDao.totalWhereBaseEntity(8)).wait;
+
+          expect(floorTask, equals(driftTask));
+        });
+
+        test("0.0", () async {
+          final (floorTask, driftTask) =
+              await (floorTaskDao.totalWhereBaseEntity(0), driftTaskDao.totalWhereBaseEntity(0)).wait;
+          expect(floorTask, equals(0.0));
+
+          expect(floorTask, equals(driftTask));
+        });
       });
     });
   });
@@ -1018,7 +1128,7 @@ void main() {
         expect(floorDeleteResult, equals(5));
 
         // The current implementation always return -1;
-        expect(driftDeleteResult, equals(-1));
+        expect(driftDeleteResult, equals(floorDeleteResult));
 
         // Because the return value doesn't work check if the deleted values are missing in the db
         final (floorTaskDeleted, driftTaskDeleted) =
@@ -1065,10 +1175,16 @@ void main() {
         expect(floorInsertResult.length, equals(2));
 
         // current implementation always returns empty list
-        expect(driftInsertResult, isEmpty);
+        // expect(driftInsertResult, isEmpty);
+
+        expect(floorInsertResult.length, equals(driftInsertResult.length));
 
         expect(floorInsertResult[0], equals(14));
         expect(floorInsertResult[1], equals(15));
+
+        for (int i = 0; i < floorInsertResult.length; i++) {
+          expect(floorInsertResult[i], equals(driftInsertResult[i]));
+        }
 
         var (floorTask, driftTask) = await (floorTaskDao.findTaskById(14), driftTaskDao.findTaskById(14)).wait;
 
@@ -1316,6 +1432,18 @@ void main() {
   group("implemented method", () {
     test("implementedGetAll", () async {
       final (floorTask, driftTask) = await (floorTaskDao.implementedGetAll(), driftTaskDao.implementedGetAll()).wait;
+
+      expect(floorTask.length, equals(driftTask.length));
+      for (int i = 0; i < floorTask.length; i++) {
+        expect(floorTask[i], EqualTaskMatcher(driftTask[i].toTask));
+      }
+    });
+  });
+
+  group("transaction", () {
+    test("transactionGetEveryOther", () async {
+      final (floorTask, driftTask) =
+          await (floorTaskDao.transactionGetEveryOther(), driftTaskDao.transactionGetEveryOther()).wait;
 
       expect(floorTask.length, equals(driftTask.length));
       for (int i = 0; i < floorTask.length; i++) {

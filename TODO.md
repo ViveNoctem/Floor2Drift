@@ -25,12 +25,16 @@
 ### Bugs
 - @delete
     - maybe use customUpdate?
-    - delete List<Entity> always returns void
-        - if the return type is int, then an empty List is returned.
+    - delete List<Entitiy>
+    - doesn't use a batch but a transaction over all entities
+    - delete every entity one after another instead of a batch delete
+    - what is the performance impact?
 - @insert
     - maybe use customInsert?
-    - insert List<Entity> always returns void
-        - if the return type is int, then an empty List is returned.
+    - insert List<Entity>
+      - doesn't use a batch but a transaction over all entities
+      - insert every entity on after another instead of all at once
+      - what is the performance impact?
 - @update
     - maybe use customUpdate?
     - it always returns void at the moment.
@@ -38,12 +42,8 @@
 - custom update
     - doesn't work with List<int> as a parameter.
 - WHERE IN doesn't work in custom update statement
-- BaseDao aggregate functions (count, avg, etc.) don't work
-    - Could work need to be cast for `avg` to work
-    - final a = table.columnsByName[""]!.count();
 
 ## Entity
 ### Features
-- generate toColumns method when using @UseRowClass
 - default value in field declaration?
 - support for using string for enums instead of index?

@@ -1,7 +1,9 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
+import 'package:floor2drift/src/element_extension.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/dao_helper.dart';
@@ -19,6 +21,7 @@ part 'delete_method_converter.dart';
 part 'insert_method_converter.dart';
 part 'query_method_converter.dart';
 part 'update_method_converter.dart';
+part 'transaction_method_converter.dart';
 
 /// {@template DaoMethodConverter}
 /// base class for all methods that are contained in a floor [dao]
@@ -59,6 +62,13 @@ abstract class DaoMethodConverter {
 
     if (annotation != null) {
       return const UpdateMethodConverter()._parse(method, annotation, tableSelector, dbState);
+    }
+
+    final transactionChecker = TypeChecker.fromRuntime(transaction.runtimeType);
+    annotation = transactionChecker.firstAnnotationOfExact(method);
+
+    if (annotation != null) {
+      return const TransactionMethodConverter()._parse(method, annotation, tableSelector, dbState);
     }
 
     return ValueResponse.value("");

@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor_annotation/floor_annotation.dart';
 
@@ -38,7 +39,7 @@ class PrimaryKeyAnnotation extends AnnotationType {
 /// {@endtemplate}
 class TypeConvertersAnnotation extends AnnotationType {
   /// The states of all [TypeConverter] specified
-  final Map<Element, TypeConverterState> value;
+  final Map<DartType, TypeConverterState> value;
 
   /// {@macro TypeConvertersAnnotation}
   const TypeConvertersAnnotation(this.value);

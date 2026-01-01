@@ -16,7 +16,7 @@ class TypeConvertersAnnotationConverter extends AnnotationConverter<TypeConverte
       return ValueResponse.error("value field of typeConverters annotation is null", annotation.element);
     }
 
-    Map<Element, TypeConverterState> resultMap = {};
+    Map<DartType, TypeConverterState> resultMap = {};
 
     for (final dartObject in listValue) {
       final classElement = dartObject.toTypeValue()?.element?.toClassElement;
@@ -42,17 +42,12 @@ class TypeConvertersAnnotationConverter extends AnnotationConverter<TypeConverte
       }
 
       final convertFrom = typeArgument[0];
-      final convertFromElement = convertFrom.element;
       final convertTo = typeArgument[1];
-
-      if (convertFromElement == null) {
-        return ValueResponse.error("Couldn't determine element for TypeConverter $dartObject", annotation.element);
-      }
 
       final classType = dartObject.toTypeValue()!;
 
       resultMap.putIfAbsent(
-        convertFromElement,
+        convertFrom,
         () => TypeConverterState(classType.element!.toClassElement, convertFrom, convertTo),
       );
     }
