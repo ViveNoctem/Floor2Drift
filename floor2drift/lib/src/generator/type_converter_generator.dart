@@ -16,7 +16,7 @@ import 'package:source_gen/source_gen.dart';
 /// {@endtemplate}
 class TypeConverterGenerator extends DriftClassGenerator<Null, Null> {
   @override
-  TypeChecker get typeChecker => TypeChecker.fromRuntime(TypeConverter);
+  TypeChecker get typeChecker => const TypeChecker.fromRuntime(TypeConverter);
 
   /// {@macro BaseHelper}
   final BaseHelper baseHelper;

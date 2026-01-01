@@ -81,11 +81,18 @@ class DeleteMethodConverter extends DaoMethodConverter {
 
     ValueResponse<String> quantityResult = switch (parameterType.type) {
       EType.unknown => ValueResponse.value("await delete($tableName).delete($argumentName);"),
-      EType.list => ValueResponse.value("""await batch((batch) {
-          for (final entry in $argumentName) {
-            batch.delete($tableName, entry);
-          }
-        });"""),
+      // EType.list => ValueResponse.value("""await batch((batch) {
+      //     for (final entry in $argumentName) {
+      //       batch.delete($tableName, entry);
+      //     }
+      //   });"""),
+      EType.list => ValueResponse.value("""var deletedRows = 0;
+    await transaction(() async {
+      for (final item in $argumentName) {
+        deletedRows += await delete($tableName).delete(item);
+      }
+    });
+    """),
       _ => ValueResponse.error("Parmeter type is not supported", parameter),
     };
 
@@ -105,7 +112,7 @@ class DeleteMethodConverter extends DaoMethodConverter {
         if (parameterType.type == EType.unknown) {
           return ValueResponse.value("return $quantity");
         }
-        return ValueResponse.value("$quantity\nreturn -1;");
+        return ValueResponse.value("$quantity\nreturn deletedRows;");
       default:
         return ValueResponse.error("Expected object void or int as Return Type", parameter);
     }

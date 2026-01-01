@@ -5,11 +5,12 @@ import 'package:floor_annotation/floor_annotation.dart';
 import '../../additional_classes/annotation.dart';
 import '../entities/task.dart';
 import '../support_classes/enums.dart';
+import '../support_classes/interfaces.dart';
 import 'floor_base_task_dao.dart';
 
 /// Documentation class TestTaskDao
 @dao
-abstract class TestTaskDao extends BaseDao<TestTask> {
+abstract class TestTaskDao extends BaseDao<TestTask> implements InterfaceThree, InterfaceFour {
   // @Query('SELECT * FROM Task')
   // Future<List<Task>> getAll();
 

@@ -55,11 +55,11 @@ class DatabaseState {
   // final List<Migration> migrations;
 
   // TODO maybe this can be remove
-  /// Contains the [Element] and [TypeConverterState] of the global type converters
+  /// Contains the [DartType] and [TypeConverterState] of the global type converters
   ///
   /// Is passed to the [DaoGenerator] and [BaseDaoGenerator] to check if an type converter is used for a specific field
   @Deprecated("Use the entityClassStates instead.")
-  late final Map<Element, TypeConverterState> typeConverterMap;
+  late final Map<DartType, TypeConverterState> typeConverterMap;
 
   /// class states of all (base-)entities used in the floor db
   Set<ClassState> entityClassStates = {};
@@ -75,7 +75,7 @@ class DatabaseState {
     required this.schemaVersion,
     // required this.migrations,
   }) {
-    typeConverterMap = {for (var entry in typeConverters) entry.fromType.element!: entry};
+    typeConverterMap = {for (var entry in typeConverters) entry.fromType: entry};
 
     for (final entity in entities) {
       floorClasses[entity.name] = entity;

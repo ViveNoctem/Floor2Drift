@@ -14,9 +14,9 @@ import 'package:source_gen/source_gen.dart';
 /// {@template ClassHelper}
 /// Helper class to provide general methods for handling floor classes
 /// {@endtemplate}
-class ClassHelper {
+class EntityHelper {
   /// {@macro ClassHelper}
-  const ClassHelper();
+  const EntityHelper();
 
   /// suffix that should be added to drift base entity class names
   static String mixinSuffix = "Mixin";
@@ -24,7 +24,7 @@ class ClassHelper {
   /// returns the dart code for the generated fields and a set of used TypeConverters
   ValueResponse<(String code, Set<FieldState> fieldStates)> generateFields(
     ClassElement classElement,
-    Map<Element, TypeConverterState> typeConverters,
+    Map<DartType, TypeConverterState> typeConverters,
   ) {
     var fieldString = "";
     final fieldStates = <FieldState>{};
@@ -86,7 +86,7 @@ class ClassHelper {
   }
 
   /// parses a [annotatedClass] and returns its the dart code and [ClassState]
-  ValueResponse<(String code, ClassState classState)> parseEntitiyFields(
+  ValueResponse<(String code, ClassState classState)> parseEntityFields(
     ClassElement annotatedClass,
     DatabaseState dbState,
   ) {
@@ -113,7 +113,7 @@ class ClassHelper {
         case ColumnInfoAnnotation():
           continue;
         case TypeConvertersAnnotation():
-          typeConverters = <Element, TypeConverterState>{...typeConverters, ...annotation.value};
+          typeConverters = <DartType, TypeConverterState>{...typeConverters, ...annotation.value};
         case EntityAnnotation():
           renamedTableName = annotation.tableName;
       }
@@ -159,7 +159,7 @@ class ClassHelper {
       currentElement = superType;
 
       final reader = LibraryReader(superType.library);
-      if (reader.annotatedWith(TypeChecker.fromRuntime(ConvertBaseEntity)).isEmpty) {
+      if (reader.annotatedWith(const TypeChecker.fromRuntime(ConvertBaseEntity)).isEmpty) {
         break;
       }
 
@@ -192,11 +192,11 @@ class ClassHelper {
   ValueResponse<(String, FieldState? field)> generateField(
     FieldElement field,
     InterfaceType fieldType,
-    Map<Element, TypeConverterState> typeConverters,
+    Map<DartType, TypeConverterState> typeConverters,
     List<AnnotationType> annotations,
     ConstructorElement? constructor,
   ) {
-    final localTypeConverters = Map<Element, TypeConverterState>.from(typeConverters);
+    final localTypeConverters = Map<DartType, TypeConverterState>.from(typeConverters);
 
     var metaDataSuffix = "";
     ColumnInfoAnnotation? namedAnnotation;
@@ -221,7 +221,7 @@ class ClassHelper {
       }
     }
 
-    final usedTypeConverter = localTypeConverters[field.type.element];
+    final usedTypeConverter = localTypeConverters[field.type];
 
     if (constructor != null) {
       for (final parameter in constructor.parameters) {
@@ -364,5 +364,35 @@ class ClassHelper {
     }
 
     return source.copyWith(imports: localImports);
+  }
+
+  /// generates the toColumns method needed to implement the Insertable drift interface to correctly use useRowClass
+  String generateToColumnsMethod(ClassState classState) {
+    var content = "";
+    final className = classState.className;
+    final itemName = "item";
+
+    for (final fieldState in classState.fieldStates) {
+      final converterState = fieldState.converted;
+      String fieldValue;
+      if (converterState != null) {
+        fieldValue = "const ${converterState.classElement.name}().toSql($itemName.${fieldState.fieldName})";
+      } else {
+        final enumChecker = const TypeChecker.fromRuntime(Enum);
+        final enumString = enumChecker.isSuperTypeOf(fieldState.fieldElement.type) ? ".index" : "";
+        fieldValue = "$itemName.${fieldState.fieldName}$enumString";
+      }
+
+      content += "\"${fieldState.sqlColumnName}\" : Variable($fieldValue),\n";
+    }
+
+    final result = """static Map<String, Expression<Object>> toColumns(bool nullToAbsent, $className $itemName,) {
+      return {
+        $content
+      };
+    }
+    """;
+
+    return result;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/element_extension.dart';
 import 'package:floor2drift/src/entity/annotation_converter/annotations.dart';
 import 'package:floor2drift/src/entity/class_state.dart';

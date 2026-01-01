@@ -7,6 +7,14 @@
 - copy all from dao/type converter generator ignored methods to the result
 - first found type converter was being ignored
 - added support for drift modular code generation
+- databasewide type converter didn't work
+- couldn't differentiate between type converters with nullable and non-nullable return type
+- added support for aggregate functions in base entity
+- @update and @delete list functions now return the same result as floor
+- toColumns helper methods are generated in (base-)entity classes if useRowClass is set
+- doc comment from the entity wasn't copied to the table class
+- @transaction methods in dao classes will be converted to drift transactions
+- interfaces from floor dao are added to the drift dao
 
 ## 0.1.7
 - rolled back dart sdk dependency to ^3.6.0

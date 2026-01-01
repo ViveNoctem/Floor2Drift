@@ -78,7 +78,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       final superTypeName = superType.element.name;
       final tableName = "\$$typeArgument${_classNameSuffix}sTable";
       final entityName = "$typeArgument$_classNameSuffix";
-      mixinName = "$superTypeName${ClassHelper.mixinSuffix}";
+      mixinName = "$superTypeName${EntityHelper.mixinSuffix}";
       mixinClause = "$mixinName<$tableName, $entityName>";
 
       if (typeArgument != null) {
@@ -144,12 +144,15 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       }
     }
 
+    final implementsClause = const BaseHelper().getImplementsClause(classElement);
+
     final header = _generateClassHeader(
       tableClassNames,
       "${classElement.name}$_classNameSuffix",
       dbState.databaseClass.element!.name!,
       mixinClause,
       outputOption.isModularCodeGeneration,
+      implementsClause,
     );
 
     final documentation = const BaseHelper().getDocumentationForElement(classElement);
@@ -177,7 +180,13 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
   }
 
   String _generateClassHeader(
-      Set<String> tables, String className, String databaseName, String mixinClause, bool isModularGeneration) {
+    Set<String> tables,
+    String className,
+    String databaseName,
+    String mixinClause,
+    bool isModularGeneration,
+    String implementsClause,
+  ) {
     final tableList = tables.map((s) => "${s}s");
 
     if (tableList.isEmpty) {
@@ -187,7 +196,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     final tableString = tableList.isEmpty ? "" : tableList.reduce((value, element) => "$value, $element");
     final private = isModularGeneration ? "" : "_";
     return '''@DriftAccessor(tables: [$tableString])
-  class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}$private\$${className}Mixin {
+  class $className extends DatabaseAccessor<$databaseName> with ${mixinClause.isNotEmpty ? "$mixinClause, " : ""}$private\$${className}Mixin $implementsClause{
   $className(super.db);''';
   }
 

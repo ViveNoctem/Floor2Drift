@@ -90,9 +90,20 @@ targets:
 ### Annotations
 Most of the result of methods annotated with `@Insert` `@Update` `@delete` will be different than the floor equivalent at the moment.
 
-e.g. @Insert will return rowId instead of inserted id. @Update will result nothing or always -1, etc.
+List insert/delete could have a performance impact from floor. It uses a transaction to delete/insert every entity after another to return the same result as floor.
+Could probably be faster if the result is not needed, but didn't check if there is an actual impact.
+
+@Update will return nothing or always -1
+
+TODO maybe add an option in the future to use the "more efficient" version or the result correct version
 
 **Check your usage of the return values for these kinds of methods.**
+
+### Transaction
+Methods in dao classes with the `@transaction` annotation will be wrapped in a drift `transaction()` block. Make sure all queries in the transaction are awaited.
+Transaction in other classes are not converted at the moment. Converting them yourself is not complex.
+
+Maybe this feature will be added in the future, but it's hard to find out which transactions to convert.
 
 ## TODOS / Planned Features
 see [TODO.md](./TODO.md)
@@ -217,6 +228,10 @@ If set to true all table/entity classes will be annotated with [@UseRowClass](ht
 
 The Drift builder will not generate an own entity class and will use the old Floor entity in the database.
 All entities used for this need to implement the `Insertable` interface by implementing `Map<String, Expression> toColumns(bool nullToAbsent);`
+
+To help with this in the generated (base-)entity classes a  static toColumns method will be generated.
+You only need to add the interface to your entity class and call the generated method.
+If you have base entities the base entity implementation needs to be called also. Every generated toColumn method only includes field directly in the class.
 
 If your entity classes are not only data classes and contain any kind of logic, this option should be set to true.
 

@@ -166,4 +166,43 @@ class BaseHelper {
 
     return methodContent;
   }
+
+  /// iterates over ClassElement.interface to create the implement clause for the given [classElement]
+  String getImplementsClause(ClassElement classElement) {
+    if (classElement.interfaces.isEmpty) {
+      return "";
+    }
+
+    final interfaceString = "implements ";
+
+    var interfaces = <String>[];
+
+    for (final interface in classElement.interfaces) {
+      var interfaceName = interface.element.name.toString();
+
+      if (interface.typeArguments.isNotEmpty) {
+        final typeParameterStrings = <String>[];
+
+        for (final typeParameter in interface.typeArguments) {
+          final typeParameterName = typeParameter.element?.name;
+
+          if (typeParameterName == null) {
+            continue;
+          }
+
+          typeParameterStrings.add(typeParameterName);
+        }
+
+        if (typeParameterStrings.isEmpty) {
+          continue;
+        }
+        interfaceName += "<";
+        interfaceName += typeParameterStrings.join(", ");
+        interfaceName += ">";
+      }
+      interfaces.add(interfaceName);
+    }
+
+    return interfaceString + interfaces.join(", ");
+  }
 }

@@ -83,7 +83,14 @@ class InsertMethodConverter extends DaoMethodConverter {
 
     ValueResponse<String> quantityResult = switch (parameterType.type) {
       EType.unknown => ValueResponse.value("await $tableName.insertOne($insertMode$argumentName);"),
-      EType.list => ValueResponse.value("await $tableName.insertAll($insertMode$argumentName);"),
+      // EType.list => ValueResponse.value("await $tableName.insertAll($insertMode$argumentName);"),
+      EType.list => ValueResponse.value(''' final list = <int>[];
+    await transaction(() async {
+    for (final item in $argumentName) {
+      list.add(await $tableName.insertOne(${insertMode}item));
+    }
+    });
+    '''),
       _ => ValueResponse.error("Parmeter type is not supported", parameter),
     };
 
@@ -102,7 +109,7 @@ class InsertMethodConverter extends DaoMethodConverter {
       case EType.unknown:
         return ValueResponse.value("return $quantity");
       case EType.list:
-        return ValueResponse.value("$quantity\nreturn const [];");
+        return ValueResponse.value("$quantity\nreturn list;");
       default:
         return ValueResponse.error("Expected object void or list as Return Type", parameter);
     }
@@ -133,3 +140,15 @@ class InsertMethodConverter extends DaoMethodConverter {
     return const DaoHelper().parseUsedTableAnnotation(method, annotation, tableSelector, dbState);
   }
 }
+
+/*
+  Future<List<int>> annotationInsertTasks(List<TestTask> taskList) async {
+    final temp = <int>[];
+    await transaction(() async {
+      for (final task in taskList) {
+        temp.add(await testTasks.insertOne(task));
+      }
+    });
+    return temp;
+  }
+ */

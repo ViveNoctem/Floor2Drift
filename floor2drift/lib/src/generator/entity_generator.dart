@@ -22,7 +22,7 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
 
   final ETableNameOption _tableName;
 
-  final ClassHelper _classHelper;
+  final EntityHelper _entityHelper;
 
   final AnnotationHelper _annotationHelper;
 
@@ -32,13 +32,13 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
   EntityGenerator({
     required TypeConverterGenerator? typeConverterGenerator,
     required bool useRowClass,
-    ClassHelper classHelper = const ClassHelper(),
+    EntityHelper entityHelper = const EntityHelper(),
     AnnotationHelper annotationHelper = const AnnotationHelper(),
     required super.inputOption,
     required ETableNameOption tableName,
   })  : _tableName = tableName,
         _useRowClass = useRowClass,
-        _classHelper = classHelper,
+        _entityHelper = entityHelper,
         _typeConverterGenerator = typeConverterGenerator,
         _annotationHelper = annotationHelper;
 
@@ -49,8 +49,6 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
     DatabaseState dbState,
     GeneratedSource currentSource,
   ) {
-    var result = "";
-
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
     final import = const BaseHelper().getImport(classElement.library.librarySource.uri, targetFilePath);
@@ -60,7 +58,7 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
     // alway add drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final data = _classHelper.parseEntitiyFields(classElement, dbState);
+    final data = _entityHelper.parseEntityFields(classElement, dbState);
 
     switch (data) {
       case ValueError():
@@ -68,7 +66,12 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
       case ValueData<(String, ClassState)>():
     }
 
-    final (fieldsCode, classState) = data.data;
+    final String fieldsCode;
+    ClassState classState;
+
+    (fieldsCode, classState) = data.data;
+
+    classState = _setSuperStates(dbState, classState);
 
     // add mixin/base entity imports
     for (final mixin in classState.superClasses) {
@@ -104,12 +107,16 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
 
     const BaseHelper().addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
-    result += _classHelper.getClassHeader(classElement.name, classState.superClasses, _useRowClass);
+    var result = const BaseHelper().getDocumentationForElement(classElement);
+    result += _entityHelper.getClassHeader(classElement.name, classState.superClasses, _useRowClass);
     result += _getTableName(_tableName, classElement);
     result += fieldsCode;
-    result += _classHelper.closeClass();
+    if (_useRowClass) {
+      result += _entityHelper.generateToColumnsMethod(classState);
+    }
+    result += _entityHelper.closeClass();
 
-    currentSource = _classHelper.removeUnwantedImports(currentSource);
+    currentSource = _entityHelper.removeUnwantedImports(currentSource);
 
     final generatedSource = currentSource + GeneratedSource(code: result, imports: newImports);
 
@@ -167,5 +174,28 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
 
     // if not specified in Annotation use Drift scheme
     return "";
+  }
+
+  /// fills the superStates of the given [currentClassState]
+  ///
+  /// expects [dbState] entityClassStates to be filled with all and only baseEntity states
+  ClassState _setSuperStates(DatabaseState dbState, ClassState currentClassState) {
+    final superStates = <ClassState>{};
+
+    for (final superClass in currentClassState.superClasses) {
+      for (final baseState in dbState.entityClassStates) {
+        if (superClass != baseState.classType.element) {
+          continue;
+        }
+
+        superStates.add(baseState);
+      }
+    }
+
+    if (superStates.isEmpty) {
+      return currentClassState;
+    }
+
+    return currentClassState.copyWith(superStates: superStates);
   }
 }

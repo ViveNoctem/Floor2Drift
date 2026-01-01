@@ -16,16 +16,20 @@ import 'package:source_gen/source_gen.dart';
 /// Converts a base entity class to the equivalent drift code
 /// {@endtemplate}
 class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassState> {
-  final ClassHelper _classHelper;
+  final EntityHelper _entityHelper;
   final TypeConverterGenerator? _typeConverterGenerator;
+
+  final bool _useRowClass;
 
   /// {@macro BaseEntityGenerator}
   BaseEntityGenerator({
     required TypeConverterGenerator? typeConverterGenerator,
-    ClassHelper classHelper = const ClassHelper(),
+    EntityHelper entityHelper = const EntityHelper(),
     required super.inputOption,
-  })  : _classHelper = classHelper,
-        _typeConverterGenerator = typeConverterGenerator;
+    required bool useRowClass,
+  })  : _entityHelper = entityHelper,
+        _typeConverterGenerator = typeConverterGenerator,
+        _useRowClass = useRowClass;
 
   @override
   bool getImport(LibraryReader library, DatabaseState dbState, bool ignoreTypeConverterUsedCheck) {
@@ -49,7 +53,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
   ) {
     var result = "";
 
-    final valueResult = _classHelper.parseEntitiyFields(classElement, dbState);
+    final valueResult = _entityHelper.parseEntityFields(classElement, dbState);
 
     switch (valueResult) {
       case ValueError<(String, ClassState)>():
@@ -61,17 +65,31 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
 
     result += const BaseHelper().getDocumentationForElement(classElement);
 
-    final mixinName = "${classElement.name}${ClassHelper.mixinSuffix}";
+    final mixinName = "${classElement.name}${EntityHelper.mixinSuffix}";
 
     const BaseHelper().addToDriftClassesMap(classElement, mixinName, outputOption, dbState.driftClasses);
 
-    result += _classHelper.getMixinHeader(mixinName);
+    result += _entityHelper.getMixinHeader(mixinName);
     result += fieldsCode;
-    result += _classHelper.closeClass();
+    if (_useRowClass) {
+      // TODO does that work with multiple inheritance?
+      result += _entityHelper.generateToColumnsMethod(classState);
+    }
+
+    result += _entityHelper.closeClass();
 
     final imports = {"import 'package:drift/drift.dart';"};
 
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
+
+    if (_useRowClass) {
+      // the generated toColumnsMethod requires import of the actual BaseEntityClass
+      final baseEntityImport = const BaseHelper().getImport(classElement.librarySource.uri, targetFilePath);
+      if (baseEntityImport != null) {
+        imports.add(baseEntityImport);
+      }
+    }
+
     for (final typeConverter in classState.usedTypeConverters) {
       final libraryReader = LibraryReader(typeConverter.classElement.library);
 
@@ -89,7 +107,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
       imports.add(importString);
     }
 
-    currentSource = _classHelper.removeUnwantedImports(currentSource);
+    currentSource = _entityHelper.removeUnwantedImports(currentSource);
 
     final generatedSource = currentSource + GeneratedSource(code: result, imports: imports);
 

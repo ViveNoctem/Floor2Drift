@@ -135,7 +135,11 @@ class Floor2DriftGenerator {
         : null;
 
     final baseEntityGenerator = inputOption.convertDbEntities
-        ? BaseEntityGenerator(inputOption: inputOption, typeConverterGenerator: typeConverterGenerator)
+        ? BaseEntityGenerator(
+            inputOption: inputOption,
+            typeConverterGenerator: typeConverterGenerator,
+            useRowClass: useRowClass,
+          )
         : null;
 
     final entityGenerator = inputOption.convertDbEntities
@@ -179,25 +183,11 @@ class Floor2DriftGenerator {
 
     // order of the generators is specific.
     // entityGenerators must come first to fill the entityClasses and floorClasses in the dbState.
+    // baseEntityGenerator muss come before entityGenerator. EntityGenerator expects, that dbState.entityClassStates is filled with alls baseEntityStates
     // order for databaseGenerator shouldn't matter.
     // baseDaoGenerator must come before daoGenerator
 
-    final entityClassStates = <ClassState>{};
-    final baseEntityClassStates = <ClassState>{};
-
     if (inputOption.convertDbEntities) {
-      if (processingOption.entityGenerator != null) {
-        final (text, classStates) = _processClassElements(
-          dbState.entities,
-          dbState,
-          processingOption.entityGenerator!,
-          newFiles,
-        );
-        newFiles = text;
-
-        entityClassStates.addAll(classStates);
-      }
-
       if (processingOption.baseEntityGenerator != null) {
         final (text, classStates) = _processClassElements(
           dbState.baseEntities,
@@ -207,29 +197,20 @@ class Floor2DriftGenerator {
         );
 
         newFiles = text;
-        baseEntityClassStates.addAll(classStates);
+        dbState.entityClassStates.addAll(classStates);
       }
 
-      // TODO try to find better solution
-      // TODO adding the States of the super type from the entities.
-      // TODO to have access to all fields and type converters from super classes
-      for (final entityState in entityClassStates) {
-        final superStates = <ClassState>{};
+      if (processingOption.entityGenerator != null) {
+        final (text, classStates) = _processClassElements(
+          dbState.entities,
+          dbState,
+          processingOption.entityGenerator!,
+          newFiles,
+        );
+        newFiles = text;
 
-        for (final superClass in entityState.superClasses) {
-          for (final baseState in baseEntityClassStates) {
-            if (superClass != baseState.classType.element) {
-              continue;
-            }
-            superStates.add(baseState);
-          }
-        }
-
-        final filledState = entityState.copyWith(superStates: superStates);
-        dbState.entityClassStates.add(filledState);
+        dbState.entityClassStates.addAll(classStates);
       }
-
-      dbState.entityClassStates.addAll(baseEntityClassStates);
     }
 
     final (text1, isNull) = _processClassElements(

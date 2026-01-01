@@ -94,7 +94,7 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
       throw InvalidGenerationSource("Type parameter for base entity is expected", element: classElement);
     }
 
-    final className = "${classElement.name}${ClassHelper.mixinSuffix}";
+    final className = "${classElement.name}${EntityHelper.mixinSuffix}";
 
     const BaseHelper().addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
@@ -105,12 +105,15 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
       newImports.add(tableImport);
     }
 
+    final interfaceString = const BaseHelper().getImplementsClause(classElement);
+
     final header = _generateMixinHeader(
       className,
       dbState.databaseClass.element!.name!,
-      "$baseEntityName${ClassHelper.mixinSuffix}",
+      "$baseEntityName${EntityHelper.mixinSuffix}",
       genericName,
       baseEntityDeclaration,
+      interfaceString,
     );
 
     final databaseimport =
@@ -137,10 +140,11 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
     String mixinName,
     String genericName,
     String baseEntityDeclataration,
+    String interfaceString,
   ) {
     // TODO change TC to be different, if D has the name TC
     // TODO case insensitivity of sqlite might be a problem
-    return '''mixin $className<TC extends $mixinName, $baseEntityDeclataration> on DatabaseAccessor<$databaseName> {
+    return '''mixin $className<TC extends $mixinName, $baseEntityDeclataration> on DatabaseAccessor<$databaseName> $interfaceString {
     TableInfo<TC, $genericName> get $tableSelector => attachedDatabase.allTables.firstWhere((tbl) =>  tbl.runtimeType == TC) as TableInfo<TC, $genericName>;''';
   }
 }

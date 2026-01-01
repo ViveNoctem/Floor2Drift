@@ -3,9 +3,11 @@ import 'package:floor_annotation/floor_annotation.dart';
 
 import '../../additional_classes/annotation.dart';
 import '../support_classes/enums.dart';
+import '../support_classes/interfaces.dart';
 import '../type_converters/type_converters.dart';
 import '../type_converters/type_converters_drift.dart' as drift;
 import 'base_class.dart';
+import 'task_drift.dart';
 
 @Entity(tableName: "UserTest")
 class TestUser implements Insertable<TestUser> {
@@ -24,12 +26,7 @@ class TestUser implements Insertable<TestUser> {
 
   @override
   Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
-    return {
-      "id": Variable(id),
-      "name": Variable(name),
-      "password": Variable(password),
-      "creation_date": Variable(createdAt),
-    };
+    return TestUsers.toColumns(nullToAbsent, this);
   }
 
   @override
@@ -43,9 +40,10 @@ class TestUser implements Insertable<TestUser> {
   }
 }
 
+/// Documentation for TestTask entity
 @Entity(tableName: "taskTest")
 @TypeConverters([IntListConverter])
-class TestTask extends BaseClass<TestTask> {
+class TestTask extends BaseClass<TestTask> implements InterfaceThree, InterfaceFour {
   // some message
   final String message;
 
@@ -114,14 +112,7 @@ class TestTask extends BaseClass<TestTask> {
   Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
     return {
       ...super.toColumns(nullToAbsent),
-      "isRead": Variable(isRead),
-      "message": Variable(message),
-      "timestamp": Variable(const drift.DateTimeConverter().toSql(timestamp)),
-      "status": Variable(status.index),
-      "type": Variable(const drift.TaskTypeConverter().toSql(type)),
-      "integers": Variable(const drift.IntListConverter().toSql(integers)),
-      "attachment": Variable(attachment),
-      "cUsToMdOuBlE": Variable(customDouble),
+      ...TestTasks.toColumns(nullToAbsent, this),
     };
   }
 

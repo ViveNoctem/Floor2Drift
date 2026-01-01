@@ -16,7 +16,7 @@ import 'package:source_gen/source_gen.dart';
 /// Converts a database class to the equivalent drift code
 /// {@endtemplate}
 class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
-  final _typeConverterChecker = TypeChecker.fromRuntime(TypeConverters);
+  final _typeConverterChecker = const TypeChecker.fromRuntime(TypeConverters);
   final bool _useRowClass;
 
   /// {@macro DatabaseGenerator}
@@ -233,7 +233,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
       while (superType != null && superType.isDartCoreObject == false && superType.isDartCoreEnum == false) {
         final superclass = superType.element.toClassElement;
         final reader = LibraryReader(superclass.library);
-        if (reader.annotatedWith(TypeChecker.fromRuntime(ConvertBaseEntity)).isEmpty) {
+        if (reader.annotatedWith(const TypeChecker.fromRuntime(ConvertBaseEntity)).isEmpty) {
           break;
         }
 
@@ -269,7 +269,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
         .objectValue
         .toListValue()
         ?.map((object) {
-          final name = object.type?.element?.name;
+          final name = object.toTypeValue()?.element?.name;
           if (name == null || inputOption.canAnalyze(name) == false) {
             return null;
           }
