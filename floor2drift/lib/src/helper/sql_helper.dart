@@ -494,20 +494,11 @@ class SqlHelper {
 
       final joinedClassState = tableSelector.getClassStateForTable(joinedTableName);
 
-      // for (final state in tableSelector.currentClassStates) {
-      //   if (state.sqlTablename != joinedTableName) {
-      //     continue;
-      //   }
-      //
-      //   realTableName = state.driftTableGetter;
-      // }
-
       if (joinedClassState == null) {
         return ValueResponse.error("Couldn't determine entity name for table $joinedTableName", element);
       }
 
-      // TODO joinedTableName is wrong. I need the class name. Therefore the correct classState for the table needs to be found.
-      joinCode += "$methodName(${joinedClassState.driftTableGetter}$onClause)";
+      joinCode += "$methodName(${joinedClassState.driftTableGetter}$onClause),";
     }
 
     joinCode += "])";
@@ -564,9 +555,9 @@ class SqlHelper {
     return switch (operator.operator) {
       JoinOperatorKind.none || JoinOperatorKind.comma || JoinOperatorKind.inner => ValueResponse.value("innerJoin"),
       JoinOperatorKind.cross => ValueResponse.value("crossJoin"),
-      JoinOperatorKind.left => ValueResponse.error("Left inner join is not supported", element),
-      JoinOperatorKind.right => ValueResponse.error("Right inner join is not supported", element),
-      JoinOperatorKind.full => ValueResponse.error("Full inner join is not supported", element),
+      JoinOperatorKind.left => ValueResponse.value("leftOuterJoin"),
+      JoinOperatorKind.right => ValueResponse.error("Right outer join is not supported", element),
+      JoinOperatorKind.full => ValueResponse.error("Full outer join is not supported", element),
     };
   }
 }
