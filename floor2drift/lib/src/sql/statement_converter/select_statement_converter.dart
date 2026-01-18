@@ -21,16 +21,6 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
     required TypeSpecification? returnValue,
     required bool isView,
   }) {
-    // TODO join in normal queries should not be possible in floor.
-    // TODO but i probably want to support it
-
-    // TODO views have a different syntax
-    // TODO selectOnly does not exist
-    // TODO use resolvedColumns in Views star seems not to be possible column.resolvedColumns
-    // TODO select([$resolvedColumns]).from($firstTable).join([joins]);
-
-    // TODO need to anlyze all columns not just first
-
     final column = statement.columns.firstOrNull;
 
     // use selectOnly instead of select, if an aggregate function is used
@@ -76,6 +66,11 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
 
     var (result, selectOnlyFunctionResult) = selectResult.data;
 
+    // from and join has to come before where in view
+    if (isView) {
+      result += fromCode;
+    }
+
     final where = statement.where;
     if (where != null) {
       final whereResult = _sqlHelper.addWhereClause(where, element, parameters, useSelectOnly, tableSelector);
@@ -111,11 +106,11 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
     // TODO GROUP BY
 
     // close bracket before the select
+    // from and join comes after where in normale select statements
     if (isView == false) {
       result += ")";
+      result += fromCode;
     }
-
-    result += fromCode;
 
     // reset the functionSelector to the correct one
     tableSelector.functionSelector = originalSelector;

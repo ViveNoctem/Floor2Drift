@@ -51,7 +51,9 @@ class ViewGenerator extends DriftClassGenerator<DatabaseView, ClassState> {
       case ValueData<(String, ClassState)>():
     }
 
-    final header = getHeader(_useRowClass);
+    final currentClassState = classStateResult.data.$2;
+
+    final header = _getHeader(_useRowClass, currentClassState);
 
     final newImports = <String>{...currentSource.imports};
 
@@ -154,12 +156,12 @@ class ViewGenerator extends DriftClassGenerator<DatabaseView, ClassState> {
 
     final outputSource = currentSource.copyWith(code: code, imports: newImports);
 
-    return (outputSource, classStateResult.data.$2);
+    return (outputSource, currentClassState);
   }
 
-  String getHeader(bool useRowClass) {
-    final viewEntityName = "TaskUserView";
-    final viewClassName = "TaskUserViews";
+  String _getHeader(bool useRowClass, ClassState classState) {
+    final viewEntityName = classState.className;
+    final viewClassName = "${classState.className}s";
     final rowClass = useRowClass ? "@UseRowClass($viewEntityName)\n" : "";
     return "${rowClass}abstract class $viewClassName extends View {\n\n";
   }
