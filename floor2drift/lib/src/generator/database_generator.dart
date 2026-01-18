@@ -46,6 +46,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     final schemaVersion = state.schemaVersion;
     var tables = "";
     var views = "";
+    var daos = "";
 
     final newImports = <String>{};
 
@@ -54,32 +55,36 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
 
     final targetFilePath = outputOption.getFileName((classElement.librarySource as FileSource).file.path);
 
-    for (final entity in state.entities) {
-      newImports.addAll(_addImport(state, entity.name, targetFilePath));
-      tables += "${entity.name}s,";
+    if (inputOption.convertDbEntities) {
+      for (final entity in state.entities) {
+        newImports.addAll(_addImport(state, entity.name, targetFilePath));
+        tables += "${entity.name}s,";
+      }
+
+      if (tables.isNotEmpty) {
+        tables = "tables:[$tables],";
+      }
     }
 
-    if (tables.isNotEmpty) {
-      tables = "tables:[$tables],";
+    if (inputOption.convertViews) {
+      for (final view in state.views) {
+        newImports.addAll(_addImport(state, view.name, targetFilePath));
+        views += "${view.name}s,";
+      }
+
+      if (views.isNotEmpty) {
+        views = "views:[$views],";
+      }
     }
 
-    for (final view in state.views) {
-      newImports.addAll(_addImport(state, view.name, targetFilePath));
-      views += "${view.name}s,";
-    }
+    if (inputOption.convertDbDaos) {
+      for (final dao in state.daos) {
+        daos += "${dao.name},";
+      }
 
-    if (views.isNotEmpty) {
-      views = "views:[$views],";
-    }
-
-    var daos = "";
-
-    for (final dao in state.daos) {
-      daos += "${dao.name},";
-    }
-
-    if (daos.isNotEmpty) {
-      daos = "daos:[$daos],";
+      if (daos.isNotEmpty) {
+        daos = "daos:[$daos],";
+      }
     }
 
     final private = outputOption.isModularCodeGeneration ? "" : "_";
