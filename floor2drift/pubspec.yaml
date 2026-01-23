@@ -1,6 +1,6 @@
 name: floor2drift
 description: Floor2Drift is dart library to help you migrate from the Floor orm library to Drift.
-version: 0.1.7
+version: 0.1.8
 repository: https://github.com/ViveNoctem/Floor2Drift
 
 resolution: workspace

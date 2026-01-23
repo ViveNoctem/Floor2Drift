@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:analyzer/dart/element/element.dart';
@@ -10,7 +9,6 @@ import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/return_type.dart';
 import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
-import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart';
 

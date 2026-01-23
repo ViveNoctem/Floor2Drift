@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/file_source.dart';
-import 'package:code_builder/code_builder.dart';
 import 'package:floor2drift/src/base_classes/database_state.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/entity/annotation_converter/annotation_converter.dart';
@@ -13,7 +12,6 @@ import 'package:floor2drift/src/helper/base_helper.dart';
 import 'package:floor2drift/src/helper/entity_helper.dart';
 import 'package:floor2drift/src/helper/sql_helper.dart';
 import 'package:floor2drift/src/return_type.dart';
-import 'package:floor2drift/src/sql/expression_converter/expression_converter.dart';
 import 'package:floor2drift/src/sql/statement_converter/statement_converter.dart';
 import 'package:floor2drift/src/value_response.dart';
 import 'package:floor_annotation/floor_annotation.dart';

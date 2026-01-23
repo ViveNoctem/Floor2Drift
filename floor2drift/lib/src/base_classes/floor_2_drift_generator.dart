@@ -8,7 +8,6 @@ import 'package:floor2drift/src/base_classes/input_option.dart';
 import 'package:floor2drift/src/base_classes/output_option.dart';
 import 'package:floor2drift/src/base_classes/processing_option.dart';
 import 'package:floor2drift/src/element_extension.dart';
-import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor2drift/src/enum/enums.dart';
 import 'package:floor2drift/src/generator/base_dao_generator.dart';
 import 'package:floor2drift/src/generator/base_entity_generator.dart';

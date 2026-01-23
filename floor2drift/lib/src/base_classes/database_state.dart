@@ -26,6 +26,7 @@ class DatabaseState {
   /// All superclasses of [entities] annotated with [convertBaseEntity]
   final Set<ClassElement> baseEntities;
 
+  /// All floor [DatabaseView] Classes that will be converted
   final Set<ClassElement> views;
 
   /// All [dao] classes that are defined in the fields of the [Database]

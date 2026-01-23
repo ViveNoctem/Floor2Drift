@@ -45,7 +45,7 @@ abstract class ProcessingOptionBase {
   /// is null if base entity classes are not generated
   final BaseEntityGenerator? baseEntityGenerator;
 
-  /// The generator for entitiy classes
+  /// The generator for entity classes
   ///
   /// is null if entity classes are not generated
   final EntityGenerator? entityGenerator;
@@ -55,6 +55,9 @@ abstract class ProcessingOptionBase {
   /// is null if type converters are not generated
   final TypeConverterGenerator? typeConverterGenerator;
 
+  /// The generator for view classes
+  ///
+  /// is null if views are not generated
   final ViewGenerator? viewGenerator;
 
   /// {@macro ProcessingOptionBase}

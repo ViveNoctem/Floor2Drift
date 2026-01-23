@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor2drift/src/entity/class_state.dart';
 import 'package:floor_annotation/floor_annotation.dart';
