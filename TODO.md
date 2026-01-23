@@ -17,7 +17,6 @@
 
 ## Dao
 ### Features
-- implement limit
 - like with escape clause
 - group by? (does floor support it?)
 - custom insert

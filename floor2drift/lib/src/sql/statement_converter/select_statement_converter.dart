@@ -87,6 +87,19 @@ class SelectStatementConverter extends StatementConverter<SelectStatement> {
       result += whereResult.data;
     }
 
+    final limit = statement.limit;
+    if (limit != null) {
+      final limitResult = _sqlHelper.addLimitClause(limit, element, parameters, tableSelector);
+
+      switch (limitResult) {
+        case ValueError<String>():
+          return limitResult.wrap();
+        case ValueData<String>():
+      }
+
+      result += limitResult.data;
+    }
+
     final orderBy = statement.orderBy;
     if (orderBy != null && orderBy is OrderBy) {
       final orderByResult = _sqlHelper.addOrderByClause(orderBy, element, parameters, tableSelector, useSelectOnly);
