@@ -560,4 +560,54 @@ class SqlHelper {
       JoinOperatorKind.full => ValueResponse.error("Full outer join is not supported", element),
     };
   }
+
+  /// returns the drift code for a LIMIT and OFFSET clause
+  ValueResponse<String> addLimitClause(
+    LimitBase limit,
+    Element element,
+    List<ParameterElement> parameters,
+    TableSelector selector,
+  ) {
+    if (limit is! Limit) {
+      return ValueResponse.error("Limit clause $limit is not supported", element);
+    }
+
+    final limitExprResult = _expressionConverterUtil.parseExpression(
+      limit.count,
+      element,
+      parameters: parameters,
+      selector: selector,
+      asExpression: false,
+    );
+
+    switch (limitExprResult) {
+      case ValueError<(String, EExpressionType)>():
+        return limitExprResult.wrap();
+      case ValueData<(String, EExpressionType)>():
+    }
+
+    final countCode = limitExprResult.data.$1;
+
+    final offset = limit.offset;
+    var offsetCode = "";
+    if (offset != null) {
+      final offsetExprResult = _expressionConverterUtil.parseExpression(
+        offset,
+        element,
+        parameters: parameters,
+        selector: selector,
+        asExpression: false,
+      );
+
+      switch (offsetExprResult) {
+        case ValueError<(String, EExpressionType)>():
+          return offsetExprResult.wrap();
+        case ValueData<(String, EExpressionType)>():
+      }
+      final offsetData = offsetExprResult.data.$1;
+      offsetCode = ", offset: $offsetData,";
+    }
+
+    return ValueResponse.value("..limit($countCode$offsetCode)");
+  }
 }

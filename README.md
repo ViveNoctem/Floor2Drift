@@ -108,6 +108,12 @@ Maybe this feature will be added in the future, but it's hard to find out which 
 ## TODOS / Planned Features
 see [TODO.md](./TODO.md)
 
+### Currently WIP Features
+- trying to automatically generate tests for each converted dao method
+  - tests will compare the results of the floor method with the drift method
+- add a flag to overwrite the floor files with all with a suffix generated files
+  - basically a way to delete the suffix of all generated drift files, after the conversion is done and all floor file can be deleted 
+
 ## Database Migrations
 At the moment DB migrations have to be converted manually to [drift migrations](https://drift.simonbinder.eu/migrations/).
 
