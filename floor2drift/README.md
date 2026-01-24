@@ -1,13 +1,13 @@
 # Floor2Drift
-**Floor2Drift** is dart/flutter script to help you migrate from the [Floor](https://pub.dev/packages/floor) orm library to [Drift](https://pub.dev/packages/drift).
+**Floor2Drift** is dart library to help you migrate from the [Floor](https://pub.dev/packages/floor) orm library to [Drift](https://pub.dev/packages/drift).
 
-The script generates the equivalent drift code for your floor database.
+The library generates the equivalent drift code for your floor database.
 For a (not complete) list of supported features see [Features](#features)
 
 > [!WARNING]
 >
 > This project is WORK IN PROGRESS.
-> 
+>
 > Not all floor features are supported at the moment and expect to make some adjustments to the generated code to work properly.
 
 ## Getting Started
@@ -35,6 +35,8 @@ If your entities/daos inherit fields or queries from a super class you need to a
 Base entities with `@convertBaseEntitiy` and base daos with `@convertBaseDao`.
 If the super classes are not annotated the generator will not convert these and the fields/queries will be missing from the output.
 
+At the moment this need a relatively specific inheritance setup. For an example see `TestTask` and `BaseClass` in the tests
+
 ### 3. Floor2Drift script
 
 To generate the drift classes you need to write a script and place it under `tool/floor2drift.dart`.
@@ -47,14 +49,14 @@ The `classNameFilter` option can be used to generate dart file for a subset of a
 If set only Entity/Dao/TypeConverter Classnames which pass the glob will be converted.
 This is perfect for initial testing with only one or a few entities.
 
-Use can use the `outputFileSuffix` argument to add a suffix to all generated files. The default value is `"Drift"`.
+Use can use the `outputFileSuffix` argument to add a suffix to all generated files. The default value is `"_drift"`.
 
 For all configuration options see: [Configuration](#configuration)
 
 > [!NOTE]
-> 
+>
 > In the default configuration the generator uses the drift `@UseRowClass` annotation. This is needed if you have any kind of logic in your entity classes.
-> 
+>
 > See [UseRowClass](#userowclass) for instruction on how to use this option.
 
 ```dart
@@ -87,22 +89,32 @@ targets:
 
 ## To be noted
 
-### Drift Version
-The used drift version is very old to be compatible with the newest floor version.
-After converting to drift you should migrate to the newest drift version.
-
-In the currently used drift generator version the drift modular code generation for views is bugged.
-The generated `attachedDatabase` getter needs to be manually edited from `GeneratedDatabase` to your actual Database implementation
-
 ### Annotations
 Most of the result of methods annotated with `@Insert` `@Update` `@delete` will be different than the floor equivalent at the moment.
 
-e.g. @Insert will return rowId instead of inserted id. @Update will result nothing or always -1, etc.
+List insert/delete could have a performance impact from floor. It uses a transaction to delete/insert every entity after another to return the same result as floor.
+Could probably be faster if the result is not needed, but didn't check if there is an actual impact.
+
+@Update will return nothing or always -1
+
+TODO maybe add an option in the future to use the "more efficient" version or the result correct version
 
 **Check your usage of the return values for these kinds of methods.**
 
+### Transaction
+Methods in dao classes with the `@transaction` annotation will be wrapped in a drift `transaction()` block. Make sure all queries in the transaction are awaited.
+Transaction in other classes are not converted at the moment. Converting them yourself is not complex.
+
+Maybe this feature will be added in the future, but it's hard to find out which transactions to convert.
+
 ## TODOS / Planned Features
 see [TODO.md](./TODO.md)
+
+### Currently WIP Features
+- trying to automatically generate tests for each converted dao method
+  - tests will compare the results of the floor method with the drift method
+- add a flag to overwrite the floor files with all with a suffix generated files
+  - basically a way to delete the suffix of all generated drift files, after the conversion is done and all floor file can be deleted
 
 ## Database Migrations
 At the moment DB migrations have to be converted manually to [drift migrations](https://drift.simonbinder.eu/migrations/).
@@ -113,7 +125,7 @@ The example consists of 2 flutter projects
 The initial_project directory contains a very simple todo app with a login in floor.
 The converted_project directory contains the same simple todo app but converted to drift using this library.
 
-To run the converted_project the drift files need to be generated and the build_runner has to run 
+To run the converted_project the drift files need to be generated and the build_runner has to run
 Generating the drift files
 ```shell
 cd floor2drift/example/converted_project/tool && dart floor2drift.dart
@@ -124,14 +136,6 @@ Running the build_runner
 cd floor2drift/example/converted_project && dart run build_runner build
 ```
 ## Tests
-The tests do not work if drift modular code generation is used.
-In the used version there seems to be a bug. 
-The attachedDatabase is a GeneratedDatabase class and not the implemented FloorTestDatabase.
-Change the definition of `attachedDatabase` in `floor2drift/test/flutter_test/test_databases/views/task_user_view_drift.drift.dart` to 
-```dart
-final $FloorTestDatabase attachedDatabase;
-```
-
 Generate the test drift files
 ```shell
 cd floor2drift/test/tool && dart test_generator.dart
@@ -155,7 +159,7 @@ cd floor2drift && dart test test/dart_test
 ## Features
 Overview over some of the feature, which are already supported.
 
-This ist not an exhaustive list. 
+This ist not an exhaustive list.
 If a feature that you need is not listed here. Try out if it already works or feel free to create an issue.
 
 ### Entity
@@ -167,7 +171,7 @@ If a feature that you need is not listed here. Try out if it already works or fe
 - renaming
   - table with `@Entity(tableName: "tableName")`
   - column with `@ColumnInfo(name: "columnName")`
-- 
+-
 
 ### Dao
 - `@Query`: see [expression_converter.dart](./floor2drift/lib/src/sql/expression_converter/expression_converter.dart) and [token_converter](./floor2drift/lib/src/sql/token_converter/token_converter.dart) for all supported sql expressions and tokens
@@ -185,13 +189,14 @@ factory Floor2DriftGenerator({
   required String dbPath,
   String rootPath = "../",
   Glob? classNameFilter,
-  String outputFileSuffix = "Drift",
+  String outputFileSuffix = "_drift",
   bool dryRun = false,
   bool convertDao = true,
   bool convertEntity = true,
   bool convertTypeConverter = true,
   bool useRowClass = true,
   ETableNameOption tableRenaming = ETableNameOption.floorScheme,
+  bool useDriftModularCodeGeneration = false,
 })
 ```
 
@@ -232,6 +237,11 @@ If set to true all table/entity classes will be annotated with [@UseRowClass](ht
 The Drift builder will not generate an own entity class and will use the old Floor entity in the database.
 All entities used for this need to implement the `Insertable` interface by implementing `Map<String, Expression> toColumns(bool nullToAbsent);`
 
+To help with this drift will generate to_columns methods for all Entities if the builder option `write_to_columns_mixins` is set.
+In the generated (base-)entity classes a  static toColumns method will be generated too.
+You only need to add the interface to your entity class and call the generated method.
+If you have base entities the base entity implementation needs to be called also. Every generated toColumn method only includes field directly in the class.
+
 If your entity classes are not only data classes and contain any kind of logic, this option should be set to true.
 
 TODO setting the option to false will produce error at the moment.
@@ -240,12 +250,15 @@ You can specify which table naming convention should be used. If you want to mig
 Then drift can open the old floor db and migrate it to drift directly.
 
 - `floorScheme` (default)
-    - the table name is the same as the class name.
-    - overrides with `@Table(name: "NewName")` annotation, will be taken into account.
+  - the table name is the same as the class name.
+  - overrides with `@Table(name: "NewName")` annotation, will be taken into account.
 - `driftScheme`
-    - the table name is snake_case version of the class name
+  - the table name is snake_case version of the class name
 - `driftSchemeWithOverride`
-    - the same as driftScheme, but the table name can be overridden by the `@Table(name: "NewName")` annotation.
+  - the same as driftScheme, but the table name can be overridden by the `@Table(name: "NewName")` annotation.
+#### useDriftModularCodeGeneration
+when set the generated code is changed to work with drift [modular code generation](https://drift.simonbinder.eu/generation_options/modular/)
+This is recommended for larger projects.
 
 ### Custom Configuration
 You can also create a more custom configuration by using the `Floor2DriftGenerator.custom` constructor.

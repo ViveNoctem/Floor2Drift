@@ -35,6 +35,8 @@ If your entities/daos inherit fields or queries from a super class you need to a
 Base entities with `@convertBaseEntitiy` and base daos with `@convertBaseDao`.
 If the super classes are not annotated the generator will not convert these and the fields/queries will be missing from the output.
 
+At the moment this need a relatively specific inheritance setup. For an example see `TestTask` and `BaseClass` in the tests
+
 ### 3. Floor2Drift script
 
 To generate the drift classes you need to write a script and place it under `tool/floor2drift.dart`.
@@ -169,7 +171,6 @@ If a feature that you need is not listed here. Try out if it already works or fe
 - renaming
   - table with `@Entity(tableName: "tableName")`
   - column with `@ColumnInfo(name: "columnName")`
-- 
 
 ### Dao
 - `@Query`: see [expression_converter.dart](./floor2drift/lib/src/sql/expression_converter/expression_converter.dart) and [token_converter](./floor2drift/lib/src/sql/token_converter/token_converter.dart) for all supported sql expressions and tokens
@@ -235,7 +236,8 @@ If set to true all table/entity classes will be annotated with [@UseRowClass](ht
 The Drift builder will not generate an own entity class and will use the old Floor entity in the database.
 All entities used for this need to implement the `Insertable` interface by implementing `Map<String, Expression> toColumns(bool nullToAbsent);`
 
-To help with this in the generated (base-)entity classes a  static toColumns method will be generated.
+To help with this drift will generate to_columns methods for all Entities if the builder option `write_to_columns_mixins` is set.
+In the generated (base-)entity classes a  static toColumns method will be generated too.
 You only need to add the interface to your entity class and call the generated method.
 If you have base entities the base entity implementation needs to be called also. Every generated toColumn method only includes field directly in the class.
 
