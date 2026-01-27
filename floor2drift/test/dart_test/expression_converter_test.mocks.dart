@@ -2711,6 +2711,19 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
       ) as Set<_i4.ClassElement>);
 
   @override
+  String get tableNameSuffix => (super.noSuchMethod(
+        Invocation.getter(#tableNameSuffix),
+        returnValue: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#tableNameSuffix),
+        ),
+        returnValueForMissingStub: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#tableNameSuffix),
+        ),
+      ) as String);
+
+  @override
   bool get isView => (super.noSuchMethod(
         Invocation.getter(#isView),
         returnValue: false,
@@ -2745,6 +2758,19 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
       ) as String);
 
   @override
+  String get tableName => (super.noSuchMethod(
+        Invocation.getter(#tableName),
+        returnValue: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#tableName),
+        ),
+        returnValueForMissingStub: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#tableName),
+        ),
+      ) as String);
+
+  @override
   Set<_i10.FieldState> get fieldStates => (super.noSuchMethod(
         Invocation.getter(#fieldStates),
         returnValue: <_i10.FieldState>{},
@@ -2773,6 +2799,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
     Set<_i4.ClassElement>? superClasses,
     Set<_i10.ClassState>? superStates,
     bool? isView,
+    String? tableNameSuffix,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -2786,6 +2813,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
             #superClasses: superClasses,
             #superStates: superStates,
             #isView: isView,
+            #tableNameSuffix: tableNameSuffix,
           },
         ),
         returnValue: _FakeClassState_16(
@@ -2801,6 +2829,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
               #superClasses: superClasses,
               #superStates: superStates,
               #isView: isView,
+              #tableNameSuffix: tableNameSuffix,
             },
           ),
         ),
@@ -2817,6 +2846,7 @@ class MockClassState extends _i1.Mock implements _i10.ClassState {
               #superClasses: superClasses,
               #superStates: superStates,
               #isView: isView,
+              #tableNameSuffix: tableNameSuffix,
             },
           ),
         ),

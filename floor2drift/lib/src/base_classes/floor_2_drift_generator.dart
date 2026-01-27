@@ -50,6 +50,7 @@ class Floor2DriftGenerator {
   /// [convertTypeConverter] should found [TypeConverter] classes be converted
   /// [convertView] should found [DatabaseView] classes be converted
   /// [useDriftModularCodeGeneration] when set the generated code is changed to work with drift modular code generation
+  /// [tableNameSuffix] change the default suffix added to drift table classes
   factory Floor2DriftGenerator({
     required String dbPath,
     String rootPath = "../",
@@ -63,6 +64,7 @@ class Floor2DriftGenerator {
     bool useRowClass = true,
     ETableNameOption tableRenaming = ETableNameOption.floorScheme,
     bool useDriftModularCodeGeneration = false,
+    String tableNameSuffix = "s",
   }) {
     final rootEntity = _getRootEntity(rootPath);
 
@@ -84,6 +86,7 @@ class Floor2DriftGenerator {
       dryRun: dryRun,
       fileSuffix: outputFileSuffix,
       isModularCodeGeneration: useDriftModularCodeGeneration,
+      tableNameSuffix: tableNameSuffix,
     );
 
     final processingOption = _getProcessingOption(inputOption, outputOption, useRowClass, tableRenaming);

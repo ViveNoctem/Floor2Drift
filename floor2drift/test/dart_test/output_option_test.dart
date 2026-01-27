@@ -35,6 +35,7 @@ void main() {
           dryRun: false,
           baseHelper: mockBaseHelper,
           isModularCodeGeneration: false,
+          tableNameSuffix: "s",
         );
 
         final inputString = "this is\ntestmessage\n\n";
@@ -56,6 +57,7 @@ void main() {
           dryRun: false,
           baseHelper: mockBaseHelper,
           isModularCodeGeneration: false,
+          tableNameSuffix: "s",
         );
 
         final inputString = "this is\ntestmessage\n\n";
@@ -77,14 +79,24 @@ void main() {
       when(mockFile.existsSync()).thenReturn(true);
       when(mockFile.readAsStringSync()).thenReturn(existingContent);
 
-      final outputOptions = OutputOptions(fileSuffix: "", dryRun: false, isModularCodeGeneration: false);
+      final outputOptions = OutputOptions(
+        fileSuffix: "",
+        dryRun: false,
+        isModularCodeGeneration: false,
+        tableNameSuffix: "s",
+      );
 
       outputOptions.writeFile(mockFile, inputString);
       verifyZeroInteractions(mockIOSink);
     });
 
     test("dryRun", () {
-      final outputOptions = OutputOptions(fileSuffix: "", dryRun: true, isModularCodeGeneration: false);
+      final outputOptions = OutputOptions(
+        fileSuffix: "",
+        dryRun: true,
+        isModularCodeGeneration: false,
+        tableNameSuffix: "s",
+      );
 
       final inputString = "this is\ntestmessage\n\n";
 

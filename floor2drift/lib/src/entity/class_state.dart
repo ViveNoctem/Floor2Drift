@@ -34,7 +34,14 @@ class ClassState {
   /// is filled after the [BaseDaoGenerator] is done running
   final Set<ClassState>? superStates;
 
-  String get driftTableGetter => "${ReCase(className).camelCase}s";
+  /// The suffix to be added to the table class name
+  final String tableNameSuffix;
+
+  /// QOL getter to get the name of the tableGetter used in daos
+  String get driftTableGetter => "${ReCase(className).camelCase}$tableNameSuffix";
+
+  /// QOL getter to get the name of the table class name
+  String get tableName => "$className$tableNameSuffix";
 
   /// True if the class is a sql view. False if the class is a sql table
   final bool isView;
@@ -47,6 +54,7 @@ class ClassState {
     required this.superClasses,
     required Set<FieldState> fieldStates,
     required this.isView,
+    required this.tableNameSuffix,
     this.superStates,
   }) : _fieldStates = fieldStates;
 
@@ -127,6 +135,7 @@ class ClassState {
     Set<ClassElement>? superClasses,
     Set<ClassState>? superStates,
     bool? isView,
+    String? tableNameSuffix,
   }) {
     return ClassState(
       classType: classType ?? this.classType,
@@ -136,6 +145,7 @@ class ClassState {
       fieldStates: fieldStates ?? _fieldStates,
       superStates: superStates ?? this.superStates,
       isView: isView ?? this.isView,
+      tableNameSuffix: tableNameSuffix ?? this.tableNameSuffix,
     );
   }
 }

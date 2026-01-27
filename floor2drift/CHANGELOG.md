@@ -1,3 +1,6 @@
+## 0.1.9
+- added option to change the suffix for table classes (default: "s")s
+
 ## 0.1.8
 - entity wasn't imported if the dao only had methods inherited from a base dao
 - files written use the current platforms line terminator instead of always '\n'

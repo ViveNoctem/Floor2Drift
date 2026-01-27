@@ -167,9 +167,9 @@ abstract class DaoMethodConverter {
       return ValueResponse.error("couldn't determine name of parameter class", parameter);
     }
 
-    final tablename = "${ReCase(className).camelCase}s";
+    final tableName = "${ReCase(className).camelCase}${tableSelector.tableNameSuffix}";
 
-    return ValueResponse.value(tablename);
+    return ValueResponse.value(tableName);
   }
 
   /// returns the standard method header for the given [method]

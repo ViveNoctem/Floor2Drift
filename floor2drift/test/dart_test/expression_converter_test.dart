@@ -43,7 +43,12 @@ void main() {
     mockClassState = MockClassState();
     mockFieldState = MockFieldState();
 
-    selector = TableSelectorDao(selector: "s", currentClassStates: [mockClassState], currentFieldState: mockFieldState);
+    selector = TableSelectorDao(
+      selector: "s",
+      currentClassStates: [mockClassState],
+      currentFieldState: mockFieldState,
+      tableNameSuffix: "s",
+    );
 
     mockParameter = MockParameterElement();
     mockParameterElement = MockElement();

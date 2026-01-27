@@ -58,7 +58,7 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
     // alway add drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final data = _entityHelper.parseEntityFields(classElement, dbState, false);
+    final data = _entityHelper.parseEntityFields(classElement, dbState, false, outputOption.tableNameSuffix);
 
     switch (data) {
       case ValueError():
@@ -103,12 +103,17 @@ class EntityGenerator extends DriftClassGenerator<Entity, ClassState> {
       newImports.add(importString);
     }
 
-    final className = "${classElement.name}s";
+    final className = "${classElement.name}${outputOption.tableNameSuffix}";
 
     const BaseHelper().addToDriftClassesMap(classElement, className, outputOption, dbState.driftClasses);
 
     var result = const BaseHelper().getDocumentationForElement(classElement);
-    result += _entityHelper.getClassHeader(classElement.name, classState.superClasses, _useRowClass);
+    result += _entityHelper.getClassHeader(
+      classElement.name,
+      classState.superClasses,
+      _useRowClass,
+      outputOption.tableNameSuffix,
+    );
     result += _getTableName(_tableName, classElement);
     result += fieldsCode;
     if (_useRowClass) {

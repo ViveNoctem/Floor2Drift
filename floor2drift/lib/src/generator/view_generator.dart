@@ -41,7 +41,7 @@ class ViewGenerator extends DriftClassGenerator<DatabaseView, ClassState> {
     // TODO the class itself must be converted to a classState, that it can be used as as table in other daos
 
     final targetFilePath = outputOption.getFileName((element.librarySource as FileSource).file.path);
-    final classStateResult = _entityHelper.parseEntityFields(element, dbState, true);
+    final classStateResult = _entityHelper.parseEntityFields(element, dbState, true, outputOption.tableNameSuffix);
 
     switch (classStateResult) {
       case ValueError<(String, ClassState)>():
@@ -113,7 +113,7 @@ class ViewGenerator extends DriftClassGenerator<DatabaseView, ClassState> {
     // returnType shouldn't matter for ViewGenerator
     const returnType = TypeSpecification(EType.unknown, EType.unknown, true);
 
-    final tableSelector = TableSelectorDao(currentClassStates: []);
+    final tableSelector = TableSelectorDao(currentClassStates: [], tableNameSuffix: outputOption.tableNameSuffix);
 
     final statementResult = StatementConverter.parseStatement(
       rootNode,
@@ -159,7 +159,7 @@ class ViewGenerator extends DriftClassGenerator<DatabaseView, ClassState> {
 
   String _getHeader(bool useRowClass, ClassState classState) {
     final viewEntityName = classState.className;
-    final viewClassName = "${classState.className}s";
+    final viewClassName = classState.tableName;
     final rowClass = useRowClass ? "@UseRowClass($viewEntityName)\n" : "";
     return "${rowClass}abstract class $viewClassName extends View {\n\n";
   }
@@ -167,7 +167,7 @@ class ViewGenerator extends DriftClassGenerator<DatabaseView, ClassState> {
   String getTables(List<ClassState> usedTables) {
     var result = "";
     for (final classState in usedTables) {
-      result += "${classState.className}s get ${classState.driftTableGetter};\n";
+      result += "${classState.tableName} get ${classState.driftTableGetter};\n";
     }
 
     return "$result\n\n";

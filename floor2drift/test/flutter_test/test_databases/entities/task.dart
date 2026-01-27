@@ -110,10 +110,7 @@ class TestTask extends BaseClass<TestTask> implements InterfaceThree, InterfaceF
 
   @override
   Map<String, Expression<Object>> toColumns(bool nullToAbsent) {
-    return {
-      ...super.toColumns(nullToAbsent),
-      ...TestTasks.toColumns(nullToAbsent, this),
-    };
+    return {...super.toColumns(nullToAbsent), ...TestTasks.toColumns(nullToAbsent, this)};
   }
 
   copyWithMessage(String message) {

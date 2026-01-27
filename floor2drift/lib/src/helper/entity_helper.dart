@@ -90,6 +90,7 @@ class EntityHelper {
     ClassElement annotatedClass,
     DatabaseState dbState,
     bool isView,
+    String tableNameSuffix,
   ) {
     // ignore: deprecated_member_use_from_same_package
     var typeConverters = dbState.typeConverterMap;
@@ -139,6 +140,7 @@ class EntityHelper {
       superClasses: mixins,
       fieldStates: fieldStates,
       isView: isView,
+      tableNameSuffix: tableNameSuffix,
     );
 
     return ValueResponse.value((dartCode, classState));
@@ -327,7 +329,7 @@ class EntityHelper {
   }
 
   /// Appends s to the entity name, drift strips the s for the entity class.
-  String getClassHeader(String className, Set<ClassElement> mixinSet, bool useRowClass) {
+  String getClassHeader(String className, Set<ClassElement> mixinSet, bool useRowClass, String tableNameSuffix) {
     var mixinString = "";
     if (mixinSet.isNotEmpty) {
       mixinString = "with ";
@@ -335,7 +337,7 @@ class EntityHelper {
 
     mixinString += mixinSet.map((s) => "${s.name}$mixinSuffix").join(", ");
 
-    return "${useRowClass ? "@UseRowClass($className)\n" : ""}class ${className}s extends Table $mixinString {\n";
+    return "${useRowClass ? "@UseRowClass($className)\n" : ""}class $className$tableNameSuffix extends Table $mixinString {\n";
   }
 
   /// returns the header for base entitiy mixins

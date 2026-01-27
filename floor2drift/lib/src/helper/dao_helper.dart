@@ -37,9 +37,10 @@ class DaoHelper {
         tableSelector = TableSelectorBaseDao(
           BaseDaoGenerator.tableSelector,
           currentClassStates: tableSelector.currentClassStates,
+          tableNameSuffix: tableSelector.tableNameSuffix,
         );
       } else {
-        tableSelector = TableSelectorDao(currentClassStates: []);
+        tableSelector = TableSelectorDao(currentClassStates: [], tableNameSuffix: tableSelector.tableNameSuffix);
       }
 
       final result = DaoMethodConverter.parseMethod(method, tableSelector, dbState);
