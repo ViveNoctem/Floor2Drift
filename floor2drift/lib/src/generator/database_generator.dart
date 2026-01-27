@@ -58,7 +58,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     if (inputOption.convertDbEntities) {
       for (final entity in state.entities) {
         newImports.addAll(_addImport(state, entity.name, targetFilePath));
-        tables += "${entity.name}s,";
+        tables += "${entity.name}${outputOption.tableNameSuffix},";
       }
 
       if (tables.isNotEmpty) {
@@ -69,7 +69,7 @@ class DatabaseGenerator extends DriftClassGenerator<Database, Null> {
     if (inputOption.convertViews) {
       for (final view in state.views) {
         newImports.addAll(_addImport(state, view.name, targetFilePath));
-        views += "${view.name}s,";
+        views += "${view.name}${outputOption.tableNameSuffix},";
       }
 
       if (views.isNotEmpty) {

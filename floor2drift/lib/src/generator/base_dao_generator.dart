@@ -67,7 +67,11 @@ class BaseDaoGenerator extends DriftClassGenerator<ConvertBaseDao, Null> {
       classElement,
       // do not use classNameSuffix. The Type Name should always be a generic type
       "",
-      TableSelectorBaseDao(tableSelector, currentClassStates: [if (classState != null) classState]),
+      TableSelectorBaseDao(
+        tableSelector,
+        currentClassStates: [if (classState != null) classState],
+        tableNameSuffix: outputOption.tableNameSuffix,
+      ),
       dbState,
       true,
     );

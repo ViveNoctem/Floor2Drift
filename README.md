@@ -7,7 +7,7 @@ For a (not complete) list of supported features see [Features](#features)
 > [!WARNING]
 >
 > This project is WORK IN PROGRESS.
-> 
+>
 > Not all floor features are supported at the moment and expect to make some adjustments to the generated code to work properly.
 
 ## Getting Started
@@ -54,9 +54,9 @@ Use can use the `outputFileSuffix` argument to add a suffix to all generated fil
 For all configuration options see: [Configuration](#configuration)
 
 > [!NOTE]
-> 
+>
 > In the default configuration the generator uses the drift `@UseRowClass` annotation. This is needed if you have any kind of logic in your entity classes.
-> 
+>
 > See [UseRowClass](#userowclass) for instruction on how to use this option.
 
 ```dart
@@ -114,7 +114,7 @@ see [TODO.md](./TODO.md)
 - trying to automatically generate tests for each converted dao method
   - tests will compare the results of the floor method with the drift method
 - add a flag to overwrite the floor files with all with a suffix generated files
-  - basically a way to delete the suffix of all generated drift files, after the conversion is done and all floor file can be deleted 
+  - basically a way to delete the suffix of all generated drift files, after the conversion is done and all floor file can be deleted
 
 ## Database Migrations
 At the moment DB migrations have to be converted manually to [drift migrations](https://drift.simonbinder.eu/migrations/).
@@ -125,7 +125,7 @@ The example consists of 2 flutter projects
 The initial_project directory contains a very simple todo app with a login in floor.
 The converted_project directory contains the same simple todo app but converted to drift using this library.
 
-To run the converted_project the drift files need to be generated and the build_runner has to run 
+To run the converted_project the drift files need to be generated and the build_runner has to run
 Generating the drift files
 ```shell
 cd floor2drift/example/converted_project/tool && dart floor2drift.dart
@@ -159,7 +159,7 @@ cd floor2drift && dart test test/dart_test
 ## Features
 Overview over some of the feature, which are already supported.
 
-This ist not an exhaustive list. 
+This ist not an exhaustive list.
 If a feature that you need is not listed here. Try out if it already works or feel free to create an issue.
 
 ### Entity
@@ -171,6 +171,7 @@ If a feature that you need is not listed here. Try out if it already works or fe
 - renaming
   - table with `@Entity(tableName: "tableName")`
   - column with `@ColumnInfo(name: "columnName")`
+-
 
 ### Dao
 - `@Query`: see [expression_converter.dart](./floor2drift/lib/src/sql/expression_converter/expression_converter.dart) and [token_converter](./floor2drift/lib/src/sql/token_converter/token_converter.dart) for all supported sql expressions and tokens
@@ -196,6 +197,7 @@ factory Floor2DriftGenerator({
   bool useRowClass = true,
   ETableNameOption tableRenaming = ETableNameOption.floorScheme,
   bool useDriftModularCodeGeneration = false,
+  String tableNameSuffix = "s", 
 })
 ```
 
@@ -249,15 +251,21 @@ You can specify which table naming convention should be used. If you want to mig
 Then drift can open the old floor db and migrate it to drift directly.
 
 - `floorScheme` (default)
-    - the table name is the same as the class name.
-    - overrides with `@Table(name: "NewName")` annotation, will be taken into account.
+  - the table name is the same as the class name.
+  - overrides with `@Table(name: "NewName")` annotation, will be taken into account.
 - `driftScheme`
-    - the table name is snake_case version of the class name
+  - the table name is snake_case version of the class name
 - `driftSchemeWithOverride`
-    - the same as driftScheme, but the table name can be overridden by the `@Table(name: "NewName")` annotation.
+  - the same as driftScheme, but the table name can be overridden by the `@Table(name: "NewName")` annotation.
 #### useDriftModularCodeGeneration
 when set the generated code is changed to work with drift [modular code generation](https://drift.simonbinder.eu/generation_options/modular/)
 This is recommended for larger projects.
+
+#### tableNameSuffix
+changes the suffix added to drift table classes
+
+The default value is "s". Meaning the table class is named EntityClassName + s.
+With this option you can change is to e.G. EntityClassName + Table if you want.
 
 ### Custom Configuration
 You can also create a more custom configuration by using the `Floor2DriftGenerator.custom` constructor.

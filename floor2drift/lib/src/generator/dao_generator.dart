@@ -49,7 +49,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     // always needs drift import
     newImports.add("import 'package:drift/drift.dart';");
 
-    final tableSelector = TableSelectorDao(currentClassStates: const []);
+    final tableSelector = TableSelectorDao(currentClassStates: const [], tableNameSuffix: outputOption.tableNameSuffix);
 
     final usedTablesResponse = _daoHelper.getUsedTables(classElement, dbState, tableSelector);
     switch (usedTablesResponse) {
@@ -76,7 +76,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     if (superType != null && superType.isDartCoreObject == false) {
       final typeArgument = superType.typeArguments.firstOrNull;
       final superTypeName = superType.element.name;
-      final tableName = "\$$typeArgument${_classNameSuffix}sTable";
+      final tableName = "\$$typeArgument$_classNameSuffix${outputOption.tableNameSuffix}Table";
       final entityName = "$typeArgument$_classNameSuffix";
       mixinName = "$superTypeName${EntityHelper.mixinSuffix}";
       mixinClause = "$mixinName<$tableName, $entityName>";
@@ -167,6 +167,7 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
       mixinClause,
       outputOption.isModularCodeGeneration,
       implementsClause,
+      outputOption.tableNameSuffix,
     );
 
     final documentation = const BaseHelper().getDocumentationForElement(classElement);
@@ -201,9 +202,10 @@ class DaoGenerator extends DriftClassGenerator<Null, Null> {
     String mixinClause,
     bool isModularGeneration,
     String implementsClause,
+    String tableNameSuffix,
   ) {
-    final viewList = views.map((s) => "${s}s");
-    final tableList = tables.map((s) => "${s}s");
+    final viewList = views.map((s) => "$s$tableNameSuffix");
+    final tableList = tables.map((s) => "$s$tableNameSuffix");
 
     if (tableList.isEmpty) {
       print("Couldn't determine tables for $className");

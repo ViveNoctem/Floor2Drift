@@ -197,6 +197,7 @@ factory Floor2DriftGenerator({
   bool useRowClass = true,
   ETableNameOption tableRenaming = ETableNameOption.floorScheme,
   bool useDriftModularCodeGeneration = false,
+  String tableNameSuffix = "s", 
 })
 ```
 
@@ -259,6 +260,12 @@ Then drift can open the old floor db and migrate it to drift directly.
 #### useDriftModularCodeGeneration
 when set the generated code is changed to work with drift [modular code generation](https://drift.simonbinder.eu/generation_options/modular/)
 This is recommended for larger projects.
+
+#### tableNameSuffix
+changes the suffix added to drift table classes
+
+The default value is "s". Meaning the table class is named EntityClassName + s.
+With this option you can change is to e.G. EntityClassName + Table if you want.
 
 ### Custom Configuration
 You can also create a more custom configuration by using the `Floor2DriftGenerator.custom` constructor.

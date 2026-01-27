@@ -53,7 +53,7 @@ class BaseEntityGenerator extends DriftClassGenerator<ConvertBaseEntity, ClassSt
   ) {
     var result = "";
 
-    final valueResult = _entityHelper.parseEntityFields(classElement, dbState, false);
+    final valueResult = _entityHelper.parseEntityFields(classElement, dbState, false, outputOption.tableNameSuffix);
 
     switch (valueResult) {
       case ValueError<(String, ClassState)>():

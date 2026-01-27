@@ -99,8 +99,7 @@ class ReferenceExpressionConverter extends ExpressionConverter<Reference> {
         // TODO selector is set in configureTableSelector;
         return currentClassState;
       case TableSelectorDao():
-        final selectorName = currentClassState.className;
-        tableSelector.selector = "${ReCase(selectorName).camelCase}s";
+        tableSelector.selector = currentClassState.driftTableGetter;
         return currentClassState;
     }
   }

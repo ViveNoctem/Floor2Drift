@@ -20,8 +20,16 @@ abstract class OutputOptionBase {
   /// Whether the output code should use the drift modular code generation
   final bool isModularCodeGeneration;
 
+  /// Suffix to be added to the table class name
+  final String tableNameSuffix;
+
   /// {@macro OutputOptionBase}
-  const OutputOptionBase({required this.dryRun, required this.fileSuffix, required this.isModularCodeGeneration});
+  const OutputOptionBase({
+    required this.dryRun,
+    required this.fileSuffix,
+    required this.isModularCodeGeneration,
+    required this.tableNameSuffix,
+  });
 
   /// converts the given [filePath] to the corresponding output path
   String getNewPath(String filePath);
@@ -59,6 +67,7 @@ class OutputOptions extends OutputOptionBase {
     required super.fileSuffix,
     required super.dryRun,
     required super.isModularCodeGeneration,
+    required super.tableNameSuffix,
     BaseHelper baseHelper = const BaseHelper(),
   }) : _baseHelper = baseHelper;
 

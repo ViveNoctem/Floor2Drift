@@ -84,11 +84,14 @@ sealed class TableSelector {
   /// TODO should be set to true to force tableName.columName in an expression
   bool useSelector = false;
 
+  final String tableNameSuffix;
+
   TableSelector({
     this.selector = "",
     this.currentFieldState,
     this.functionSelector = "s",
     required this.currentClassStates,
+    required this.tableNameSuffix,
   });
 
   ClassState? getClassStateForTable(String tableName) {
@@ -112,7 +115,13 @@ class TableSelectorBaseDao extends TableSelector {
   final String table;
 
   /// {@macro TableSelectorBaseDao}
-  TableSelectorBaseDao(this.table, {super.selector, super.currentFieldState, required super.currentClassStates});
+  TableSelectorBaseDao(
+    this.table, {
+    super.selector,
+    super.currentFieldState,
+    required super.currentClassStates,
+    required super.tableNameSuffix,
+  });
 }
 
 /// {@template TableSelectorDao}
@@ -120,5 +129,10 @@ class TableSelectorBaseDao extends TableSelector {
 /// {@endtemplate}
 class TableSelectorDao extends TableSelector {
   /// {@macro TableSelectorDao}
-  TableSelectorDao({super.selector, super.currentFieldState, required super.currentClassStates});
+  TableSelectorDao({
+    super.selector,
+    super.currentFieldState,
+    required super.currentClassStates,
+    required super.tableNameSuffix,
+  });
 }
